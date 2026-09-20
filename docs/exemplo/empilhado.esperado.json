@@ -1,0 +1,30 @@
+{
+  "descricao": "Entrada de Valor abaixo de Despesas Gerais (não ao lado), com Recorrentes à direita.",
+  "limiteConhecido": false,
+  "abas": {
+    "Tudo": {
+      "despesasGerais": {
+        "headerRow": 2,
+        "startCol": 0
+      },
+      "entradaDeValor": {
+        "headerRow": 12,
+        "startCol": 0
+      },
+      "contagens": {
+        "despesas": 2,
+        "entradas": 2,
+        "transfers": 0,
+        "billPayments": 1,
+        "mirrorsConsumed": 0,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 134030,
+        "entradas": 429000,
+        "transfers": 0,
+        "billPayments": 22000
+      }
+    }
+  }
+}

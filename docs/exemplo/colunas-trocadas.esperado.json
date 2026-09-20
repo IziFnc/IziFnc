@@ -1,0 +1,30 @@
+{
+  "descricao": "LIMITE CONHECIDO: Despesas Gerais com as colunas em outra ordem (Nome, Banco, Valor, Tipo, Dia, Observação).",
+  "limiteConhecido": true,
+  "abas": {
+    "Dados": {
+      "despesasGerais": {
+        "headerRow": 2,
+        "startCol": 0
+      },
+      "entradaDeValor": {
+        "headerRow": 2,
+        "startCol": 8
+      },
+      "contagens": {
+        "despesas": 2,
+        "entradas": 1,
+        "transfers": 0,
+        "billPayments": 0,
+        "mirrorsConsumed": 0,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 24340,
+        "entradas": 420000,
+        "transfers": 0,
+        "billPayments": 0
+      }
+    }
+  }
+}

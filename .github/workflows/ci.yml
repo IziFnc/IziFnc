@@ -1,0 +1,29 @@
+name: CI
+
+# Roda a validação completa a cada push e pull request. NÃO usa segredos: a
+# avaliação ao vivo dos provedores de LLM (`--live`) precisa de chave de API e
+# fica só na máquina de quem desenvolve.
+on:
+  push:
+  pull_request:
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # O histórico inteiro: a varredura de chaves olha todos os commits.
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.1
+          channel: stable
+          cache: true
+
+      # Os arquivos gerados (*.g.dart, *.drift.dart) são versionados, então não
+      # precisa rodar o build_runner aqui.
+      - run: flutter pub get
+
+      - run: dart run tool/validar.dart

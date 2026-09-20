@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gerado por `dart run flutter_launcher_icons` e ajustado à mão: sem o <inset> de
+  16% que o gerador põe. O foreground (assets/branding/foreground.png) já é
+  desenhado com a carteira na zona segura de 66%, então a camada ocupa os 108dp.
+  Se regenerar os ícones, refaça este ajuste.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@color/ic_launcher_background"/>
+  <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>

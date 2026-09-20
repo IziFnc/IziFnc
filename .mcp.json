@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "mobile-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "-p",
+        "@mobilenext/mobile-mcp@latest",
+        "-p",
+        "@mobilenext/mobilecli-windows-amd64@latest",
+        "mcp-server-mobile"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# Por que dois alvos: o riverpod_generator precisa enxergar as classes que o
+# drift gera (Account, Entry). No modo padrão o drift escreve num part
+# compartilhado (.g.dart) montado só no fim do build, tarde demais para o
+# riverpod. Aqui o drift roda num alvo próprio, antes, e gera `.drift.dart`.
+# Receita da documentação do drift: generation_options/in_other_builders.
+#
+# Tudo que os arquivos de tabela importam precisa estar em `sources` do alvo
+# `drift` — senão o $default (que depende do drift) vira dependência circular.
+targets:
+  drift:
+    auto_apply_builders: false
+    sources:
+      - lib/core/database/app_database.dart
+      - lib/features/*/data/*_table.dart
+      - lib/features/accounts/domain/account_kind.dart
+      - lib/features/entries/domain/entry_type.dart
+      # import_bank_mappings_table.dart já casa com `*/data/*_table.dart` acima.
+    builders:
+      drift_dev:analyzer:
+        enabled: true
+        options: &drift_options
+          has_separate_analyzer: true
+          # `dart run drift_dev make-migrations` lê daqui (do primeiro builder
+          # drift habilitado, que é o not_shared abaixo). Rodar a cada mudança
+          # de schema: guarda a versão em drift_schemas/ e gera os testes.
+          databases:
+            app_database: lib/core/database/app_database.dart
+          schema_dir: drift_schemas/
+          test_dir: test/drift/
+      drift_dev:not_shared:
+        enabled: true
+        options: *drift_options
+
+  $default:
+    dependencies:
+      - ":drift"
+    sources:
+      exclude:
+        - lib/core/database/app_database.dart
+        - lib/features/*/data/*_table.dart
+        - lib/features/accounts/domain/account_kind.dart
+        - lib/features/entries/domain/entry_type.dart
+        # import_bank_mappings_table.dart já casa com `*/data/*_table.dart` acima.
+    builders:
+      drift_dev:
+        enabled: false

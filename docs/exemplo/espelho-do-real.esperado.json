@@ -1,0 +1,54 @@
+{
+  "descricao": "Esqueleto da planilha real: tabela de Faturas antes de Despesas Gerais, Gastos Recorrentes no meio, Entrada de Valor à direita, e pares de transferência (com destino em branco e espelho sem data).",
+  "limiteConhecido": false,
+  "abas": {
+    "Mes1": {
+      "despesasGerais": {
+        "headerRow": 18,
+        "startCol": 1
+      },
+      "entradaDeValor": {
+        "headerRow": 18,
+        "startCol": 15
+      },
+      "contagens": {
+        "despesas": 4,
+        "entradas": 2,
+        "transfers": 2,
+        "billPayments": 1,
+        "mirrorsConsumed": 2,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 32830,
+        "entradas": 580000,
+        "transfers": 55000,
+        "billPayments": 30000
+      }
+    },
+    "Mes2": {
+      "despesasGerais": {
+        "headerRow": 18,
+        "startCol": 1
+      },
+      "entradaDeValor": {
+        "headerRow": 18,
+        "startCol": 15
+      },
+      "contagens": {
+        "despesas": 2,
+        "entradas": 1,
+        "transfers": 0,
+        "billPayments": 0,
+        "mirrorsConsumed": 0,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 12280,
+        "entradas": 500000,
+        "transfers": 0,
+        "billPayments": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "descricao": "Sem tabela de Faturas nem Recorrentes; cabeçalho na linha 3, Despesas na coluna A.",
+  "limiteConhecido": false,
+  "abas": {
+    "Dados": {
+      "despesasGerais": {
+        "headerRow": 3,
+        "startCol": 0
+      },
+      "entradaDeValor": {
+        "headerRow": 3,
+        "startCol": 7
+      },
+      "contagens": {
+        "despesas": 2,
+        "entradas": 1,
+        "transfers": 0,
+        "billPayments": 0,
+        "mirrorsConsumed": 0,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 18800,
+        "entradas": 420000,
+        "transfers": 0,
+        "billPayments": 0
+      }
+    }
+  }
+}
