@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +12,7 @@ import '../../accounts/presentation/accounts_providers.dart';
 import '../../entries/domain/competence.dart';
 import '../../entries/domain/entry_type.dart';
 import '../../entries/presentation/month_providers.dart';
+import '../../entries/presentation/month_screen.dart';
 import '../data/llm_table_locator.dart';
 import '../data/xlsx_workbook.dart';
 import '../domain/build_import_plan.dart';
@@ -80,6 +80,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // O fluxo lê estes providers com `.future` no meio do caminho (ao escolher a
+    // aba e ao confirmar). Eles descartam sozinhos quando ninguém os observa e,
+    // com a importação aberta pelo menu (que troca a tela), nenhuma outra tela
+    // os mantém vivos: a leitura falhava com "provider disposed during loading
+    // state". Observar aqui, em todos os passos, os mantém vivos até sair.
+    ref.watch(accountsProvider);
+    ref.watch(monthStartDayProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Importar planilha')),
       drawer: const AppDrawer(current: AppDestination.importSheet),
@@ -260,15 +268,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       _missingKey = false;
     });
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'],
-      );
-      if (file == null) {
+      final bytes = await ref.read(importFilePickerProvider)();
+      if (bytes == null) {
         setState(() => _busy = false);
         return;
       }
-      final bytes = await file.readAsBytes();
       final workbook = XlsxWorkbook.open(bytes);
       setState(() {
         _workbook = workbook;
@@ -620,7 +624,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           Text('$_savedCount lançamento(s) importado(s).'),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: () => context.pop(),
+            // `go`, não `pop`: a importação é aberta pelo menu (que troca a tela), então
+            // não há tela por baixo para desempilhar.
+            onPressed: () => context.go(MonthScreen.path),
             child: const Text('Voltar para o mês'),
           ),
         ],

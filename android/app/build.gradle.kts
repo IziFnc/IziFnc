@@ -31,6 +31,15 @@ android {
         // Identificador unico na Play Store. NAO MUDAR depois de publicar: um id novo
         // e um app novo, e quem ja instalou perde os dados locais.
         applicationId = "com.getulio.izifnc"
+        // Versao PESSOAL (feat 0024): `IZIFNC_PESSOAL=1` (ver tool/build_pessoal.sh)
+        // instala como outro app ("IziFnc Pessoal", id ".pessoal"), lado a lado com a
+        // versao normal. Ela leva as chaves de IA embutidas no build e NAO se distribui.
+        if (System.getenv("IZIFNC_PESSOAL") == "1") {
+            applicationIdSuffix = ".pessoal"
+            manifestPlaceholders["appLabel"] = "IziFnc Pessoal"
+        } else {
+            manifestPlaceholders["appLabel"] = "IziFnc"
+        }
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

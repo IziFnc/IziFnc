@@ -109,6 +109,19 @@ publicar atualizações por cima do que já foi instalado: **guarde uma cópia d
 `izifnc-release.jks` e da senha fora deste computador**. Como o keystore é outro, um APK de
 release não instala por cima de um build de debug (e vice-versa): desinstale antes.
 
+**Duas versões do app.**
+
+| | Versão do usuário | Versão pessoal |
+|---|---|---|
+| Como gerar | `flutter build apk --release --target-platform android-arm64` | `bash tool/build_pessoal.sh` |
+| Nome / id | IziFnc · `com.getulio.izifnc` | IziFnc Pessoal · `com.getulio.izifnc.pessoal` |
+| Chave de IA | cada pessoa cola a sua em Configurações › Inteligência artificial | já embutida (lida de `_local/keys/`) |
+| Distribuição | vai para as releases | **nunca**: só para uso do autor |
+
+As duas convivem no mesmo celular (ids diferentes, cada uma com o seu banco). A chave embutida na versão
+pessoal pode ser extraída de quem tiver o APK; por isso o arquivo sai em `_local/build/` (fora do git) e
+não se publica nem se compartilha. Uma chave configurada dentro do app sempre vale mais que a embutida.
+
 Para desenvolver com a IA sem digitar a chave no app, use
 `--dart-define=GROQ_API_KEY="$(cat _local/keys/groq.txt)"`; a chave configurada no app tem prioridade.
 

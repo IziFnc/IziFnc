@@ -20,6 +20,17 @@ O primeiro passo da importação era um botão "Escolher arquivo" numa tela vazi
   tem o botão ☰ (não a seta de voltar) e abre com `go`. Antes ela abria por cima da tela de origem e a
   seta voltava para lá (ex.: Contas e cartões), o que parecia um erro. O item fica marcado no menu.
 
+- **Regressão achada no rc.1 (corrigida no rc.2):** ao tornar a importação um destino do menu (`go`), a
+  tela anterior deixou de manter vivos `accountsProvider` e `monthStartDayProvider`, que o fluxo lê com
+  `.future` ao escolher a aba e ao confirmar. Eles descartam sozinhos, e a leitura falhava com "The provider
+  accountsProvider was disposed during loading state" (mostrado como "Não consegui ler essa aba…"). A tela
+  agora observa os dois durante todo o fluxo. O seletor de arquivos virou um provider
+  (`importFilePickerProvider`) e um teste percorre o fluxo inteiro: arquivo → aba → mapear → prévia → importar.
+  Nenhum teste cobria a escolha da aba, por isso a regressão passou.
+- **Segunda consequência da mesma mudança (rc.3):** o botão "Voltar para o mês" da tela final usava `pop`,
+  que não tem para onde voltar quando a importação é aberta por `go`, então não fazia nada. Achado testando
+  o rc.2 no emulador; agora usa `go` para a home, e o teste do fluxo cobre o botão.
+
 ## Por quê
 
 Achado P2 da auditoria de UX, escolhido pelo autor: em vez de deixar a pessoa escolher arquivo e aba para só

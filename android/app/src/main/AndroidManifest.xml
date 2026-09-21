@@ -5,7 +5,7 @@
          falha em toda importacao, e isso passa despercebido em build debug. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="IziFnc"
+        android:label="${appLabel}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
