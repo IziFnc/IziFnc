@@ -14,14 +14,19 @@ SheetGrid gridFrom(Map<(int row, int col), XlsxValue> cells) {
 }
 
 class _FakeLocator implements LlmTableLocator {
-  _FakeLocator(this.result);
+  _FakeLocator(this.result, {this.then});
   final TableLocations result;
+
+  /// A resposta das chamadas seguintes (a IA às vezes acerta na segunda).
+  final TableLocations? then;
+  int calls = 0;
 
   @override
   String get providerName => 'Fake';
 
   @override
-  Future<TableLocations> locate(SheetGrid grid, {required String sheetName}) async => result;
+  Future<TableLocations> locate(SheetGrid grid, {required String sheetName}) async =>
+      calls++ == 0 ? result : (then ?? result);
 }
 
 void main() {
@@ -93,15 +98,30 @@ void main() {
       expect(result.note, 'Anthropic respondeu no lugar da Groq');
     });
 
-    test('lança FormatException quando falta alguma tabela', () async {
+    test('falta uma tabela nas duas tentativas: TablesNotFoundException (não "arquivo inválido")', () async {
       final locator = _FakeLocator(
         const TableLocations(despesasGerais: TableLocation(headerRow: 1, startCol: 1)),
       );
 
-      expect(
-        () => extractTablesWithAi(grid, sheetName: 'Aba1', locator: locator),
-        throwsFormatException,
+      await expectLater(
+        extractTablesWithAi(grid, sheetName: 'Aba1', locator: locator),
+        throwsA(isA<TablesNotFoundException>()),
       );
+      expect(locator.calls, 2, reason: 'tenta de novo uma vez antes de desistir');
+    });
+
+    test('a IA erra na primeira e acha na segunda: segue normal (visto na planilha real)', () async {
+      final locator = _FakeLocator(
+        const TableLocations(despesasGerais: TableLocation(headerRow: 1, startCol: 1)),
+        then: const TableLocations(
+          despesasGerais: TableLocation(headerRow: 1, startCol: 1),
+          entradaDeValor: TableLocation(headerRow: 10, startCol: 1),
+        ),
+      );
+
+      final result = await extractTablesWithAi(grid, sheetName: 'Aba1', locator: locator);
+      expect(result.tables.entradaDeValor, hasLength(1));
+      expect(locator.calls, 2);
     });
   });
 

@@ -46,6 +46,15 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
     );
   }
 
+  if (error is TablesNotFoundException) {
+    return ImportErrorMessage(
+      '$prefix A IA não achou a tabela ${error.missing} nesta aba, mesmo tentando de novo. '
+      'Toque na aba outra vez (às vezes ela acha na próxima) e confira se os títulos das '
+      'colunas são Nome, Valor, Tipo, Banco, Observação e Dia.',
+      detail: '$error',
+    );
+  }
+
   if (error is FormatException) {
     return ImportErrorMessage(
       '$prefix Este arquivo não parece ser uma planilha .xlsx válida. Salve a planilha como .xlsx e tente de novo.',

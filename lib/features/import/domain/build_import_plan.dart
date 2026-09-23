@@ -39,6 +39,42 @@ bool canContinueMapping({
   return decided && importsSomething;
 }
 
+String _two(int n) => n.toString().padLeft(2, '0');
+
+/// Os avisos da prévia (feat 0025): o que a importação fez de diferente do que
+/// está escrito na planilha, para nenhuma linha "sumir" sem explicação. A
+/// planilha real mostrou que, sem isso, a pessoa conta as linhas e não bate.
+List<String> importNotes(ParsedSheetData parsed, List<ImportPlanRow> plan) {
+  final unchecked = plan.where((p) => !p.include).length;
+  final undated = plan.where((p) => p.row.undated).length;
+  final parcelas = plan.where((p) => p.row.originalDate != null).length;
+  final semCartao = plan.where((p) => p.row.cardUnknown).length;
+  return [
+    if (unchecked > 0)
+      '$unchecked vieram desmarcada(s) para você revisar (já importada antes, ou data muito longe do mês da aba).',
+    if (parcelas > 0)
+      '$parcelas parcela(s) estavam com a data da compra original e foram trazidas para o mês da aba (a data da compra fica na observação).',
+    if (undated > 0) '$undated linha(s) estavam sem data na planilha e entram com a última data da aba.',
+    if (semCartao > 0) '$semCartao fatura(s) sem o cartão na planilha usam o cartão escolhido no passo anterior.',
+    if (parsed.mirrorsConsumed > 0)
+      '${parsed.mirrorsConsumed} transferência(s) aparecem duas vezes na planilha (saída e entrada) e entram uma vez só.',
+    'A tabela "Gastos Recorrentes" ainda não é importada.',
+  ];
+}
+
+/// A observação do lançamento, com o que a importação fez com a data (feat 0025):
+/// parcela trazida para o mês da aba guarda a data da compra; linha sem data avisa.
+String? _noteFor(ParsedRow row, String? base) {
+  final original = row.originalDate;
+  final ate = row.lastInstallment;
+  final compra = original == null ? null : 'compra em ${_two(original.day)}/${_two(original.month)}/${original.year}';
+  final extra = compra != null && ate != null && base == null
+      ? 'parcela até ${_two(ate.month)}/${ate.year} · $compra'
+      : compra ?? (row.undated ? 'sem data na planilha' : null);
+  if (extra == null) return base;
+  return base == null ? extra : '$base · $extra';
+}
+
 /// Transforma o que foi lido da aba em lançamentos prontos para gravar.
 ///
 /// [mapped] liga cada chave `banco|tipo` (ver [bankMappingKey]) ao id da conta
@@ -85,12 +121,16 @@ Future<ImportPlan> buildImportPlan({
       continue;
     }
 
-    final (type, description, note) = switch (row.kind) {
+    final (type, description, baseNote) = switch (row.kind) {
       ParsedKind.expense => (EntryType.expense, row.nome, row.observacao),
       ParsedKind.income => (EntryType.income, row.nome, row.observacao),
       ParsedKind.transfer => (EntryType.transfer, 'Transferência', null),
+      // Sem o cartão na planilha, o nome técnico do mapeamento não vai para a
+      // descrição; a lista do mês já mostra "Conta → fatura Cartão".
+      ParsedKind.billPayment when row.cardUnknown => (EntryType.billPayment, 'Pagamento fatura', null),
       ParsedKind.billPayment => (EntryType.billPayment, 'Pagamento fatura ${row.destino}', null),
     };
+    final note = _noteFor(row, baseNote);
 
     final draft = EntryDraft(
       accountId: accountId,

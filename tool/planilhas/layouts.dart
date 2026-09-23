@@ -8,7 +8,10 @@ class Despesa {
   final double valor;
   final String tipo;
   final String banco;
-  final String? obs;
+
+  /// Texto (ex.: "4/10") ou número (ex.: data serial sem formato de data, o
+  /// formato antigo de parcela da planilha real).
+  final Object? obs;
   final DateTime? dia;
 }
 
@@ -146,7 +149,71 @@ DateTime _d(int m, int d) => DateTime(2026, m, d);
 /// **Dados inventados.** Contas "Azul" e "Verde", cartão "Roxo" — nada daqui
 /// vem de planilha real. Para acrescentar um modelo: crie outra função e
 /// inclua na lista (ver `docs/exemplo/LEIAME.md`).
-List<GeneratedCase> allCases() => [_espelhoDoReal(), _deslocado(), _empilhado(), _colunasTrocadas()];
+List<GeneratedCase> allCases() => [
+  _espelhoDoReal(),
+  _deslocado(),
+  _empilhado(),
+  _colunasTrocadas(),
+  _armadilhasDoReal(),
+];
+
+// --- (e) armadilhas achadas na planilha real (feat 0025) ----------------------
+
+/// Data serial do Excel, gravada como NÚMERO comum (sem formato de data).
+double _serial(DateTime d) => d.difference(DateTime(1899, 12, 30)).inDays.toDouble();
+
+/// Os traços que fizeram a importação da planilha real trazer ~50 de ~70 linhas,
+/// com dados inventados: linhas sem data no fim da tabela, parcelas com a data
+/// da compra original (formato "4/10" e o formato antigo, Observação = data da
+/// última parcela como número), faturas sem o cartão na Observação e uma
+/// transferência com espelho. Todas precisam virar lançamento, sem erro.
+GeneratedCase _armadilhasDoReal() {
+  final despesas = [
+    Despesa('Padaria', 12.5, 'Debito', 'Azul', dia: _d(9, 2)),
+    Despesa('Mercado', 230.9, 'Debito', 'Verde', dia: _d(9, 10)),
+    Despesa('Cinema', 55, 'Crédito', 'Roxo', dia: _d(9, 18)),
+    Despesa('Farmácia', 67.8, 'Debito', 'Azul', dia: _d(9, 24)),
+    // Parcelas com a data da compra original, meses antes.
+    Despesa('Geladeira', 250, 'Crédito', 'Roxo', obs: '4/10', dia: _d(6, 12)),
+    Despesa('Sofá', 180, 'Crédito', 'Roxo', obs: '2 / 6', dia: _d(8, 5)),
+    Despesa('TV', 200, 'Crédito', 'Roxo', obs: _serial(_d(12, 20)), dia: _d(3, 20)),
+    // Faturas: uma com o cartão, uma sem (Observação vazia).
+    Despesa('fatura', 300, 'Debito', 'Azul', obs: 'Roxo', dia: _d(9, 10)),
+    Despesa('fatura', 150, 'Debito', 'Verde', dia: _d(9, 11)),
+    Despesa('transfer', 400, 'Debito', 'Azul', obs: 'Verde', dia: _d(9, 15)),
+    // Sem data, no fim da tabela.
+    Despesa('Feira', 42, 'Debito', 'Azul'),
+    Despesa('Assinatura', 29.9, 'Crédito', 'Roxo'),
+    Despesa('fatura', 90, 'Debito', 'Azul', obs: 'Roxo'),
+  ];
+  final entradas = [
+    Entrada('Salario', 5000, 'Azul', dia: _d(9, 5)),
+    Entrada('transfer', 400, 'Verde', obs: 'Azul', dia: _d(9, 15)),
+    Entrada('Reembolso', 60, 'Verde'), // sem data
+  ];
+  final c = <WCell>[];
+  _despesas(c, 18, 1, despesas);
+  _despesas(c, 18, 8, const [Despesa('Internet', 99.9, 'Debito', 'Azul')]); // Recorrentes
+  _entradas(c, 18, 15, entradas);
+  return GeneratedCase(
+    slug: 'armadilhas-do-real',
+    descricao:
+        'Traços da planilha real com dados inventados: linhas sem data no fim, parcelas com a '
+        'data da compra (texto "4/10" e formato antigo com a data da última parcela como número), '
+        'fatura sem o cartão e transferência com espelho. Tudo vira lançamento, sem erro.',
+    sheets: {'Setembro': c},
+    abas: {
+      'Setembro': _expected(
+        despesasHeaderRow: 18,
+        despesasCol: 1,
+        entradaHeaderRow: 18,
+        entradaCol: 15,
+        despesas: despesas,
+        entradas: entradas,
+      ),
+    },
+  );
+}
 
 // --- (a) espelho do layout real -----------------------------------------------
 

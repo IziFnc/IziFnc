@@ -44,12 +44,137 @@ ParsedSheetData _data({
 
 Future<bool> _never(EntryDraft _) async => false;
 
+// Planilha real (feat 0025): o que a prévia e o lançamento dizem das regras novas.
+void _planilhaReal() {
+  group('planilha real', () {
+    test('fatura sem cartão: o cartão vem do mapeamento e a descrição não repete o rótulo técnico', () async {
+      final fatura = ParsedRow(
+        sheetRow: 42,
+        nome: 'fatura',
+        valorCents: 30000,
+        data: _dia,
+        banco: 'Bradesco',
+        tipo: SourceTipo.debito,
+        observacao: null,
+        suspiciousDate: false,
+        kind: ParsedKind.billPayment,
+        destino: unknownCardName('Bradesco'),
+        cardUnknown: true,
+      );
+      final plan = await buildImportPlan(
+        parsed: _data(billPayments: [fatura]),
+        mapped: {'bradesco|debito': _bradesco, fatura.destinoKey!: _cartaoAmazon},
+        isDuplicate: _never,
+      );
+      final row = plan.rows.single;
+      expect(row.toAccountId, _cartaoAmazon);
+      expect(row.description, 'Pagamento fatura');
+      expect(row.include, isTrue);
+    });
+
+    test('parcela trazida para o mês da aba guarda a data da compra na observação', () async {
+      final parcela = ParsedRow(
+        sheetRow: 3,
+        nome: 'Geladeira',
+        valorCents: 25000,
+        data: _dia,
+        banco: 'Amazon',
+        tipo: SourceTipo.credito,
+        observacao: '4/10',
+        suspiciousDate: false,
+        originalDate: DateTime(2025, 8, 10),
+      );
+      final plan = await buildImportPlan(
+        parsed: _data(despesas: [parcela]),
+        mapped: {'amazon|credito': _cartaoAmazon},
+        isDuplicate: _never,
+      );
+      expect(plan.rows.single.note, '4/10 · compra em 10/08/2025');
+      expect(plan.rows.single.include, isTrue);
+    });
+
+    test('parcela no formato antigo: a observação diz até quando vai e a data da compra', () async {
+      final tv = ParsedRow(
+        sheetRow: 3,
+        nome: 'TV',
+        valorCents: 20000,
+        data: _dia,
+        banco: 'Amazon',
+        tipo: SourceTipo.credito,
+        observacao: null,
+        suspiciousDate: false,
+        originalDate: DateTime(2025, 8, 15),
+        lastInstallment: DateTime(2026, 5, 15),
+      );
+      final plan = await buildImportPlan(
+        parsed: _data(despesas: [tv]),
+        mapped: {'amazon|credito': _cartaoAmazon},
+        isDuplicate: _never,
+      );
+      expect(plan.rows.single.note, 'parcela até 05/2026 · compra em 15/08/2025');
+    });
+
+    test('os avisos da prévia contam cada coisa que a importação fez diferente da planilha', () async {
+      ParsedRow r({bool undated = false, DateTime? original, bool semCartao = false, bool suspeita = false}) => ParsedRow(
+        sheetRow: 1,
+        nome: 'X',
+        valorCents: 100,
+        data: _dia,
+        banco: 'Bradesco',
+        tipo: SourceTipo.debito,
+        observacao: null,
+        suspiciousDate: suspeita,
+        undated: undated,
+        originalDate: original,
+      );
+      final parsed = ParsedSheetData(
+        despesas: [r(undated: true), r(original: DateTime(2025, 8, 1)), r(suspeita: true), r()],
+        entradas: const [],
+        mirrorsConsumed: 2,
+        rowErrors: const [],
+      );
+      final plan = await buildImportPlan(parsed: parsed, mapped: {'bradesco|debito': _bradesco}, isDuplicate: _never);
+
+      final notes = importNotes(parsed, plan.rows);
+      expect(notes, contains(startsWith('1 vieram desmarcada(s)')));
+      expect(notes, contains(startsWith('1 parcela(s)')));
+      expect(notes, contains(startsWith('1 linha(s) estavam sem data')));
+      expect(notes, contains(startsWith('2 transferência(s) aparecem duas vezes')));
+      expect(notes, contains(contains('Gastos Recorrentes')));
+      expect(notes.where((n) => n.contains('fatura(s) sem o cartão')), isEmpty, reason: 'só aparece o que aconteceu');
+    });
+
+    test('linha sem data na planilha: entra marcada, e a observação avisa', () async {
+      final semDia = ParsedRow(
+        sheetRow: 60,
+        nome: 'Padaria',
+        valorCents: 1500,
+        data: _dia,
+        banco: 'Bradesco',
+        tipo: SourceTipo.debito,
+        observacao: null,
+        suspiciousDate: false,
+        undated: true,
+      );
+      final plan = await buildImportPlan(
+        parsed: _data(despesas: [semDia]),
+        mapped: {'bradesco|debito': _bradesco},
+        isDuplicate: _never,
+      );
+      expect(plan.rows.single.include, isTrue);
+      expect(plan.rows.single.note, 'sem data na planilha');
+    });
+  });
+}
+
 // Ids das contas escolhidas no mapeamento.
 const _bradesco = 1;
 const _c6 = 2;
 const _cartaoAmazon = 3;
 
 void main() {
+  _planilhaReal();
+
   test('despesa e entrada viram expense e income, com a observação como nota', () async {
     final plan = await buildImportPlan(
       parsed: _data(

@@ -1,0 +1,30 @@
+{
+  "descricao": "Traços da planilha real com dados inventados: linhas sem data no fim, parcelas com a data da compra (texto \"4/10\" e formato antigo com a data da última parcela como número), fatura sem o cartão e transferência com espelho. Tudo vira lançamento, sem erro.",
+  "limiteConhecido": false,
+  "abas": {
+    "Setembro": {
+      "despesasGerais": {
+        "headerRow": 18,
+        "startCol": 1
+      },
+      "entradaDeValor": {
+        "headerRow": 18,
+        "startCol": 15
+      },
+      "contagens": {
+        "despesas": 9,
+        "entradas": 2,
+        "transfers": 1,
+        "billPayments": 3,
+        "mirrorsConsumed": 1,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 106810,
+        "entradas": 506000,
+        "transfers": 40000,
+        "billPayments": 54000
+      }
+    }
+  }
+}

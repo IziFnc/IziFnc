@@ -126,12 +126,32 @@ void main() {
       expect(fatura.destinoKey, 'bradesco|credito');
     });
 
-    test('sem o cartão (Observação) vira erro, não chute', () {
+    test('sem o cartão (Observação): entra, e o cartão é perguntado no mapeamento (não é chute)', () {
       final parsed = parseSheet(
         tables(despesas: [despesaRow(3, nome: 'fatura', valor: 100, tipo: 'Debito', banco: 'Bradesco', dia: dez1)]),
       );
-      expect(parsed.billPayments, isEmpty);
-      expect(parsed.rowErrors.single, allOf(contains('Linha 3'), contains('cartão')));
+      expect(parsed.rowErrors, isEmpty);
+      final fatura = parsed.billPayments.single;
+      expect(fatura.cardUnknown, isTrue);
+      expect(fatura.mappingKey, 'bradesco|debito', reason: 'a conta que paga continua a de sempre');
+      // Uma chave própria por conta pagadora: o mapeamento pergunta "de qual cartão
+      // é a fatura paga pelo Bradesco?" e lembra a resposta nas próximas abas.
+      expect(parsed.mappingPairs.map((p) => p.$1), contains(unknownCardName('Bradesco')));
+      expect(fatura.destinoKey, bankMappingKey(unknownCardName('Bradesco'), SourceTipo.credito));
+    });
+
+    test('faturas sem cartão de contas diferentes viram perguntas diferentes', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(3, nome: 'fatura', valor: 100, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(4, nome: 'fatura', valor: 200, tipo: 'Debito', banco: 'C6', dia: dez1),
+            despesaRow(5, nome: 'fatura', valor: 300, tipo: 'Debito', banco: 'Bradesco', dia: dez5),
+          ],
+        ),
+      );
+      final keys = parsed.billPayments.map((f) => f.destinoKey).toSet();
+      expect(keys, hasLength(2), reason: 'uma por conta pagadora, não uma por linha');
     });
 
     test('fatura em Entrada de Valor não é esperada e vira erro', () {
@@ -300,6 +320,162 @@ void main() {
       expect(parsed.despesas[0].suspiciousDate, isFalse);
       expect(parsed.despesas[1].suspiciousDate, isFalse);
       expect(parsed.despesas[2].suspiciousDate, isTrue);
+    });
+  });
+
+  // O que a planilha real mostrou (feat 0025): linhas sem data no fim da tabela,
+  // parcelas copiadas com a data da compra original e faturas sem o cartão.
+  group('planilha real: sem data e parcelas', () {
+    final dez20 = DateTime(2025, 12, 20);
+
+    test('despesa sem data entra com a data do fim do mês da aba (a última data da aba)', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez20),
+            despesaRow(3, nome: 'Sem dia', valor: 99, tipo: 'Crédito', banco: 'Amazon'),
+          ],
+        ),
+      );
+      expect(parsed.rowErrors, isEmpty);
+      final semDia = parsed.despesas.last;
+      expect(semDia.data, dez20);
+      expect(semDia.undated, isTrue);
+      expect(semDia.suspiciousDate, isFalse, reason: 'entra marcada');
+    });
+
+    test('entrada sem data também entra, pela mesma regra', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez5)],
+          entradas: [entradaRow(2, nome: 'Freela', valor: 800, banco: 'Bradesco')],
+        ),
+      );
+      expect(parsed.rowErrors, isEmpty);
+      expect(parsed.entradas.single.data, dez5);
+      expect(parsed.entradas.single.undated, isTrue);
+    });
+
+    test('a "data do fim do mês" ignora datas suspeitas (não pula para outro mês)', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez5),
+            despesaRow(3, nome: 'Ano errado', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: DateTime(2026, 12, 30)),
+            despesaRow(4, nome: 'Sem dia', valor: 10, tipo: 'Debito', banco: 'Bradesco'),
+          ],
+        ),
+      );
+      expect(parsed.despesas.last.data, dez5);
+    });
+
+    test('aba sem nenhuma data: a linha sem data continua erro (não dá para adivinhar o mês)', () {
+      final parsed = parseSheet(
+        tables(despesas: [despesaRow(7, nome: 'Sem dia', valor: 10, tipo: 'Debito', banco: 'Bradesco')]),
+      );
+      expect(parsed.despesas, isEmpty);
+      expect(parsed.rowErrors.single, allOf(contains('Linha 7'), contains('data')));
+    });
+
+    test('fatura sem data e sem cartão entra com as duas regras', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez5),
+            despesaRow(2, nome: 'fatura', valor: 300, tipo: 'Debito', banco: 'Bradesco'),
+          ],
+        ),
+      );
+      final fatura = parsed.billPayments.single;
+      expect(fatura.data, dez5);
+      expect(fatura.cardUnknown, isTrue);
+    });
+
+    test('parcela "4/10" com a data da compra original vem para o mesmo dia no mês da aba, marcada', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez20),
+            despesaRow(3, nome: 'Geladeira', valor: 250, tipo: 'Crédito', banco: 'Amazon', observacao: '4/10', dia: DateTime(2025, 8, 10)),
+          ],
+        ),
+      );
+      final parcela = parsed.despesas.last;
+      expect(parcela.data, DateTime(2025, 12, 10));
+      expect(parcela.suspiciousDate, isFalse);
+      expect(parcela.originalDate, DateTime(2025, 8, 10), reason: 'guardada para a observação');
+    });
+
+    test('parcela cujo mesmo dia cairia fora das datas da aba vai para a última data da aba', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez5),
+            despesaRow(3, nome: 'Sofá', valor: 300, tipo: 'Crédito', banco: 'Amazon', observacao: '2 / 6', dia: DateTime(2025, 8, 28)),
+          ],
+        ),
+      );
+      expect(parsed.despesas.last.data, dez5);
+      expect(parsed.despesas.last.suspiciousDate, isFalse);
+    });
+
+    // Até abril/2026 a planilha anotava a parcela com a Observação em DATA (a da
+    // última parcela), guardada como número — não "4/10".
+    RawTableRow parcelaAntiga(int linha, DateTime compra, DateTime ate) => RawTableRow(linha, [
+      const XlsxText('TV'),
+      const XlsxNumber(200),
+      const XlsxText('Crédito'),
+      const XlsxText('Amazon'),
+      XlsxNumber(ate.difference(DateTime(1899, 12, 30)).inDays.toDouble()),
+      XlsxDate(compra),
+    ]);
+
+    test('parcela no formato antigo (Observação = data da última parcela) também vem para o mês da aba', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez20),
+            parcelaAntiga(3, DateTime(2025, 8, 15), DateTime(2026, 5, 15)),
+          ],
+        ),
+      );
+      final tv = parsed.despesas.last;
+      expect(tv.suspiciousDate, isFalse);
+      expect(tv.data, DateTime(2025, 12, 15));
+      expect(tv.originalDate, DateTime(2025, 8, 15));
+      expect(tv.lastInstallment, DateTime(2026, 5, 15));
+    });
+
+    test('formato antigo já encerrado antes do mês da aba não é parcela em curso: continua desmarcada', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez20),
+            parcelaAntiga(3, DateTime(2025, 6, 15), DateTime(2025, 9, 15)),
+          ],
+        ),
+      );
+      expect(parsed.despesas.last.suspiciousDate, isTrue);
+    });
+
+    test('data antiga que NÃO é parcela continua desmarcada (provável erro de digitação)', () {
+      final parsed = parseSheet(
+        tables(
+          despesas: [
+            despesaRow(1, nome: 'A', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez1),
+            despesaRow(2, nome: 'B', valor: 10, tipo: 'Debito', banco: 'Bradesco', dia: dez5),
+            despesaRow(3, nome: 'C', valor: 10, tipo: 'Debito', banco: 'Bradesco', observacao: 'presente', dia: DateTime(2025, 8, 10)),
+          ],
+        ),
+      );
+      expect(parsed.despesas.last.suspiciousDate, isTrue);
+      expect(parsed.despesas.last.originalDate, isNull);
     });
   });
 }

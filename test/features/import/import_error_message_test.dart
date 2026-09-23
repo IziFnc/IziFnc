@@ -50,6 +50,13 @@ void main() {
       }
     });
 
+    test('tabela não encontrada pela IA: diz qual e sugere tentar de novo, não "arquivo inválido"', () {
+      final m = of(const TablesNotFoundException(despesasFound: true, entradaFound: false));
+      expect(m.text, contains('"Entrada de Valor"'));
+      expect(m.text, contains('outra vez'));
+      expect(m.text, isNot(contains('.xlsx válida')));
+    });
+
     test('arquivo que não é uma planilha válida', () {
       final m = of(const FormatException('bad zip'), during: 'abrir o arquivo');
       expect(m.text, contains('Não consegui abrir o arquivo'));

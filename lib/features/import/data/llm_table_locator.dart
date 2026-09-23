@@ -178,6 +178,23 @@ String describeTextCells(SheetGrid grid) {
   return lines.join('\n');
 }
 
+/// A IA não achou uma das duas tabelas na aba (nem na segunda tentativa).
+class TablesNotFoundException implements Exception {
+  const TablesNotFoundException({required this.despesasFound, required this.entradaFound});
+
+  final bool despesasFound;
+  final bool entradaFound;
+
+  /// O nome das tabelas que faltaram, para a mensagem.
+  String get missing => [
+    if (!despesasFound) '"Despesas Gerais"',
+    if (!entradaFound) '"Entrada de Valor"',
+  ].join(' e ');
+
+  @override
+  String toString() => 'Tabela(s) não encontrada(s) nesta aba: $missing.';
+}
+
 /// Localiza as tabelas via [locator] e extrai as linhas de cada uma
 /// (`readTableRows`, determinístico) a partir da célula já tipada da [grid].
 ///
@@ -189,13 +206,17 @@ Future<({SpreadsheetTables tables, String? note})> extractTablesWithAi(
   required String sheetName,
   required LlmTableLocator locator,
 }) async {
-  final locations = await locator.locate(grid, sheetName: sheetName);
+  var locations = await locator.locate(grid, sheetName: sheetName);
+  // A resposta de um LLM varia: na planilha real, a mesma aba teve a Entrada de
+  // Valor não encontrada numa chamada e encontrada na seguinte. Uma segunda
+  // tentativa custa centavos e evita um erro à toa.
+  if (locations.despesasGerais == null || locations.entradaDeValor == null) {
+    locations = await locator.locate(grid, sheetName: sheetName);
+  }
   final despesas = locations.despesasGerais;
   final entrada = locations.entradaDeValor;
   if (despesas == null || entrada == null) {
-    throw const FormatException(
-      'Não encontrei as tabelas "Despesas Gerais" e "Entrada de Valor" nesta aba.',
-    );
+    throw TablesNotFoundException(despesasFound: despesas != null, entradaFound: entrada != null);
   }
 
   final tables = SpreadsheetTables(

@@ -37,5 +37,5 @@ A base já servia: `storedSlotsResolver` usa a chave guardada no app e, sem ela,
 
 ## Pendências / próximos passos
 
-- As chaves de IA têm validade: ao renovar uma, gere a versão pessoal de novo.
+- As chaves têm validade (Groq vence em 25/09/2026, Anthropic ~19/10/2026): renovar e gerar de novo.
 - Dados não passam sozinhos de uma versão para a outra: use o backup em Configurações › Dados.

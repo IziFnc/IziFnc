@@ -24,6 +24,17 @@ String normalizeBankName(String raw) {
 /// Chave de mapeamento salva em `import_bank_mappings`: "banco|tipo".
 String bankMappingKey(String banco, SourceTipo tipo) => '${normalizeBankName(banco)}|${tipo.name}';
 
+/// O "cartão" de uma fatura cuja linha não diz qual cartão foi pago (Observação
+/// vazia). Vira um item do mapeamento — "de qual cartão é a fatura paga pelo
+/// Bradesco?" — e a resposta fica lembrada para as próximas abas, como os bancos.
+String unknownCardName(String banco) => 'Fatura sem cartão · paga por $banco';
+
+/// Observação no formato de parcela: "4/10", "2 / 6".
+final _parcelaPattern = RegExp(r'^\d+\s*/\s*\d+$');
+
+/// Linha sem data ainda não resolvida (ver [parseSheet]).
+final _noDateYet = DateTime(0);
+
 /// Uma linha já interpretada da planilha — pronta para virar um `EntryDraft`,
 /// faltando só resolver a conta/cartão.
 class ParsedRow {
@@ -38,7 +49,27 @@ class ParsedRow {
     required this.suspiciousDate,
     this.kind = ParsedKind.expense,
     this.destino,
+    this.undated = false,
+    this.originalDate,
+    this.cardUnknown = false,
+    this.lastInstallment,
   });
+
+  /// Formato antigo de parcela (até abril/2026): a Observação era uma DATA, a da
+  /// última parcela, guardada como número. Nulo quando a Observação não é data.
+  final DateTime? lastInstallment;
+
+  /// A planilha não tinha data: [data] é a última data da aba (o "fim do mês"
+  /// da aba), e a prévia/observação avisam.
+  final bool undated;
+
+  /// Parcela ("4/10") que estava com a data da compra original, meses antes:
+  /// [data] foi trazida para o mesmo dia no mês da aba, e esta é a data de origem.
+  final DateTime? originalDate;
+
+  /// Fatura sem o cartão na Observação: [destino] é [unknownCardName] e o cartão
+  /// de verdade vem do mapeamento.
+  final bool cardUnknown;
 
   /// Linha da planilha (1-based) — para a prévia apontar onde está.
   final int sheetRow;
@@ -74,18 +105,28 @@ class ParsedRow {
     _ => null,
   };
 
-  ParsedRow copyWith({bool? suspiciousDate}) => ParsedRow(
+  ParsedRow copyWith({bool? suspiciousDate, DateTime? data, DateTime? originalDate}) => ParsedRow(
     sheetRow: sheetRow,
     nome: nome,
     valorCents: valorCents,
-    data: data,
+    data: data ?? this.data,
     banco: banco,
     tipo: tipo,
     observacao: observacao,
     suspiciousDate: suspiciousDate ?? this.suspiciousDate,
     kind: kind,
     destino: destino,
+    undated: undated,
+    originalDate: originalDate ?? this.originalDate,
+    cardUnknown: cardUnknown,
+    lastInstallment: lastInstallment,
   );
+
+  /// Parcela: "4/10" na Observação, ou (formato antigo) a data da última parcela
+  /// depois da data da compra.
+  bool get isParcela =>
+      _parcelaPattern.hasMatch(observacao?.trim() ?? '') ||
+      (lastInstallment != null && lastInstallment!.isAfter(data));
 }
 
 /// Resultado de interpretar as duas tabelas de uma aba.
@@ -212,25 +253,29 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     final data = _date(row[5]);
 
     if (isFaturaName(normalizedNome)) {
-      if (valor == null || banco == null || data == null || observacao == null) {
+      if (valor == null || banco == null) {
         errors.add(
-          'Linha ${row.sheetRow} (Despesas Gerais, fatura): faltou valor, conta, '
-          'data ou o cartão (Observação) — ignorada.',
+          'Linha ${row.sheetRow} (Despesas Gerais, fatura): faltou valor ou a '
+          'conta que pagou — ignorada.',
         );
         return null;
       }
+      // Sem data e sem o cartão ainda entram (feat 0025): a data vem do mês da
+      // aba e o cartão é perguntado no mapeamento — ver [unknownCardName].
       billPayments.add(
         ParsedRow(
           sheetRow: row.sheetRow,
           nome: nome,
           valorCents: valor,
-          data: data,
+          data: data ?? _noDateYet,
           banco: banco,
           tipo: SourceTipo.debito,
           observacao: null,
           suspiciousDate: false,
           kind: ParsedKind.billPayment,
-          destino: observacao,
+          destino: observacao ?? unknownCardName(banco),
+          undated: data == null,
+          cardUnknown: observacao == null,
         ),
       );
       return null;
@@ -257,10 +302,10 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     }
 
     final tipo = _parseTipo(normalizedTipo);
-    if (valor == null || banco == null || data == null || tipo == null) {
+    if (valor == null || banco == null || tipo == null) {
       errors.add(
         'Linha ${row.sheetRow} (Despesas Gerais, "$nome"): '
-        'faltou valor, banco, data ou o Tipo não é Débito/Crédito — ignorada.',
+        'faltou valor, banco ou o Tipo não é Débito/Crédito — ignorada.',
       );
       return null;
     }
@@ -269,11 +314,18 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
       sheetRow: row.sheetRow,
       nome: nome,
       valorCents: valor,
-      data: data,
+      data: data ?? _noDateYet,
       banco: banco,
       tipo: tipo,
       observacao: observacao,
       suspiciousDate: false,
+      undated: data == null,
+      lastInstallment: switch (row[4]) {
+        // Número na faixa de datas do Excel (anos ~1982–2064): data sem formato.
+        XlsxNumber(:final value) when value >= 30000 && value <= 60000 => excelSerialToDate(value),
+        XlsxDate(:final value) => value,
+        _ => null,
+      },
     );
   }
 
@@ -313,10 +365,10 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
       return null;
     }
 
-    if (valor == null || banco == null || data == null) {
+    if (valor == null || banco == null) {
       errors.add(
         'Linha ${row.sheetRow} (Entrada de Valor, "$nome"): '
-        'faltou valor, banco ou data — ignorada.',
+        'faltou valor ou banco — ignorada.',
       );
       return null;
     }
@@ -325,12 +377,13 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
       sheetRow: row.sheetRow,
       nome: nome,
       valorCents: valor,
-      data: data,
+      data: data ?? _noDateYet,
       banco: banco,
       tipo: null,
       observacao: _text(row[3]),
       suspiciousDate: false,
       kind: ParsedKind.income,
+      undated: data == null,
     );
   }
 
@@ -347,29 +400,62 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     );
   }
 
-  if (all.isEmpty) {
+  // As datas da aba dizem qual é o "mês da aba". Só as linhas que TÊM data
+  // entram na conta; as sem data recebem uma depois.
+  final dated = [for (final r in all) if (!r.undated) r.data]..sort();
+  if (dated.isEmpty) {
+    // Nenhuma data na aba: não há mês para usar nas linhas sem data.
+    for (final r in all.where((r) => r.undated)) {
+      errors.add(
+        'Linha ${r.sheetRow} ("${r.nome}"): sem data, e a aba não tem nenhuma '
+        'outra data para usar — ignorada.',
+      );
+    }
     return ParsedSheetData(
-      despesas: despesas,
-      entradas: entradas,
+      despesas: const [],
+      entradas: const [],
       transfers: transfers,
-      billPayments: billPayments,
+      billPayments: const [],
       mirrorsConsumed: mirrorsConsumed,
       rowErrors: errors,
     );
   }
 
-  final allDates = [for (final r in all) r.data]..sort();
-  final median = allDates[allDates.length ~/ 2];
+  final median = dated[dated.length ~/ 2];
   bool suspicious(DateTime d) => d.difference(median).abs().inDays > 40;
-  List<ParsedRow> flag(List<ParsedRow> rows) => [
-    for (final r in rows) r.copyWith(suspiciousDate: suspicious(r.data)),
-  ];
+  // O intervalo "normal" da aba (sem as datas suspeitas): a última data é o
+  // "fim do mês da aba" das linhas sem data (decisão do dono), e nenhuma data
+  // ajustada sai dele — assim o lançamento cai no mesmo mês que os outros.
+  final normal = dated.where((d) => !suspicious(d)).toList();
+  final first = normal.isEmpty ? median : normal.first;
+  final last = normal.isEmpty ? median : normal.last;
+
+  ParsedRow resolve(ParsedRow r) {
+    if (r.undated) return r.copyWith(data: last, suspiciousDate: false);
+    if (!suspicious(r.data)) return r.copyWith(suspiciousDate: false);
+    // Parcela copiada mês a mês com a data da compra original: é um gasto
+    // DESTE mês — mesmo dia no mês da aba, dentro das datas da aba. No formato
+    // antigo, só se o parcelamento ainda corre no mês da aba.
+    final ended = r.lastInstallment != null &&
+        !_parcelaPattern.hasMatch(r.observacao?.trim() ?? '') &&
+        r.lastInstallment!.isBefore(first.subtract(const Duration(days: 3)));
+    if (r.isParcela && !ended) {
+      final lastDay = DateTime(median.year, median.month + 1, 0).day;
+      var moved = DateTime(median.year, median.month, r.data.day > lastDay ? lastDay : r.data.day);
+      if (moved.isBefore(first)) moved = first;
+      if (moved.isAfter(last)) moved = last;
+      return r.copyWith(data: moved, originalDate: r.data, suspiciousDate: false);
+    }
+    return r.copyWith(suspiciousDate: true);
+  }
+
+  List<ParsedRow> resolveAll(List<ParsedRow> rows) => [for (final r in rows) resolve(r)];
 
   return ParsedSheetData(
-    despesas: flag(despesas),
-    entradas: flag(entradas),
-    transfers: flag(transfers),
-    billPayments: flag(billPayments),
+    despesas: resolveAll(despesas),
+    entradas: resolveAll(entradas),
+    transfers: resolveAll(transfers),
+    billPayments: resolveAll(billPayments),
     mirrorsConsumed: mirrorsConsumed,
     rowErrors: errors,
   );

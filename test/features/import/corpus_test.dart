@@ -73,6 +73,12 @@ void main() {
           expect(_sum(parsed.entradas), t['entradas'], reason: 'total de entradas');
           expect(_sum(parsed.transfers), t['transfers'], reason: 'total de transferências');
           expect(_sum(parsed.billPayments), t['billPayments'], reason: 'total de faturas');
+
+          // Nos modelos suportados, nada vem desmarcado por data: parcela com a data
+          // da compra é trazida para o mês da aba, e linha sem data recebe a do
+          // fim do mês da aba (feat 0025, achado da planilha real).
+          final suspeitas = [for (final r in parsed.all) if (r.suspiciousDate) 'L${r.sheetRow}'];
+          expect(suspeitas, isEmpty, reason: 'linhas desmarcadas por data');
         });
       }
     });

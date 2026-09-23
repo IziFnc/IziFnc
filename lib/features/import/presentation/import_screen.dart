@@ -506,6 +506,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         Expanded(
           child: ListView(
             children: [
+              // O que a importação fez diferente da planilha: nada some sem explicação.
+              for (final note in importNotes(parsed, _plan))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text(note, style: Theme.of(context).textTheme.bodySmall)),
+                    ],
+                  ),
+                ),
               if (despesas.isNotEmpty) _sectionHeader('Despesas', despesas),
               for (final p in despesas) _PlanTile(plan: p, onToggle: _toggle),
               if (entradas.isNotEmpty) _sectionHeader('Entradas', entradas),
