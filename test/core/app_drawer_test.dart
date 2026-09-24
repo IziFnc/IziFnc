@@ -9,6 +9,7 @@ import 'package:izifnc/app.dart';
 import 'package:izifnc/core/database/app_database.dart';
 import 'package:izifnc/core/database/database_provider.dart';
 import 'package:izifnc/core/widgets/app_drawer.dart';
+import 'package:izifnc/core/widgets/tour_target.dart';
 import 'package:izifnc/features/accounts/presentation/accounts_screen.dart';
 import 'package:izifnc/features/entries/presentation/month_screen.dart';
 import 'package:izifnc/features/import/data/ai_slots_store.dart';
@@ -44,6 +45,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           // A importação lê a chave de IA; o Keystore não existe no teste.
           aiSlotsStoreProvider.overrideWithValue(MemoryAiSlotsStore()),
+          tourEnabledProvider.overrideWithValue(false),
         ],
         child: const IziFncApp(),
       ),

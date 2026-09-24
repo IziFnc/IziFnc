@@ -6,6 +6,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_form_screen.dart';
 import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_providers.dart';
@@ -91,7 +93,10 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
                     icon: const Icon(Icons.search),
                     onPressed: () => setState(() => _searching = true),
                   ),
-                FilterButton(accounts: list),
+                TourTarget(
+                  anchor: TourAnchor.homeFilters,
+                  child: FilterButton(accounts: list),
+                ),
               ],
             )
           : AppBar(title: const Text('IziFnc')),
@@ -195,10 +200,13 @@ class _MonthBody extends ConsumerWidget {
       children: [
         if (showBackupNotice) BackupNotice(lastBackup: last),
         if (situation != null)
-          SituationCard(
-            situation: situation,
-            monthLoaded: rows != null,
-            onTap: () => showSituationSheet(context, situation: situation, month: month),
+          TourTarget(
+            anchor: TourAnchor.situationCard,
+            child: SituationCard(
+              situation: situation,
+              monthLoaded: rows != null,
+              onTap: () => showSituationSheet(context, situation: situation, month: month),
+            ),
           ),
         ...switch (entries) {
           AsyncData(value: final rows) when rows.isEmpty => [
@@ -372,9 +380,12 @@ class _NoAccounts extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () => context.push(AccountFormScreen.newPath),
-              child: const Text('Cadastrar conta'),
+            TourTarget(
+              anchor: TourAnchor.accountsAdd,
+              child: FilledButton(
+                onPressed: () => context.push(AccountFormScreen.newPath),
+                child: const Text('Cadastrar conta'),
+              ),
             ),
           ],
         ),

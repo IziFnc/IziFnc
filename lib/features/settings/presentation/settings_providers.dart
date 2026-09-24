@@ -40,3 +40,7 @@ Stream<DateTime?> lastBackup(Ref ref) =>
 @riverpod
 Stream<Appearance> appearance(Ref ref) =>
     ref.watch(settingsRepositoryProvider).watchAppearance();
+
+/// Em qual parada do tour guiado (feat 0026) a pessoa está — ver `TourAnchor`.
+@riverpod
+Stream<int> tourStep(Ref ref) => ref.watch(settingsRepositoryProvider).watchTourStep();

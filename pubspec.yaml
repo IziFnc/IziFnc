@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0-rc.4+27
+version: 1.0.0-rc.5+28
 
 environment:
   sdk: ^3.13.1
@@ -53,6 +53,9 @@ dependencies:
   sqlite3: ^3.5.2
   # Guarda a chave de IA do usuário no Keystore do Android (criptografada).
   flutter_secure_storage: ^11.2.0
+  # Dicas ("coach marks") apontando para botões reais, na primeira visita a
+  # cada tela-chave (feat 0026).
+  tutorial_coach_mark: ^1.3.4
 
 dev_dependencies:
   flutter_test:

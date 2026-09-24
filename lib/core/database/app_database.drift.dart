@@ -1264,6 +1264,18 @@ class $AppSettingsTable extends AppSettings
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tourStepMeta = const VerificationMeta(
+    'tourStep',
+  );
+  @override
+  late final GeneratedColumn<int> tourStep = GeneratedColumn<int>(
+    'tour_step',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1272,6 +1284,7 @@ class $AppSettingsTable extends AppSettings
     textScale,
     highContrast,
     lastBackupAt,
+    tourStep,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1327,6 +1340,12 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('tour_step')) {
+      context.handle(
+        _tourStepMeta,
+        tourStep.isAcceptableOrUnknown(data['tour_step']!, _tourStepMeta),
+      );
+    }
     return context;
   }
 
@@ -1360,6 +1379,10 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_backup_at'],
       ),
+      tourStep: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tour_step'],
+      )!,
     );
   }
 
@@ -1390,6 +1413,11 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
   /// Quando o usuário exportou o banco pela última vez (Configurações › Dados).
   /// Nulo = nunca. Adicionada no schema v7.
   final DateTime? lastBackupAt;
+
+  /// Em qual parada do tour guiado (feat 0026) a pessoa está — o índice do
+  /// próximo `TourAnchor` a mostrar; `kTourSteps.length` = tour concluído (ou
+  /// pulado). Adicionada no schema v8.
+  final int tourStep;
   const AppSettingsRow({
     required this.id,
     required this.monthStartDay,
@@ -1397,6 +1425,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     required this.textScale,
     required this.highContrast,
     this.lastBackupAt,
+    required this.tourStep,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1409,6 +1438,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     if (!nullToAbsent || lastBackupAt != null) {
       map['last_backup_at'] = Variable<DateTime>(lastBackupAt);
     }
+    map['tour_step'] = Variable<int>(tourStep);
     return map;
   }
 
@@ -1422,6 +1452,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       lastBackupAt: lastBackupAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastBackupAt),
+      tourStep: Value(tourStep),
     );
   }
 
@@ -1437,6 +1468,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       textScale: serializer.fromJson<double>(json['textScale']),
       highContrast: serializer.fromJson<bool>(json['highContrast']),
       lastBackupAt: serializer.fromJson<DateTime?>(json['lastBackupAt']),
+      tourStep: serializer.fromJson<int>(json['tourStep']),
     );
   }
   @override
@@ -1449,6 +1481,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       'textScale': serializer.toJson<double>(textScale),
       'highContrast': serializer.toJson<bool>(highContrast),
       'lastBackupAt': serializer.toJson<DateTime?>(lastBackupAt),
+      'tourStep': serializer.toJson<int>(tourStep),
     };
   }
 
@@ -1459,6 +1492,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     double? textScale,
     bool? highContrast,
     Value<DateTime?> lastBackupAt = const Value.absent(),
+    int? tourStep,
   }) => AppSettingsRow(
     id: id ?? this.id,
     monthStartDay: monthStartDay ?? this.monthStartDay,
@@ -1466,6 +1500,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     textScale: textScale ?? this.textScale,
     highContrast: highContrast ?? this.highContrast,
     lastBackupAt: lastBackupAt.present ? lastBackupAt.value : this.lastBackupAt,
+    tourStep: tourStep ?? this.tourStep,
   );
   AppSettingsRow copyWithCompanion(AppSettingsCompanion data) {
     return AppSettingsRow(
@@ -1481,6 +1516,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       lastBackupAt: data.lastBackupAt.present
           ? data.lastBackupAt.value
           : this.lastBackupAt,
+      tourStep: data.tourStep.present ? data.tourStep.value : this.tourStep,
     );
   }
 
@@ -1492,7 +1528,8 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           ..write('themeMode: $themeMode, ')
           ..write('textScale: $textScale, ')
           ..write('highContrast: $highContrast, ')
-          ..write('lastBackupAt: $lastBackupAt')
+          ..write('lastBackupAt: $lastBackupAt, ')
+          ..write('tourStep: $tourStep')
           ..write(')'))
         .toString();
   }
@@ -1505,6 +1542,7 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     textScale,
     highContrast,
     lastBackupAt,
+    tourStep,
   );
   @override
   bool operator ==(Object other) =>
@@ -1515,7 +1553,8 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           other.themeMode == this.themeMode &&
           other.textScale == this.textScale &&
           other.highContrast == this.highContrast &&
-          other.lastBackupAt == this.lastBackupAt);
+          other.lastBackupAt == this.lastBackupAt &&
+          other.tourStep == this.tourStep);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
@@ -1525,6 +1564,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
   final Value<double> textScale;
   final Value<bool> highContrast;
   final Value<DateTime?> lastBackupAt;
+  final Value<int> tourStep;
   const AppSettingsCompanion({
     this.id = const Value.absent(),
     this.monthStartDay = const Value.absent(),
@@ -1532,6 +1572,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     this.textScale = const Value.absent(),
     this.highContrast = const Value.absent(),
     this.lastBackupAt = const Value.absent(),
+    this.tourStep = const Value.absent(),
   });
   AppSettingsCompanion.insert({
     this.id = const Value.absent(),
@@ -1540,6 +1581,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     this.textScale = const Value.absent(),
     this.highContrast = const Value.absent(),
     this.lastBackupAt = const Value.absent(),
+    this.tourStep = const Value.absent(),
   });
   static Insertable<AppSettingsRow> custom({
     Expression<int>? id,
@@ -1548,6 +1590,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     Expression<double>? textScale,
     Expression<bool>? highContrast,
     Expression<DateTime>? lastBackupAt,
+    Expression<int>? tourStep,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1556,6 +1599,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
       if (textScale != null) 'text_scale': textScale,
       if (highContrast != null) 'high_contrast': highContrast,
       if (lastBackupAt != null) 'last_backup_at': lastBackupAt,
+      if (tourStep != null) 'tour_step': tourStep,
     });
   }
 
@@ -1566,6 +1610,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     Value<double>? textScale,
     Value<bool>? highContrast,
     Value<DateTime?>? lastBackupAt,
+    Value<int>? tourStep,
   }) {
     return AppSettingsCompanion(
       id: id ?? this.id,
@@ -1574,6 +1619,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
       textScale: textScale ?? this.textScale,
       highContrast: highContrast ?? this.highContrast,
       lastBackupAt: lastBackupAt ?? this.lastBackupAt,
+      tourStep: tourStep ?? this.tourStep,
     );
   }
 
@@ -1598,6 +1644,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     if (lastBackupAt.present) {
       map['last_backup_at'] = Variable<DateTime>(lastBackupAt.value);
     }
+    if (tourStep.present) {
+      map['tour_step'] = Variable<int>(tourStep.value);
+    }
     return map;
   }
 
@@ -1609,7 +1658,8 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
           ..write('themeMode: $themeMode, ')
           ..write('textScale: $textScale, ')
           ..write('highContrast: $highContrast, ')
-          ..write('lastBackupAt: $lastBackupAt')
+          ..write('lastBackupAt: $lastBackupAt, ')
+          ..write('tourStep: $tourStep')
           ..write(')'))
         .toString();
   }
@@ -2847,6 +2897,7 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<double> textScale,
       Value<bool> highContrast,
       Value<DateTime?> lastBackupAt,
+      Value<int> tourStep,
     });
 typedef $$AppSettingsTableUpdateCompanionBuilder =
     AppSettingsCompanion Function({
@@ -2856,6 +2907,7 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<double> textScale,
       Value<bool> highContrast,
       Value<DateTime?> lastBackupAt,
+      Value<int> tourStep,
     });
 
 class $$AppSettingsTableFilterComposer
@@ -2894,6 +2946,11 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<DateTime> get lastBackupAt => $composableBuilder(
     column: $table.lastBackupAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tourStep => $composableBuilder(
+    column: $table.tourStep,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2936,6 +2993,11 @@ class $$AppSettingsTableOrderingComposer
     column: $table.lastBackupAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get tourStep => $composableBuilder(
+    column: $table.tourStep,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$AppSettingsTableAnnotationComposer
@@ -2970,6 +3032,9 @@ class $$AppSettingsTableAnnotationComposer
     column: $table.lastBackupAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get tourStep =>
+      $composableBuilder(column: $table.tourStep, builder: (column) => column);
 }
 
 class $$AppSettingsTableTableManager
@@ -3009,6 +3074,7 @@ class $$AppSettingsTableTableManager
                 Value<double> textScale = const Value.absent(),
                 Value<bool> highContrast = const Value.absent(),
                 Value<DateTime?> lastBackupAt = const Value.absent(),
+                Value<int> tourStep = const Value.absent(),
               }) => AppSettingsCompanion(
                 id: id,
                 monthStartDay: monthStartDay,
@@ -3016,6 +3082,7 @@ class $$AppSettingsTableTableManager
                 textScale: textScale,
                 highContrast: highContrast,
                 lastBackupAt: lastBackupAt,
+                tourStep: tourStep,
               ),
           createCompanionCallback:
               ({
@@ -3025,6 +3092,7 @@ class $$AppSettingsTableTableManager
                 Value<double> textScale = const Value.absent(),
                 Value<bool> highContrast = const Value.absent(),
                 Value<DateTime?> lastBackupAt = const Value.absent(),
+                Value<int> tourStep = const Value.absent(),
               }) => AppSettingsCompanion.insert(
                 id: id,
                 monthStartDay: monthStartDay,
@@ -3032,6 +3100,7 @@ class $$AppSettingsTableTableManager
                 textScale: textScale,
                 highContrast: highContrast,
                 lastBackupAt: lastBackupAt,
+                tourStep: tourStep,
               ),
           withReferenceMapper: (p0) => p0
               .map(

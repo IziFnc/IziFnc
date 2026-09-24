@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:izifnc/app.dart';
 import 'package:izifnc/core/database/app_database.dart';
 import 'package:izifnc/core/database/database_provider.dart';
+import 'package:izifnc/core/widgets/tour_target.dart';
 import 'package:izifnc/features/accounts/data/accounts_repository.dart';
 import 'package:izifnc/features/accounts/domain/account_kind.dart';
 import 'package:izifnc/features/accounts/presentation/account_form_screen.dart';
@@ -109,6 +110,7 @@ void main() {
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
           aiSlotsStoreProvider.overrideWithValue(aiStore),
+          tourEnabledProvider.overrideWithValue(false),
         ],
         child: const IziFncApp(),
       ),

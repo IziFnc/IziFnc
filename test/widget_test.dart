@@ -8,6 +8,7 @@ import 'package:izifnc/app.dart';
 import 'package:izifnc/core/database/app_database.dart';
 import 'package:izifnc/core/database/database_provider.dart';
 import 'package:izifnc/core/utils/formatters.dart';
+import 'package:izifnc/core/widgets/tour_target.dart';
 import 'package:izifnc/features/accounts/data/accounts_repository.dart';
 import 'package:izifnc/features/accounts/domain/account_kind.dart';
 import 'package:izifnc/features/entries/data/entries_repository.dart';
@@ -52,7 +53,10 @@ void main() {
   Future<AppDatabase> pumpApp(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          tourEnabledProvider.overrideWithValue(false),
+        ],
         child: const IziFncApp(),
       ),
     );

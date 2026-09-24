@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/database/repositories.dart';
 import '../../accounts/presentation/accounts_providers.dart';
+import '../../entries/presentation/month_screen.dart';
 import '../domain/appearance.dart';
 import 'month_start_day_dialog.dart';
 import 'settings_providers.dart';
@@ -95,6 +97,18 @@ class GeneralSettingsScreen extends ConsumerWidget {
               AsyncData(value: final i) => 'Versão ${i.version} (build ${i.buildNumber})',
               _ => 'Versão …',
             }),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.help_outline),
+            title: const Text('Ver o tour de novo'),
+            subtitle: const Text(
+              'Refaz o passeio guiado pelas telas principais, do início.',
+            ),
+            onTap: () async {
+              await repo.restartTour();
+              if (context.mounted) context.go(MonthScreen.path);
+            },
           ),
         ],
       ),

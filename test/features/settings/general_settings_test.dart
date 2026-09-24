@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:izifnc/app.dart';
 import 'package:izifnc/core/database/app_database.dart';
 import 'package:izifnc/core/database/database_provider.dart';
+import 'package:izifnc/core/widgets/tour_target.dart';
 import 'package:izifnc/features/settings/domain/appearance.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:izifnc/features/settings/presentation/settings_screen.dart';
@@ -36,7 +37,10 @@ void main() {
   Future<void> openGeneral(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          tourEnabledProvider.overrideWithValue(false),
+        ],
         child: const IziFncApp(),
       ),
     );
@@ -61,7 +65,10 @@ void main() {
   testWidgets('a tela de Configurações lista as seções e abre a Geral', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          tourEnabledProvider.overrideWithValue(false),
+        ],
         child: const IziFncApp(),
       ),
     );
@@ -165,7 +172,10 @@ void main() {
   testWidgets('a tela de contas não tem mais o dia de virada', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          tourEnabledProvider.overrideWithValue(false),
+        ],
         child: const IziFncApp(),
       ),
     );

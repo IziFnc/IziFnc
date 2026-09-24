@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/widgets/tour_step.dart';
 import '../../accounts/domain/account_kind.dart';
 import '../../entries/data/entries_repository.dart';
 import '../domain/appearance.dart';
@@ -63,4 +64,36 @@ class SettingsRepository {
   Future<void> markBackup(DateTime at) => _db
       .update(_db.appSettings)
       .write(AppSettingsCompanion(lastBackupAt: Value(at)));
+
+  /// Em qual parada do tour guiado (feat 0026) a pessoa está — o índice do
+  /// próximo [TourAnchor]; `kTourSteps.length` = concluído ou pulado.
+  Stream<int> watchTourStep() =>
+      _db.select(_db.appSettings).watchSingle().map((s) => s.tourStep);
+
+  /// Avança para a próxima parada (satura em `kTourSteps.length`, não passa
+  /// disso mesmo se chamado depois de concluído).
+  Future<void> advanceTour() => _db.transaction(() async {
+    final current = await (_db.select(_db.appSettings)..limit(1)).getSingle();
+    final next = (current.tourStep + 1).clamp(0, kTourSteps.length);
+    await _db
+        .update(_db.appSettings)
+        .write(AppSettingsCompanion(tourStep: Value(next)));
+  });
+
+  /// "Pular o tour": vai direto para o fim, como se tivesse concluído.
+  Future<void> skipTour() => _db
+      .update(_db.appSettings)
+      .write(AppSettingsCompanion(tourStep: Value(kTourSteps.length)));
+
+  /// "Ver o tour de novo" em Configurações: volta para a primeira parada que
+  /// ainda faz sentido. A primeira (cadastrar a conta) só existe numa home
+  /// sem contas — pedir para revê-la a quem já tem conta deixaria o tour
+  /// esperando para sempre um alvo que não aparece mais, então quem já tem
+  /// conta cadastrada recomeça na segunda parada.
+  Future<void> restartTour() => _db.transaction(() async {
+    final hasAccounts = await _db.select(_db.accounts).get().then((l) => l.isNotEmpty);
+    await _db
+        .update(_db.appSettings)
+        .write(AppSettingsCompanion(tourStep: Value(hasAccounts ? 1 : 0)));
+  });
 }

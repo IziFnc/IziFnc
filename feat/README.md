@@ -33,6 +33,7 @@ e **como conferir** que funciona.
 | [0023](0023-importar-checklist.md) | Importar: "Antes de começar" no primeiro passo (contas e chave de IA com atalho, lembretes de saldo inicial e de formato) e botão de escolher arquivo desligado enquanto faltar o essencial | 2026-09-21 | ✅ concluído |
 | [0024](0024-versao-pessoal.md) | Duas versões do app: a do usuário (cola a própria chave) e a pessoal (chaves embutidas, id `.pessoal`, nunca publicada), gerada por `tool/build_pessoal.sh` | 2026-09-21 | ✅ concluído |
 | [0025](0025-importacao-planilha-real.md) | Importação com a planilha real: linhas sem data e parcelas (inclusive formato antigo) no mês da aba, fatura sem cartão perguntada no mapeamento, segunda tentativa da IA, avisos na prévia; diagnóstico `tool/diagnosticar_planilha.dart` e modelo fictício `armadilhas-do-real` | 2026-09-22 | ✅ concluído |
+| [0026](0026-guia-no-app.md) | Guia dentro do app: tour guiado de 7 paradas na primeira vez, andando sozinho de tela em tela, com "Pular o tour" e "Ver o tour de novo" | 2026-09-23/24 | ✅ concluído |
 
 ## Backlog
 
@@ -40,10 +41,13 @@ Próximas entregas, **em ordem**. Cada uma pequena e fechada antes da seguinte.
 
 | # | Entrega | Por que nesta posição |
 |---|---------|------|
-| — | ✅ **`v1.0.0-rc.1`** publicado no GitHub Releases (APK arm64 assinado, pré-lançamento, 2026-09-21). Falta o **ciclo de testadores** e então a **1.0.0** | Depois: aposentar a `release/teste-usuarios` (já arquivada na tag `archive/release-teste`). |
-| 0026 | Exportar relatório do mês | Para o agente externo de análise que o autor já usa. (1.1+) |
-| 0027 | Parcelamento de compras e de fatura | Na planilha, as parcelas são linhas repetidas mês a mês; parcelas futuras servem aos dois. (1.1+) |
-| 0028 | Recorrentes (inclui importar a tabela "Gastos Recorrentes") | Mesma lógica: dá para importar como lançamentos simples antes. (1.1+) |
+| — | ✅ **`v1.0.0-rc.4`** publicado no GitHub Releases (APK arm64 assinado, pré-lançamento, 2026-09-23; corrige a importação com planilha real da 0025). Falta o **ciclo de testadores** e então a **1.0.0** | Depois: aposentar a `release/teste-usuarios` (já arquivada na tag `archive/release-teste`). |
+| 0027 | Pagar fatura em % de juros (hoje só aceita a diferença em R$) | Achado testando a 0025 no emulador: a fatura do banco vem em taxa (ex.: "2,5% a.m."), não em reais; quem paga tem que fazer a conta de cabeça. Pequeno. |
+| 0028 | Atalho direto para "Pagar fatura" a partir do próprio cartão (folha de situação) | Mesmo teste: hoje tocar no cartão só filtra a lista; "Pagar fatura" está escondido na grade do "+" junto com Despesa/Entrada/Transferência. |
+| 0029 | Importar todas as abas de uma vez | Hoje é uma aba por vez; ajuda quem tem o ano inteiro na mesma planilha. (1.1+) |
+| 0030 | Exportar relatório do mês | Para o agente externo de análise que o autor já usa. (1.1+) |
+| 0031 | Parcelamento de compras e de fatura | Na planilha, as parcelas são linhas repetidas mês a mês; parcelas futuras servem aos dois. (1.1+) |
+| 0032 | Recorrentes (inclui importar a tabela "Gastos Recorrentes") | Mesma lógica: dá para importar como lançamentos simples antes. (1.1+) |
 
 **Futuras, sem ordem:** poupança (junto com rendimento de investimentos, talvez um app
 à parte) · fatura parcial com saldo rolando para o mês seguinte · extrato bancário (um

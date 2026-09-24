@@ -32,6 +32,11 @@ class AppSettings extends Table {
   /// Nulo = nunca. Adicionada no schema v7.
   DateTimeColumn get lastBackupAt => dateTime().nullable()();
 
+  /// Em qual parada do tour guiado (feat 0026) a pessoa está — o índice do
+  /// próximo `TourAnchor` a mostrar; `kTourSteps.length` = tour concluído (ou
+  /// pulado). Adicionada no schema v8.
+  IntColumn get tourStep => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

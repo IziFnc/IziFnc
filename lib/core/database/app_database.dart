@@ -48,7 +48,8 @@ class AppDatabase extends _$AppDatabase {
   /// - v5: tema, tamanho do texto e alto contraste em `app_settings` (feat 0008)
   /// - v6: `accounts.closing_day_in_current`, regra do dia do fechamento (feat 0012)
   /// - v7: `app_settings.last_backup_at` e os índices de `entries` para saldo (feat 0018)
-  static const int currentSchemaVersion = 7;
+  /// - v8: `app_settings.tour_step`, parada atual do tour guiado (feat 0026)
+  static const int currentSchemaVersion = 8;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -105,6 +106,15 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(schema.appSettings, schema.appSettings.lastBackupAt);
         await m.createIndex(schema.entriesAccountDate);
         await m.createIndex(schema.entriesToAccount);
+      },
+      from7To8: (m, schema) async {
+        // Só adiciona a coluna, com padrão 0 ("primeira parada do tour"): quem
+        // já usa o app não ganha o tour do zero de repente — a primeira parada
+        // é o botão de cadastrar conta, que não existe mais numa conta com
+        // contas — então o tour fica "esperando" um alvo que nunca aparece de
+        // novo sozinho, sem incomodar ninguém. "Ver o tour de novo" em
+        // Configurações continua disponível para quem quiser rever.
+        await m.addColumn(schema.appSettings, schema.appSettings.tourStep);
       },
     ),
     beforeOpen: (details) async {

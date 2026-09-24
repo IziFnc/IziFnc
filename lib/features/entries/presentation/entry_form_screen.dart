@@ -7,6 +7,8 @@ import '../../../core/database/repositories.dart';
 import '../../../core/utils/cents_input_formatter.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_providers.dart';
 import '../data/entries_repository.dart';
@@ -279,6 +281,28 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
       );
     }
 
+    Widget typeChip(EntryType type) => ChoiceChip(
+      // O rótulo ocupa a largura toda para o texto ficar centrado.
+      label: SizedBox(
+        width: double.infinity,
+        child: Text(type.label, textAlign: TextAlign.center),
+      ),
+      selected: _type == type,
+      onSelected: switch (type) {
+        // Cartão só aceita despesa nesta versão.
+        EntryType.income when account?.kind.isCard ?? false => null,
+        // Precisa de duas contas.
+        EntryType.transfer when checking.length < 2 => null,
+        // Precisa de um cartão e de uma conta para pagar.
+        EntryType.billPayment when cards.isEmpty || checking.isEmpty => null,
+        _ => (_) => setState(() {
+          _type = type;
+          if (!type.hasDestination) _toAccountId = null;
+          _suggestDescription(accounts);
+        }),
+      },
+    );
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -305,41 +329,25 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
         // Grade 2×2 fixa, não Wrap: num Wrap os chips mudavam de linha conforme
         // o tipo escolhido (a posição de cada um pulava). Quatro tipos também
         // não cabem lado a lado num celular de 360dp.
-        for (var row = 0; row < _formTypes.length; row += 2) ...[
-          if (row > 0) const SizedBox(height: 8),
-          Row(
+        TourTarget(
+          anchor: TourAnchor.entryTypeGrid,
+          ready: !_isEditing,
+          child: Column(
             children: [
-              for (final type in _formTypes.skip(row).take(2)) ...[
-                if (type != _formTypes[row]) const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
-                    // O rótulo ocupa a largura toda para o texto ficar centrado.
-                    label: SizedBox(
-                      width: double.infinity,
-                      child: Text(type.label, textAlign: TextAlign.center),
-                    ),
-                    selected: _type == type,
-                    onSelected: switch (type) {
-                      // Cartão só aceita despesa nesta versão.
-                      EntryType.income when account?.kind.isCard ?? false => null,
-                      // Precisa de duas contas.
-                      EntryType.transfer when checking.length < 2 => null,
-                      // Precisa de um cartão e de uma conta para pagar.
-                      EntryType.billPayment
-                          when cards.isEmpty || checking.isEmpty =>
-                        null,
-                      _ => (_) => setState(() {
-                        _type = type;
-                        if (!type.hasDestination) _toAccountId = null;
-                        _suggestDescription(accounts);
-                      }),
-                    },
-                  ),
+              for (var row = 0; row < _formTypes.length; row += 2) ...[
+                if (row > 0) const SizedBox(height: 8),
+                Row(
+                  children: [
+                    for (final type in _formTypes.skip(row).take(2)) ...[
+                      if (type != _formTypes[row]) const SizedBox(width: 8),
+                      Expanded(child: typeChip(type)),
+                    ],
+                  ],
                 ),
               ],
             ],
           ),
-        ],
+        ),
         const SizedBox(height: 16),
         ...switch (_type) {
           EntryType.transfer => [

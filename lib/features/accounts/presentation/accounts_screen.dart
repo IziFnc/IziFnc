@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
 import 'account_form_screen.dart';
 import 'account_label.dart';
 import 'accounts_providers.dart';
@@ -22,10 +24,13 @@ class AccountsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Contas e cartões')),
       drawer: const AppDrawer(current: AppDestination.accounts),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Nova conta',
-        onPressed: () => context.push(AccountFormScreen.newPath),
-        child: const Icon(Icons.add),
+      floatingActionButton: TourTarget(
+        anchor: TourAnchor.accountsAdd,
+        child: FloatingActionButton(
+          tooltip: 'Nova conta',
+          onPressed: () => context.push(AccountFormScreen.newPath),
+          child: const Icon(Icons.add),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 88),

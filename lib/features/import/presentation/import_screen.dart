@@ -6,6 +6,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/repositories.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_form_screen.dart';
 import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_providers.dart';
@@ -234,15 +236,25 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 hint: '"Despesas Gerais" e "Entrada de Valor". Outro layout provavelmente não será lido.',
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _busy || !ready ? null : _pickFile,
-                child: _busy
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Escolher arquivo'),
+              // Sem `ready` aqui: diferente da v1 (dica avulsa), esta parada é
+              // uma etapa **obrigatória** de uma sequência — se ficasse
+              // esperando a chave de IA (algo que o tour não pede para
+              // configurar), o passeio travaria para sempre neste passo.
+              // Mostra mesmo com o botão desligado, como o passo do "Pagar
+              // fatura": é educativo, não um apontador para o que já dá pra
+              // usar agora.
+              TourTarget(
+                anchor: TourAnchor.importPickFile,
+                child: FilledButton(
+                  onPressed: _busy || !ready ? null : _pickFile,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Escolher arquivo'),
+                ),
               ),
               if (!ready && !checking)
                 Padding(

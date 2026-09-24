@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
 import '../data/backup_service.dart';
 import 'backup_actions.dart';
 import 'settings_providers.dart';
@@ -132,10 +134,13 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
                 : null,
           ),
           const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: _busy ? null : _export,
-            icon: const Icon(Icons.save_alt),
-            label: const Text('Salvar backup'),
+          TourTarget(
+            anchor: TourAnchor.backupButton,
+            child: FilledButton.icon(
+              onPressed: _busy ? null : _export,
+              icon: const Icon(Icons.save_alt),
+              label: const Text('Salvar backup'),
+            ),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(

@@ -138,3 +138,41 @@ final class AppearanceProvider
 }
 
 String _$appearanceHash() => r'9fb83fcb6e4c37410dd2630d37ec246f14b33d3b';
+
+/// Em qual parada do tour guiado (feat 0026) a pessoa está — ver `TourAnchor`.
+
+@ProviderFor(tourStep)
+final tourStepProvider = TourStepProvider._();
+
+/// Em qual parada do tour guiado (feat 0026) a pessoa está — ver `TourAnchor`.
+
+final class TourStepProvider
+    extends $FunctionalProvider<AsyncValue<int>, int, Stream<int>>
+    with $FutureModifier<int>, $StreamProvider<int> {
+  /// Em qual parada do tour guiado (feat 0026) a pessoa está — ver `TourAnchor`.
+  TourStepProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tourStepProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tourStepHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<int> create(Ref ref) {
+    return tourStep(ref);
+  }
+}
+
+String _$tourStepHash() => r'a70ef345a3f9a8b7cffba00c80bb92edbd44dfc8';

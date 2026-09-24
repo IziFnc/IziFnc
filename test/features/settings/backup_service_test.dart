@@ -28,7 +28,7 @@ void main() {
     service = BackupService(
       databaseFile: () async => dbFile,
       workDir: () async => Directory('${tmp.path}/work'),
-      currentSchemaVersion: 7,
+      currentSchemaVersion: AppDatabase.currentSchemaVersion,
     );
     db = open(dbFile);
     final entries = EntriesRepository(db);
@@ -70,7 +70,7 @@ void main() {
     expect(String.fromCharCodes(bytes.sublist(0, 15)), 'SQLite format 3');
     final check = await service.inspect(bytes);
     expect(check, isA<BackupValid>());
-    expect((check as BackupValid).schemaVersion, 7);
+    expect((check as BackupValid).schemaVersion, AppDatabase.currentSchemaVersion);
   });
 
   test('exportar não deixa arquivos temporários para trás', () async {
@@ -88,7 +88,7 @@ void main() {
     final otherService = BackupService(
       databaseFile: () async => other,
       workDir: () async => Directory('${tmp.path}/work2'),
-      currentSchemaVersion: 7,
+      currentSchemaVersion: AppDatabase.currentSchemaVersion,
     );
     await otherService.replaceDatabase(bytes);
 
