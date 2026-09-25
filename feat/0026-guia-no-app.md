@@ -63,6 +63,45 @@ Pedido do autor, em duas rodadas depois de ver a primeira versão funcionando:
   **`tourEnabledProvider`** desliga o recurso nos testes que só passam pelas telas afetadas,
   sem testar o tour em si (o véu é modal, bloqueia toque).
 
+## Correções do teste no celular real (rc.6, 2026-09-24)
+
+O rc.5 foi instalado no celular do autor (Samsung SM-S721B) e o emulador não tinha mostrado
+três problemas:
+
+- **`ContentAlign.top` estourava a barra de status:** no passo do backup, a bolha é mais alta
+  num aparelho real (fonte do sistema, barra de status) do que no emulador — nasceu colada no
+  topo e ficou atrás do relógio/bateria. Lição: só usar `ContentAlign.top` quando o espaço
+  **acima** do alvo é claramente maior que a bolha (ex.: o passo da importação, depois de um
+  checklist comprido); nos outros casos, `ContentAlign.bottom` (o padrão) tem mais margem de
+  segurança porque o rodapé da tela costuma sobrar mais espaço que o topo.
+- **Alvo incompleto no passo de busca/filtro:** só o botão de filtro era destacado, mas o
+  texto também falava da lupa — virou um `TourTarget` só, envolvendo os dois botões (busca/
+  fechar busca e filtro) num `Row`. A troca de ícone (buscar ↔ fechar busca) acontece dentro do
+  mesmo alvo, então não gera o problema de "alvo instável" que tinha afastado a lupa na v2.
+- **Teclado cobrindo a bolha:** o campo "Valor" do lançamento tem foco automático
+  (`autofocus`), que abre o teclado por cima dos botões da bolha no passo da grade de tipos.
+  Corrigido em duas camadas: o campo não recebe foco automático quando a tela é a parada atual
+  do tour, e `TourTarget._show` chama `FocusManager.instance.primaryFocus?.unfocus()` como
+  rede de segurança geral, antes de abrir qualquer bolha.
+- **Um "SKIP" solto por cima do FAB:** o `tutorial_coach_mark` desenha, por padrão, o próprio
+  texto de pular (`textSkip = "SKIP"`, canto inferior direito) além de qualquer conteúdo do
+  `builder` — como a bolha já tem "Pular o tour", esse texto ficava sobrando exatamente em
+  cima do botão flutuante da tela (visível já na primeira parada). Corrigido com
+  `hideSkip: true` no `TutorialCoachMark`.
+- **Véu escuro demais no tema escuro:** o pacote dimeriza o que não é o alvo com um véu preto a
+  80% (`opacityShadow`, padrão do pacote); sobre um fundo já quase preto do tema escuro, isso
+  deixava o texto ao redor do botão destacado ilegível (a régua de contraste só funciona
+  porque no tema claro o fundo dimmed ainda sobra brilho). Corrigido com
+  `opacityShadow: 0.45` quando `Theme.of(context).brightness == Brightness.dark` (mantém 0.8 no
+  claro).
+- **Bolha estourando a borda de baixo (passo 1):** o pacote posiciona a bolha `ContentAlign.bottom`
+  crescendo para baixo do alvo, sem checar se sobra espaço — no passo de cadastrar a primeira
+  conta, o botão fica no meio da tela vazia, e a bolha acabava encostando (ou quase saindo) na
+  borda inferior. Mesma lição do passo do backup (agora com `ContentAlign.top`, que tem mais
+  espaço livre acima nesta tela).
+
+Também revisado o texto de todas as paradas (clareza e consistência do português).
+
 ## Arquivos tocados
 
 - `lib/core/widgets/tour_step.dart` — `TourAnchor` (enum, um valor por parada — o índice é o

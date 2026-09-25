@@ -71,27 +71,30 @@ const kTourSteps = <TourStep>[
     icon: Icons.account_balance_wallet_outlined,
     title: 'Cadastre suas contas e cartões',
     message:
-        'Comece por aqui: cadastre cada conta e cartão que você usa. '
-        'Cartões precisam de uma conta dona, que paga a fatura.',
+        'Comece por aqui: cadastre as contas e os cartões que você usa. '
+        'Todo cartão fica ligado a uma conta, que é quem paga a fatura dele.',
     buttonLabel: 'Cadastrar conta',
     nextRoute: AccountFormScreen.newPath,
     pushNext: true,
+    // O botão fica no meio da tela vazia: "abaixo" (o padrão) empurrava a
+    // bolha até estourar a borda de baixo. Achado no celular real, feat 0026.
+    align: ContentAlign.top,
   ),
   TourStep(
     anchor: TourAnchor.situationCard,
     icon: Icons.dashboard_outlined,
-    title: 'Sua situação de relance',
+    title: 'Sua situação num relance',
     message:
-        'Quanto há em conta e o que está em aberto nas faturas. Toque no '
-        'cartão para ver o detalhe de cada conta e cartão.',
+        'Mostra quanto você tem nas contas e quanto está em aberto nas '
+        'faturas. Toque aqui para ver os valores de cada conta e cartão.',
   ),
   TourStep(
     anchor: TourAnchor.homeFilters,
     icon: Icons.filter_alt_outlined,
     title: 'Busque e filtre',
     message:
-        'A lupa busca pela descrição; aqui do lado dá para filtrar por tipo, '
-        'conta ou cartão, e ordenar por data ou valor.',
+        'A lupa procura pela descrição. O filtro, ao lado, separa por tipo, '
+        'conta ou cartão e muda a ordem (por data ou valor).',
     nextRoute: EntryFormScreen.newPath,
     pushNext: true,
   ),
@@ -100,9 +103,10 @@ const kTourSteps = <TourStep>[
     icon: Icons.add_circle_outline,
     title: 'Escolha o tipo',
     message:
-        'Despesa, entrada, transferência entre contas ou "Pagar fatura" — '
-        'esse último dá pra pagar só uma parte e informar juros, quando a '
-        'fatura do banco vier maior. Só liga quando você já tiver um cartão.',
+        'Despesa, entrada, transferência entre contas ou pagamento de '
+        'fatura. Em "Pagar fatura" dá para pagar só uma parte ou incluir '
+        'juros, quando a fatura vier maior. Essa opção fica disponível '
+        'depois que você cadastrar um cartão.',
     nextRoute: ImportScreen.path,
   ),
   TourStep(
@@ -111,7 +115,7 @@ const kTourSteps = <TourStep>[
     title: 'Importe a planilha que você já usa',
     message:
         'Com as contas cadastradas e a chave de IA configurada, escolha o '
-        '.xlsx e importe uma aba (mês) por vez.',
+        'arquivo .xlsx e importe um mês (uma aba) por vez.',
     nextRoute: SettingsScreen.path,
     // Este botão fica mais para baixo na tela (depois do checklist "Antes de
     // começar"): "abaixo" (o padrão) estourava a tela.
@@ -121,7 +125,7 @@ const kTourSteps = <TourStep>[
     anchor: TourAnchor.settingsMenu,
     icon: Icons.settings_outlined,
     title: 'Configurações',
-    message: 'Tema e tamanho do texto, a chave de IA e o backup ficam aqui.',
+    message: 'Aqui ficam o tema, o tamanho do texto, a chave de IA e o backup.',
     nextRoute: DataSettingsScreen.path,
     pushNext: true,
   ),
@@ -131,8 +135,8 @@ const kTourSteps = <TourStep>[
     title: 'Faça backup de vez em quando',
     message:
         'Seus dados ficam só neste aparelho. Salve uma cópia de tempos em '
-        'tempos — sem ela, perder o aparelho é perder tudo.',
+        'tempos: sem ela, se o aparelho for perdido ou trocado, os dados '
+        'vão junto.',
     buttonLabel: 'Concluir',
-    align: ContentAlign.top,
   ),
 ];

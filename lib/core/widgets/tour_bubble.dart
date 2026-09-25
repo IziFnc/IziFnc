@@ -16,7 +16,7 @@ class TourBubble extends StatelessWidget {
 
   final TourStep step;
 
-  /// 1-based: "1 de 8", não "0 de 8".
+  /// 1-based: "1 de 7", não "0 de 7".
   final int stepNumber;
   final VoidCallback onNext;
   final VoidCallback onSkip;

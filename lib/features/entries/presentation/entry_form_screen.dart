@@ -11,6 +11,7 @@ import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_providers.dart';
+import '../../settings/presentation/settings_providers.dart';
 import '../data/entries_repository.dart';
 import '../domain/competence.dart';
 import '../domain/entry_type.dart';
@@ -142,6 +143,13 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
     _interest.dispose();
     super.dispose();
   }
+
+  /// Verdadeiro quando esta tela é a parada atual do tour guiado (feat 0026)
+  /// — usado para não focar "Valor" sozinho e abrir o teclado por cima da
+  /// bolha.
+  bool get _tourIsHere =>
+      ref.watch(tourEnabledProvider) &&
+      ref.watch(tourStepProvider).value == TourAnchor.entryTypeGrid.index;
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +317,10 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
         TextField(
           controller: _amount,
           focusNode: _amountFocus,
-          autofocus: !_isEditing,
+          // Sem foco automático quando esta tela é a parada do tour: senão o
+          // teclado sobe sozinho e cobre a bolha (achado testando no celular
+          // real, feat 0026).
+          autofocus: !_isEditing && !_tourIsHere,
           keyboardType: TextInputType.number,
           inputFormatters: [CentsInputFormatter()],
           style: Theme.of(context).textTheme.headlineMedium,

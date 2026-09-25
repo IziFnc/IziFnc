@@ -56,6 +56,10 @@ class _TourTargetState extends ConsumerState<TourTarget> {
   void _show(int stepIndex) {
     final step = kTourSteps[stepIndex];
     final colors = Theme.of(context).colorScheme;
+    // Um campo com foco automático (ex.: "Valor" no lançamento) pode abrir o
+    // teclado por cima da bolha assim que a tela monta — tirar o foco antes
+    // de mostrar evita que isso aconteça.
+    FocusManager.instance.primaryFocus?.unfocus();
     TutorialCoachMark(
       targets: [
         TargetFocus(
@@ -77,10 +81,20 @@ class _TourTargetState extends ConsumerState<TourTarget> {
         ),
       ],
       colorShadow: colors.scrim,
+      // O padrão do pacote (80%) some quase tudo no tema escuro: por cima de
+      // um fundo já quase preto, um véu preto a 80% deixa até o texto que
+      // explica o próximo passo ilegível. No claro, o fundo claro sobra
+      // brilho suficiente mesmo dimmed — só o escuro precisa de um véu mais
+      // fraco (achado no celular real, feat 0026).
+      opacityShadow: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.8,
       // Sem o pulso contínuo: ele nunca "assenta" (a animação se repete para
       // sempre), o que travaria qualquer teste que use `pumpAndSettle` depois
       // de abrir uma destas telas.
       pulseEnable: false,
+      // O pacote desenha o próprio texto "SKIP" solto num canto por padrão;
+      // a bolha já tem "Pular o tour", então esse extra só sobra por cima de
+      // outro botão (achado no celular real, feat 0026).
+      hideSkip: true,
       onFinish: () => _advance(step),
       onSkip: () {
         _skipTour();

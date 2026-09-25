@@ -78,24 +78,29 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
                       onNext: () => select(month.next()),
                     ),
               actions: [
-                if (searchOpen)
-                  IconButton(
-                    tooltip: 'Fechar busca',
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      filtersController.setQuery('');
-                      setState(() => _searching = false);
-                    },
-                  )
-                else
-                  IconButton(
-                    tooltip: 'Buscar',
-                    icon: const Icon(Icons.search),
-                    onPressed: () => setState(() => _searching = true),
-                  ),
                 TourTarget(
                   anchor: TourAnchor.homeFilters,
-                  child: FilterButton(accounts: list),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (searchOpen)
+                        IconButton(
+                          tooltip: 'Fechar busca',
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            filtersController.setQuery('');
+                            setState(() => _searching = false);
+                          },
+                        )
+                      else
+                        IconButton(
+                          tooltip: 'Buscar',
+                          icon: const Icon(Icons.search),
+                          onPressed: () => setState(() => _searching = true),
+                        ),
+                      FilterButton(accounts: list),
+                    ],
+                  ),
                 ),
               ],
             )

@@ -9,9 +9,11 @@ import 'package:izifnc/app.dart';
 import 'package:izifnc/core/database/app_database.dart';
 import 'package:izifnc/core/database/database_provider.dart';
 import 'package:izifnc/core/widgets/tour_bubble.dart';
+import 'package:izifnc/core/widgets/tour_target.dart';
 import 'package:izifnc/features/accounts/data/accounts_repository.dart';
 import 'package:izifnc/features/accounts/domain/account_kind.dart';
 import 'package:izifnc/features/entries/data/entries_repository.dart';
+import 'package:izifnc/features/entries/presentation/month_filters.dart';
 import 'package:izifnc/features/import/data/ai_slots_store.dart';
 import 'package:izifnc/features/import/presentation/import_providers.dart';
 
@@ -87,9 +89,13 @@ void main() {
   testWidgets('percorre as 7 paradas, cada uma na tela certa, até Concluir', (tester) async {
     await pumpApp(tester);
 
-    // 1) Cadastrar conta — na home vazia, sem precisar navegar antes.
+    // 1) Cadastrar conta — na home vazia, sem precisar navegar antes. O
+    // pacote desenha o próprio "SKIP" num canto por padrão; já temos "Pular
+    // o tour" na bolha, então esse extra deve ficar escondido (achado no
+    // celular real: sobrava por cima do botão flutuante).
     await waitForBubble(tester);
     expect(find.text('1 de 7'), findsOneWidget);
+    expect(find.text('SKIP'), findsNothing);
     await tester.tap(bubbleButton('Cadastrar conta'));
     await tester.pumpAndSettle();
     expect(find.text('Nova conta'), findsOneWidget, reason: 'a bolha navegou pro formulário');
@@ -102,14 +108,38 @@ void main() {
     expect(find.text('2 de 7'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
 
-    // 3) Busca e filtros — ainda a home.
+    // 3) Busca e filtros — ainda a home. A lupa e o filtro ficam sob o mesmo
+    // alvo (achado no celular real: só o filtro era destacado, mas o texto
+    // falava dos dois).
     expect(find.text('3 de 7'), findsOneWidget);
+    final searchTarget = find.ancestor(
+      of: find.byType(FilterButton),
+      matching: find.byType(TourTarget),
+    );
+    expect(searchTarget, findsOneWidget);
+    expect(
+      find.descendant(of: searchTarget, matching: find.byIcon(Icons.search)),
+      findsOneWidget,
+      reason: 'a lupa deve estar no mesmo alvo do tour que o filtro',
+    );
     await tapBubble(tester, 'Próximo');
     expect(find.text('Novo lançamento'), findsWidgets, reason: 'navegou pro formulário de lançamento');
 
     // 4) Grade de tipos — lançamento (menciona "Pagar fatura" no texto, sem
-    // destacar o chip à parte — nenhum alvo aninhado dentro de outro).
+    // destacar o chip à parte — nenhum alvo aninhado dentro de outro). O
+    // campo "Valor" não pode estar em foco: senão o teclado sobe por cima da
+    // bolha (achado no celular real).
     expect(find.text('4 de 7'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextField, 'Valor'),
+      findsOneWidget,
+      reason: 'a tela do lançamento carregou',
+    );
+    expect(
+      tester.testTextInput.isVisible,
+      isFalse,
+      reason: '"Valor" não deve focar sozinho: o teclado cobriria a bolha do tour',
+    );
     await tapBubble(tester, 'Próximo');
     expect(find.text('Importar planilha'), findsOneWidget, reason: 'navegou pra importação');
 
