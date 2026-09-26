@@ -15,13 +15,18 @@ import 'accounts_providers.dart';
 /// **Nada é gravado antes do Salvar** — nem o ajuste de saldo. O "Ajustar" do
 /// diálogo só prepara o ajuste; o Salvar grava conta e ajuste juntos (feat 0005).
 class AccountFormScreen extends ConsumerStatefulWidget {
-  const AccountFormScreen({super.key, this.accountId});
+  const AccountFormScreen({super.key, this.accountId, this.initialKind = AccountKind.checking});
 
   static const String newPath = '/contas/nova';
   static const String editPattern = '/contas/:id';
   static String editPath(int id) => '/contas/$id';
 
   final int? accountId;
+
+  /// Tipo pré-selecionado ao criar (ignorado ao editar). Usado pelo tour
+  /// guiado e pelo item "Cadastrar um cartão" do `FirstStepsCard` pra abrir
+  /// direto em "Cartão".
+  final AccountKind initialKind;
 
   @override
   ConsumerState<AccountFormScreen> createState() => _AccountFormScreenState();
@@ -71,7 +76,11 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   @override
   void initState() {
     super.initState();
-    if (_isEditing) _load(widget.accountId!);
+    if (_isEditing) {
+      _load(widget.accountId!);
+    } else {
+      _kind = widget.initialKind;
+    }
   }
 
   Future<void> _load(int id) async {

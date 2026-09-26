@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/double_back_to_exit.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import 'settings_sections.dart';
@@ -14,14 +15,16 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Configurações')),
-      drawer: const AppDrawer(current: AppDestination.settings),
-      body: ListView(
-        children: [
-          for (final (i, section) in settingsSections.indexed)
-            _sectionTile(context, section, highlight: i == 0),
-        ],
+    return DoubleBackToExit(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Configurações')),
+        drawer: const AppDrawer(current: AppDestination.settings),
+        body: ListView(
+          children: [
+            for (final (i, section) in settingsSections.indexed)
+              _sectionTile(context, section, highlight: i == 0),
+          ],
+        ),
       ),
     );
   }

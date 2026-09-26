@@ -167,13 +167,18 @@ void main() {
         linkedAccountId: bradesco, // o Amazon é do Bradesco
       );
       await entries.adjustBalance(accountId: bradesco, target: 50000);
+      // Dia 1 do mês, não `DateTime.now()`: o Amazon fecha dia 22, e uma
+      // compra depois do fechamento (ex.: testando no dia 26) cairia na
+      // fatura do mês seguinte, tirando o Mouse do resumo do mês atual e
+      // quebrando o teste dependendo de quando ele roda.
+      final today = DateTime.now();
       await entries.save(
         EntryDraft(
           accountId: amazon,
           type: EntryType.expense,
           description: 'Mouse',
           amountCents: 5000,
-          date: DateTime.now(),
+          date: DateTime(today.year, today.month, 1),
         ),
       );
       await tester.pumpAndSettle();

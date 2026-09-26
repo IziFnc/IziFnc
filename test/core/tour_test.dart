@@ -19,7 +19,7 @@ import 'package:izifnc/features/import/presentation/import_providers.dart';
 
 import '../support/real_fonts.dart';
 
-/// O tour guiado (feat 0026): sete paradas, uma sequência só, andando de tela
+/// O tour guiado (feat 0026): oito paradas, uma sequência só, andando de tela
 /// em tela sozinho conforme a pessoa toca o botão de cada bolha. Começa
 /// sozinho na primeira vez (sem conta ainda); "Pular o tour" ou "Concluir" no
 /// fim marcam como visto; "Ver o tour de novo" em Configurações reinicia.
@@ -86,7 +86,7 @@ void main() {
     await waitForBubble(tester);
   }
 
-  testWidgets('percorre as 7 paradas, cada uma na tela certa, até Concluir', (tester) async {
+  testWidgets('percorre as 8 paradas, cada uma na tela certa, até Concluir', (tester) async {
     await pumpApp(tester);
 
     // 1) Cadastrar conta — na home vazia, sem precisar navegar antes. O
@@ -94,7 +94,7 @@ void main() {
     // o tour" na bolha, então esse extra deve ficar escondido (achado no
     // celular real: sobrava por cima do botão flutuante).
     await waitForBubble(tester);
-    expect(find.text('1 de 7'), findsOneWidget);
+    expect(find.text('1 de 8'), findsOneWidget);
     expect(find.text('SKIP'), findsNothing);
     await tester.tap(bubbleButton('Cadastrar conta'));
     await tester.pumpAndSettle();
@@ -103,15 +103,34 @@ void main() {
     await tester.tap(find.text('Salvar'));
     await tester.pumpAndSettle();
 
-    // 2) Situação — mesma tela (home), avança sem navegar.
+    // 2) Cadastrar cartão — aponta pro item do `FirstStepsCard` na home.
+    // Achado testando com um amigo (feat 0026): sem este passo, quem criava
+    // só a conta não sabia que faltava cadastrar o cartão à parte. O botão
+    // da bolha já abre o formulário com "Cartão" pré-selecionado.
     await waitForBubble(tester);
-    expect(find.text('2 de 7'), findsOneWidget);
+    expect(find.text('2 de 8'), findsOneWidget);
+    await tester.tap(bubbleButton('Cadastrar cartão'));
+    await tester.pumpAndSettle();
+    expect(
+      find.widgetWithText(TextField, 'Dia do fechamento da fatura'),
+      findsOneWidget,
+      reason: '"Cartão" já vem pré-selecionado (extra do TourStep)',
+    );
+    await tester.enterText(find.widgetWithText(TextField, 'Nome'), 'Amazon');
+    await tester.tap(find.text('Bradesco')); // conta dona, no _OwnerPicker
+    await tester.enterText(find.widgetWithText(TextField, 'Dia do fechamento da fatura'), '10');
+    await tester.tap(find.text('Salvar'));
+    await tester.pumpAndSettle();
+
+    // 3) Situação — mesma tela (home), avança sem navegar.
+    await waitForBubble(tester);
+    expect(find.text('3 de 8'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
 
-    // 3) Busca e filtros — ainda a home. A lupa e o filtro ficam sob o mesmo
+    // 4) Busca e filtros — ainda a home. A lupa e o filtro ficam sob o mesmo
     // alvo (achado no celular real: só o filtro era destacado, mas o texto
     // falava dos dois).
-    expect(find.text('3 de 7'), findsOneWidget);
+    expect(find.text('4 de 8'), findsOneWidget);
     final searchTarget = find.ancestor(
       of: find.byType(FilterButton),
       matching: find.byType(TourTarget),
@@ -125,11 +144,11 @@ void main() {
     await tapBubble(tester, 'Próximo');
     expect(find.text('Novo lançamento'), findsWidgets, reason: 'navegou pro formulário de lançamento');
 
-    // 4) Grade de tipos — lançamento (menciona "Pagar fatura" no texto, sem
+    // 5) Grade de tipos — lançamento (menciona "Pagar fatura" no texto, sem
     // destacar o chip à parte — nenhum alvo aninhado dentro de outro). O
     // campo "Valor" não pode estar em foco: senão o teclado sobe por cima da
     // bolha (achado no celular real).
-    expect(find.text('4 de 7'), findsOneWidget);
+    expect(find.text('5 de 8'), findsOneWidget);
     expect(
       find.widgetWithText(TextField, 'Valor'),
       findsOneWidget,
@@ -143,19 +162,19 @@ void main() {
     await tapBubble(tester, 'Próximo');
     expect(find.text('Importar planilha'), findsOneWidget, reason: 'navegou pra importação');
 
-    // 5) Escolher arquivo — mostra mesmo com o botão desligado (sem chave de
+    // 6) Escolher arquivo — mostra mesmo com o botão desligado (sem chave de
     // IA configurada neste teste): senão o tour travaria aqui para sempre.
-    expect(find.text('5 de 7'), findsOneWidget);
+    expect(find.text('6 de 8'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
     expect(find.text('Configurações'), findsWidgets, reason: 'navegou pra Configurações');
 
-    // 6) Menu de Configurações.
-    expect(find.text('6 de 7'), findsOneWidget);
+    // 7) Menu de Configurações.
+    expect(find.text('7 de 8'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
     expect(find.text('Dados'), findsOneWidget, reason: 'navegou pra Configurações › Dados');
 
-    // 7) Backup — último passo, botão "Concluir".
-    expect(find.text('7 de 7'), findsOneWidget);
+    // 8) Backup — último passo, botão "Concluir".
+    expect(find.text('8 de 8'), findsOneWidget);
     await tapBubble(tester, 'Concluir');
 
     expect(find.byType(TourBubble), findsNothing, reason: 'tour concluído, nenhuma bolha sobra');
@@ -182,7 +201,7 @@ void main() {
     expect(find.byType(TourBubble), findsNothing);
   });
 
-  testWidgets('"Ver o tour de novo" com conta já cadastrada pula direto pro 2º passo', (
+  testWidgets('"Ver o tour de novo" com conta sem cartão pula direto pro passo do cartão', (
     tester,
   ) async {
     await accounts.create(name: 'Bradesco', kind: AccountKind.checking);
@@ -198,7 +217,32 @@ void main() {
     await waitForBubble(tester);
 
     // Pula o passo 0 (cadastrar conta — não existe mais alvo pra ele) e cai
-    // direto no passo 1 (situação), que já existe porque há conta.
-    expect(find.text('2 de 7'), findsOneWidget);
+    // direto no passo 1 (cadastrar cartão), que já existe porque há conta e
+    // ainda não há cartão.
+    expect(find.text('2 de 8'), findsOneWidget);
+  });
+
+  testWidgets('"Ver o tour de novo" com conta e cartão pula direto pra situação', (
+    tester,
+  ) async {
+    final owner = await accounts.create(name: 'Bradesco', kind: AccountKind.checking);
+    await accounts.create(
+      name: 'Amazon',
+      kind: AccountKind.creditCard,
+      linkedAccountId: owner,
+      closingDay: 10,
+    );
+    await pumpApp(tester);
+    await waitForBubble(tester);
+
+    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/configuracoes/geral');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver o tour de novo'));
+    await tester.pumpAndSettle();
+    await waitForBubble(tester);
+
+    // Pula os passos 0 e 1 (conta e cartão já existem) e cai direto na
+    // situação.
+    expect(find.text('3 de 8'), findsOneWidget);
   });
 }

@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
+import '../../../core/widgets/tour_step.dart';
+import '../../../core/widgets/tour_target.dart';
+import '../../accounts/domain/account_kind.dart';
 import '../../accounts/presentation/account_form_screen.dart';
 import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_screen.dart';
@@ -210,11 +213,17 @@ class FirstStepsCard extends StatelessWidget {
               () => context.go(AccountsScreen.path),
             ),
             if (!hasCard)
-              step(
-                Icons.credit_card,
-                'Cadastrar um cartão',
-                'Para lançar compras no crédito.',
-                () => context.push(AccountFormScreen.newPath),
+              TourTarget(
+                anchor: TourAnchor.cardAdd,
+                child: step(
+                  Icons.credit_card,
+                  'Cadastrar um cartão',
+                  'Para lançar compras no crédito.',
+                  () => context.push(
+                    AccountFormScreen.newPath,
+                    extra: AccountKind.creditCard,
+                  ),
+                ),
               ),
             step(
               Icons.upload_file_outlined,

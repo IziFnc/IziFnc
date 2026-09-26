@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show DatabaseConnection, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -146,5 +147,35 @@ void main() {
     // Do menu dá para ir a qualquer destino.
     await goTo(tester, 'Início');
     expect(find.byType(MonthScreen), findsOneWidget);
+  });
+
+  testWidgets('sair de um destino do menu exige dois gestos de voltar seguidos', (tester) async {
+    await pumpApp(tester);
+
+    final calls = <MethodCall>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (
+      call,
+    ) async {
+      calls.add(call);
+      return null;
+    });
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    // Primeiro gesto: só o aviso, o app continua aberto.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Toque em voltar de novo para sair'), findsOneWidget);
+    expect(find.byType(MonthScreen), findsOneWidget);
+    expect(calls, isEmpty, reason: 'um gesto só não fecha o app');
+
+    // Segundo gesto, logo em seguida: fecha de verdade.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(calls.map((c) => c.method), contains('SystemNavigator.pop'));
   });
 }

@@ -1,27 +1,29 @@
 # 0026 — Guia dentro do app: tour guiado, tela por tela
 
-**Data:** 2026-09-23/24 · **Status:** ✅ concluído
+**Data:** 2026-09-23/24, correções 2026-09-25/26 · **Status:** ✅ concluído
 
 ## O que mudou
 
-Na primeira vez que a pessoa usa o app, um tour guiado anda sozinho por sete paradas,
+Na primeira vez que a pessoa usa o app, um tour guiado anda sozinho por oito paradas,
 mostrando as funções principais uma de cada vez: a tela escurece, um recorte destaca o botão
-certo e um cartão explica o que ele faz, com um contador ("2 de 7") e um botão para seguir —
+certo e um cartão explica o que ele faz, com um contador ("2 de 8") e um botão para seguir —
 que já leva para a próxima tela, quando for o caso.
 
 1. **Cadastrar a primeira conta** — na home vazia; o botão da bolha faz a mesma coisa que o
    botão real (leva ao formulário).
-2. **Situação de relance** — o cartão de saldo/faturas da home.
-3. **Busca e filtros** — a barra da home.
-4. **Escolher o tipo do lançamento** — a grade (menciona "Pagar fatura" no texto).
-5. **Escolher o arquivo da planilha** — mostra mesmo com o botão desligado (sem chave de IA
+2. **Cadastrar um cartão** (se usar) — aponta pro item do `FirstStepsCard` na home, com "Cartão"
+   já pré-selecionado no formulário; quem não usa cartão volta sem salvar e segue em frente.
+3. **Situação de relance** — o cartão de saldo/faturas da home.
+4. **Busca e filtros** — a barra da home.
+5. **Escolher o tipo do lançamento** — a grade (menciona "Pagar fatura" no texto).
+6. **Escolher o arquivo da planilha** — mostra mesmo com o botão desligado (sem chave de IA
    configurada ainda): senão o tour travaria aqui para sempre.
-6. **Menu de Configurações**.
-7. **Backup**, dentro de Configurações › Dados — último passo, botão "Concluir".
+7. **Menu de Configurações**.
+8. **Backup**, dentro de Configurações › Dados — último passo, botão "Concluir".
 
 Dá para **pular o tour inteiro** a qualquer momento (botão "Pular o tour" em toda bolha) e
 **revê-lo depois** por "Ver o tour de novo", em Configurações › Geral — quem já tem conta
-cadastrada cai direto na 2ª parada (a 1ª não existe mais numa home com contas).
+cadastrada pula a 1ª parada, e quem já tem conta e cartão pula direto pra 3ª (situação).
 
 ## Por quê
 
@@ -102,36 +104,117 @@ três problemas:
 
 Também revisado o texto de todas as paradas (clareza e consistência do português).
 
+## Correção 2: passo do cartão separado do passo da conta (2026-09-26)
+
+Um amigo testando o rc.6 seguiu o tour, cadastrou a conta do banco e, ao voltar pra home, "se
+sentiu jogado numa tela" — nada indicava que faltava cadastrar um cartão também antes do resto
+do tour fazer sentido ("Pagar fatura" só existe com cartão). O passo 1 tentava explicar conta e
+cartão juntos, mas só levava à criação de uma conta (tipo padrão do formulário).
+
+- **Novo `TourAnchor.cardAdd`**, logo depois de `accountsAdd` (desloca os demais um índice —
+  7 paradas viraram 8). Aponta pro item "Cadastrar um cartão" que **já existia** no
+  `FirstStepsCard` da home (aparece assim que a primeira conta é criada, some sozinho quando já
+  há cartão) — nenhuma navegação nova precisou ser inventada.
+- **`TourStep` ganhou `extra`** (repassado no `context.push`/`go`): o botão da bolha do novo
+  passo abre o formulário já com "Cartão" pré-selecionado (`AccountFormScreen.initialKind`,
+  também aproveitado pelo próprio item do `FirstStepsCard` fora do tour).
+- **`restartTour()`** passou a checar conta **e** cartão: pula pra `cardAdd` se só falta o
+  cartão, pula direto pra `situationCard` se já há os dois.
+- **Achado ao testar a inserção do passo novo:** a bolha da parada seguinte (`situationCard`)
+  tentava aparecer **por cima do formulário recém-empilhado** (`push`) assim que a pessoa tocava
+  "Cadastrar cartão" — porque a home, ainda montada por baixo do formulário, já enxergava o
+  índice do tour avançado e tentava mostrar sua bolha na hora, antes do formulário assentar.
+  Isso não acontecia entre `accountsAdd`→`cardAdd` (a home ainda estava no estado "sem contas",
+  sem alvo pronto), mas acontecia aqui porque a home já tinha tudo pronto. Corrigido de forma
+  geral (não só para este caso): `TourTarget` agora observa a própria rota via `RouteObserver`
+  (`tourRouteObserver`, registrado no `GoRouter`) e só mostra a bolha quando a rota está
+  **em primeiro plano** (`ModalRoute.isCurrent`); ao voltar de uma tela empilhada por cima
+  (`didPopNext`), tenta de novo. Protege qualquer inserção futura de parada do mesmo problema.
+
+## Correção 2.1: segunda chamada fantasma do `onFinish` travava o toque seguinte (2026-09-26)
+
+Achado depurando um sintoma esquisito ao vivo (celular real e emulador): depois de tocar
+"Cadastrar cartão" e cair no formulário, alguns toques simplesmente paravam de funcionar (o
+chip da conta dona não marcava, um campo não ganhava foco), sem nenhum erro visível na tela.
+Rodando `flutter run` conectado ao aparelho, o console mostrou a causa: uma exceção não tratada
+(`Bad state: Using "ref" when a widget is about to or has been unmounted is unsafe`).
+
+O `tutorial_coach_mark` acompanha a posição do alvo quadro a quadro durante a animação de saída;
+quando o alvo (o botão "Cadastrar conta") some da tela no meio dessa animação, porque a conta
+foi salva e a home trocou de corpo, o pacote não acha mais o alvo, cai no próprio mecanismo de
+"pular pro próximo" e chama `onFinish` **de novo**, sozinho, um tempo depois. Como a nossa
+`_advance()` já tinha rodado uma vez (avançando o índice e navegando), essa segunda chamada caía
+numa instância de `TourTarget` já desmontada e usava `ref` de um jeito que o Riverpod rejeita —
+a exceção não tratada, ocorrendo durante o processamento de um gesto, deixava a interação
+seguinte instável.
+
+Corrigido com uma trava simples: `_show()` guarda um `finished` local (por chamada, não pelo
+`_open` da instância) e `onFinish`/`onSkip` só têm efeito na primeira vez. Confirmado ao vivo,
+com `flutter run` no celular: a mensagem "Failed to refresh target position" ainda aparece no
+console (o pacote continua tentando), mas sem mais exceção, e o chip da conta dona volta a
+marcar normalmente.
+
+## Correção 3: dois gestos de voltar para sair (2026-09-26)
+
+Achado testando a correção acima: os destinos do menu lateral (`AppDrawer`, feature 0010)
+trocam de tela com `context.go` (sem empilhar) — "voltar" a partir de qualquer um deles já
+fechava o app com um único gesto, de propósito (documentado desde a 0010). O tour, ao levar a
+pessoa direto pra Importar planilha ou Configurações logo no início do uso, tornava esse
+comportamento mais fácil de disparar sem querer.
+
+- **`lib/core/widgets/double_back_to_exit.dart`** (novo): embrulha um destino do menu — quando
+  a tela não tem pra onde voltar (`!Navigator.canPop`), o primeiro gesto de voltar mostra
+  "Toque voltar de novo para sair" e só o segundo, dentro de 2s, fecha de verdade
+  (`SystemNavigator.pop()`). Quando a tela **tem** pra onde voltar (empilhada de verdade, ex.:
+  formulário aberto por cima), não interfere — o gesto normal já funciona.
+- Aplicado às 4 telas do menu: `MonthScreen`, `AccountsScreen`, `ImportScreen`,
+  `SettingsScreen`.
+
 ## Arquivos tocados
 
 - `lib/core/widgets/tour_step.dart` — `TourAnchor` (enum, um valor por parada — o índice é o
-  número persistido), `TourStep` (o que mostrar e como navegar) e `kTourSteps` (o roteiro).
+  número persistido), `TourStep` (o que mostrar, `extra` e como navegar) e `kTourSteps` (o
+  roteiro, 8 paradas).
 - `lib/core/widgets/tour_bubble.dart` — o cartão visual (ícone, "N de M", título, mensagem,
   "Pular o tour" e o botão de seguir).
-- `lib/core/widgets/tour_target.dart` — o widget que embrulha cada alvo (substitui o
-  `CoachMarkOnce`/`TourHint` da v1, removidos).
+- `lib/core/widgets/tour_target.dart` — o widget que embrulha cada alvo; observa a própria rota
+  via `tourRouteObserver` (`RouteObserver`) pra só mostrar a bolha em primeiro plano.
+- `lib/core/widgets/double_back_to_exit.dart` — dois gestos de voltar pra sair, nas telas do
+  menu lateral.
+- `lib/core/router/app_router.dart` — registra `tourRouteObserver`; `AccountFormScreen.newPath`
+  repassa `extra` como `initialKind`.
+- `lib/features/accounts/presentation/account_form_screen.dart` — `initialKind` (pré-seleciona
+  "Cartão" quando vem do tour ou do `FirstStepsCard`).
 - `lib/features/settings/data/settings_table.dart` — coluna `tourStep` (schema v8, no lugar do
   `tourHintsSeen` da v1).
 - `lib/features/settings/data/settings_repository.dart` — `watchTourStep`/`advanceTour`/
-  `skipTour`/`restartTour` (este último pula a 1ª parada se já houver conta).
+  `skipTour`/`restartTour` (este último considera conta e cartão pra decidir onde recomeçar).
 - `lib/features/entries/presentation/month_screen.dart` (`_NoAccounts`, `SituationCard`,
-  `FilterButton`), `lib/features/accounts/presentation/accounts_screen.dart`,
+  `FilterButton`, `DoubleBackToExit`),
+  `lib/features/entries/presentation/month_situation_widgets.dart` (`FirstStepsCard`,
+  `TourTarget(cardAdd)`), `lib/features/accounts/presentation/accounts_screen.dart`,
   `lib/features/entries/presentation/entry_form_screen.dart`,
   `lib/features/import/presentation/import_screen.dart`,
   `lib/features/settings/presentation/settings_screen.dart`,
-  `lib/features/settings/presentation/data_settings_screen.dart` — `TourTarget` nos alvos.
+  `lib/features/settings/presentation/data_settings_screen.dart` — `TourTarget` nos alvos
+  (e `DoubleBackToExit` nas 4 telas do menu).
 - `lib/features/settings/presentation/general_settings_screen.dart` — "Ver o tour de novo".
-- `test/core/tour_test.dart` (substitui `coach_mark_test.dart` da v1) — percorre as 7 paradas
-  até "Concluir", "Pular o tour" encerra tudo, e "Ver o tour de novo" com conta já cadastrada
-  pula a 1ª parada.
+- `test/core/tour_test.dart` (substitui `coach_mark_test.dart` da v1) — percorre as 8 paradas
+  até "Concluir" (inclusive cadastrando um cartão de verdade no passo novo), "Pular o tour"
+  encerra tudo, e "Ver o tour de novo" cobre os três casos de recomeço (sem conta, com conta
+  sem cartão, com conta e cartão).
 
 ## Como verificar
 
 1. `dart run drift_dev make-migrations`, `flutter analyze`, `flutter test`.
 2. `test/core/tour_test.dart` cobre o fluxo completo (ver acima).
-3. No emulador (`mobile-mcp`, `Pixel_9`), instalação nova: o tour abre sozinho na home vazia e
-   anda até o fim; a bolha (ícone, "N de 7", cartão com fundo) cabe na tela em cada parada, nos
-   temas claro/escuro; "Ver o tour de novo" em Configurações traz de volta.
+3. No emulador ou celular real (`mobile-mcp`), instalação nova: o tour abre sozinho na home
+   vazia e anda até o fim, inclusive cadastrando um cartão no passo novo; a bolha (ícone, "N de
+   8", cartão com fundo) cabe na tela em cada parada, nos temas claro/escuro; "Ver o tour de
+   novo" em Configurações traz de volta, pulando as paradas cujo alvo já não existe mais.
+4. Sair de qualquer uma das 4 telas do menu (Início, Contas e cartões, Importar planilha,
+   Configurações) com o gesto de voltar: o primeiro gesto mostra o aviso, só o segundo (dentro
+   de 2s) fecha o app.
 
 ## Pendências / próximos passos
 

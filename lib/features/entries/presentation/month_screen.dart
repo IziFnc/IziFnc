@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/double_back_to_exit.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_form_screen.dart';
@@ -62,66 +63,72 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
     final start = startDay.value;
     final hasAccounts = list != null && list.isNotEmpty && start != null;
     final month = hasAccounts
-        ? (ref.watch(selectedMonthProvider) ?? competenceOf(DateTime.now(), start))
+        ? (ref.watch(selectedMonthProvider) ??
+              competenceOf(DateTime.now(), start))
         : null;
     final searchOpen = _searching || query.isNotEmpty;
 
-    return Scaffold(
-      appBar: hasAccounts
-          ? AppBar(
-              titleSpacing: 0,
-              title: searchOpen
-                  ? const SearchTitleField()
-                  : _MonthTitle(
-                      month: month!,
-                      onPrevious: () => select(month.previous()),
-                      onNext: () => select(month.next()),
+    return DoubleBackToExit(
+      child: Scaffold(
+        appBar: hasAccounts
+            ? AppBar(
+                titleSpacing: 0,
+                title: searchOpen
+                    ? const SearchTitleField()
+                    : _MonthTitle(
+                        month: month!,
+                        onPrevious: () => select(month.previous()),
+                        onNext: () => select(month.next()),
+                      ),
+                actions: [
+                  TourTarget(
+                    anchor: TourAnchor.homeFilters,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (searchOpen)
+                          IconButton(
+                            tooltip: 'Fechar busca',
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              filtersController.setQuery('');
+                              setState(() => _searching = false);
+                            },
+                          )
+                        else
+                          IconButton(
+                            tooltip: 'Buscar',
+                            icon: const Icon(Icons.search),
+                            onPressed: () => setState(() => _searching = true),
+                          ),
+                        FilterButton(accounts: list),
+                      ],
                     ),
-              actions: [
-                TourTarget(
-                  anchor: TourAnchor.homeFilters,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (searchOpen)
-                        IconButton(
-                          tooltip: 'Fechar busca',
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            filtersController.setQuery('');
-                            setState(() => _searching = false);
-                          },
-                        )
-                      else
-                        IconButton(
-                          tooltip: 'Buscar',
-                          icon: const Icon(Icons.search),
-                          onPressed: () => setState(() => _searching = true),
-                        ),
-                      FilterButton(accounts: list),
-                    ],
                   ),
-                ),
-              ],
-            )
-          : AppBar(title: const Text('IziFnc')),
-      drawer: const AppDrawer(current: AppDestination.home),
-      body: switch ((accounts, startDay)) {
-        (AsyncData(), AsyncData()) when !hasAccounts => const _NoAccounts(),
-        (AsyncData(), AsyncData()) => _MonthBody(accounts: list!, month: month!),
-        (AsyncError(:final error), _) || (_, AsyncError(:final error)) =>
-          Center(child: Text('Erro ao carregar: $error')),
-        _ => const Center(child: CircularProgressIndicator()),
-      },
-      floatingActionButton: switch (accounts) {
-        AsyncData(value: final list) when list.isNotEmpty =>
-          FloatingActionButton(
-            tooltip: 'Novo lançamento',
-            onPressed: () => context.push(EntryFormScreen.newPath),
-            child: const Icon(Icons.add),
+                ],
+              )
+            : AppBar(title: const Text('IziFnc')),
+        drawer: const AppDrawer(current: AppDestination.home),
+        body: switch ((accounts, startDay)) {
+          (AsyncData(), AsyncData()) when !hasAccounts => const _NoAccounts(),
+          (AsyncData(), AsyncData()) => _MonthBody(
+            accounts: list!,
+            month: month!,
           ),
-        _ => null,
-      },
+          (AsyncError(:final error), _) || (_, AsyncError(:final error)) =>
+            Center(child: Text('Erro ao carregar: $error')),
+          _ => const Center(child: CircularProgressIndicator()),
+        },
+        floatingActionButton: switch (accounts) {
+          AsyncData(value: final list) when list.isNotEmpty =>
+            FloatingActionButton(
+              tooltip: 'Novo lançamento',
+              onPressed: () => context.push(EntryFormScreen.newPath),
+              child: const Icon(Icons.add),
+            ),
+          _ => null,
+        },
+      ),
     );
   }
 }
@@ -151,7 +158,10 @@ class _MonthTitle extends StatelessWidget {
         Flexible(
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(month.title, style: Theme.of(context).textTheme.titleMedium),
+            child: Text(
+              month.title,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
         ),
         IconButton(
@@ -186,7 +196,9 @@ class _MonthBody extends ConsumerWidget {
         : MonthSituation.from(
             accounts: accounts,
             balances: balances,
-            summary: rows == null || rows.isEmpty ? null : MonthSummary.from(rows),
+            summary: rows == null || rows.isEmpty
+                ? null
+                : MonthSummary.from(rows),
           );
 
     // Lembrete de backup: nunca feito (só depois de a pessoa ter uma base de
@@ -210,7 +222,11 @@ class _MonthBody extends ConsumerWidget {
             child: SituationCard(
               situation: situation,
               monthLoaded: rows != null,
-              onTap: () => showSituationSheet(context, situation: situation, month: month),
+              onTap: () => showSituationSheet(
+                context,
+                situation: situation,
+                month: month,
+              ),
             ),
           ),
         ...switch (entries) {

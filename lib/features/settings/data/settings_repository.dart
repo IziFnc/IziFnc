@@ -86,14 +86,22 @@ class SettingsRepository {
       .write(AppSettingsCompanion(tourStep: Value(kTourSteps.length)));
 
   /// "Ver o tour de novo" em Configurações: volta para a primeira parada que
-  /// ainda faz sentido. A primeira (cadastrar a conta) só existe numa home
-  /// sem contas — pedir para revê-la a quem já tem conta deixaria o tour
-  /// esperando para sempre um alvo que não aparece mais, então quem já tem
-  /// conta cadastrada recomeça na segunda parada.
+  /// ainda faz sentido. "Cadastrar conta" só existe numa home sem contas, e
+  /// "Cadastrar cartão" só enquanto não houver nenhum — pedir pra rever uma
+  /// parada cujo alvo já não existe deixaria o tour esperando pra sempre —
+  /// então quem já tem conta pula pra parada do cartão, e quem já tem os
+  /// dois pula direto pra situação.
   Future<void> restartTour() => _db.transaction(() async {
-    final hasAccounts = await _db.select(_db.accounts).get().then((l) => l.isNotEmpty);
+    final accounts = await _db.select(_db.accounts).get();
+    final hasAccounts = accounts.isNotEmpty;
+    final hasCard = accounts.any((a) => a.kind.isCard);
+    final start = !hasAccounts
+        ? TourAnchor.accountsAdd.index
+        : !hasCard
+        ? TourAnchor.cardAdd.index
+        : TourAnchor.situationCard.index;
     await _db
         .update(_db.appSettings)
-        .write(AppSettingsCompanion(tourStep: Value(hasAccounts ? 1 : 0)));
+        .write(AppSettingsCompanion(tourStep: Value(start)));
   });
 }

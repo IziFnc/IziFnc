@@ -4,10 +4,11 @@ Controle de finanças pessoais — offline, local e sem frescura.
 
 Os dados ficam no aparelho, num SQLite. Sem conta, sem login, sem servidor.
 
-> **Status:** pré-1.0 (a última entrega vem em [`feat/`](feat/README.md)). Funcionando: contas
-> e cartões, lançamentos, transferências, pagamento de fatura (com juros opcionais), saldos,
-> filtros e busca, importação da planilha `.xlsx` com IA, tema/tamanho do texto/alto contraste
-> e **backup e restauração** do banco. O caminho até a 1.0 está no backlog de `feat/`.
+> **Status:** 1.0.0 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
+> Funcionando: contas e cartões, lançamentos, transferências, pagamento de fatura (com juros
+> opcionais), saldos, filtros e busca, importação da planilha `.xlsx` com IA, tema/tamanho do
+> texto/alto contraste, backup e restauração do banco, e um guia dentro do app pra quem está
+> começando. Próximas entregas seguem pelo backlog numerado de `feat/`.
 
 ## Como usar
 
@@ -202,8 +203,8 @@ aparecem junto com a feature.
 ## Licença
 
 [MIT](LICENSE): pode usar, copiar, modificar e distribuir, mantendo o aviso de autoria. O app é
-oferecido "como está", sem garantia (é um controle financeiro pessoal em pré-lançamento: confira os
-valores e faça backup).
+oferecido "como está", sem garantia — é um controle financeiro pessoal: confira os valores e
+faça backup de vez em quando.
 
 ## Histórico de features
 

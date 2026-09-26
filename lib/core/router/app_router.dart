@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/accounts/domain/account_kind.dart';
 import '../../features/accounts/presentation/account_form_screen.dart';
 import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/entries/presentation/entry_form_screen.dart';
@@ -9,6 +10,7 @@ import '../../features/settings/presentation/ai_settings_screen.dart';
 import '../../features/settings/presentation/data_settings_screen.dart';
 import '../../features/settings/presentation/general_settings_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../widgets/tour_target.dart';
 
 /// Rotas do app.
 ///
@@ -17,6 +19,10 @@ import '../../features/settings/presentation/settings_screen.dart';
 /// das com parâmetro (`/contas/:id`), porque o go_router casa na ordem.
 GoRouter createAppRouter() => GoRouter(
   initialLocation: MonthScreen.path,
+  // `tourRouteObserver` avisa um `TourTarget` quando a tela dele volta a
+  // ficar visível (voltando de uma tela empilhada por cima) — ver o
+  // doc-comment em tour_target.dart.
+  observers: [tourRouteObserver],
   routes: [
     GoRoute(
       path: MonthScreen.path,
@@ -37,7 +43,9 @@ GoRouter createAppRouter() => GoRouter(
     ),
     GoRoute(
       path: AccountFormScreen.newPath,
-      builder: (context, state) => const AccountFormScreen(),
+      builder: (context, state) => AccountFormScreen(
+        initialKind: (state.extra as AccountKind?) ?? AccountKind.checking,
+      ),
     ),
     GoRoute(
       path: AccountFormScreen.editPattern,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
+import '../../features/accounts/domain/account_kind.dart';
 import '../../features/accounts/presentation/account_form_screen.dart';
 import '../../features/entries/presentation/entry_form_screen.dart';
 import '../../features/import/presentation/import_screen.dart';
@@ -13,6 +14,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 /// os valores daqui sem pensar em quem já estiver no meio do tour.
 enum TourAnchor {
   accountsAdd,
+  cardAdd,
   situationCard,
   homeFilters,
   entryTypeGrid,
@@ -31,6 +33,7 @@ class TourStep {
     this.buttonLabel = 'Próximo',
     this.nextRoute,
     this.pushNext = false,
+    this.extra,
     this.align = ContentAlign.bottom,
   });
 
@@ -58,27 +61,48 @@ class TourStep {
   /// formulário de conta, o formulário de lançamento, Dados como sub-tela de
   /// Configurações), não um destino do menu.
   final bool pushNext;
+
+  /// Vai como `extra` na navegação — ex.: pré-selecionar "Cartão" ao abrir o
+  /// formulário de conta pro passo [TourAnchor.cardAdd].
+  final Object? extra;
 }
 
-/// O roteiro fixo do tour, sete paradas: cadastrar a primeira conta, a
-/// situação e os filtros da home, a grade de tipos do lançamento (menciona
-/// "Pagar fatura" no texto, sem destacar o chip à parte — ver feat 0026),
-/// importar planilha, Configurações e o backup dentro dela. Cobre uma função
-/// por vez, em vez de esperar a pessoa esbarrar em cada botão sozinha.
+/// O roteiro fixo do tour, oito paradas: cadastrar a primeira conta, um
+/// cartão (se usar), a situação e os filtros da home, a grade de tipos do
+/// lançamento (menciona "Pagar fatura" no texto, sem destacar o chip à parte
+/// — ver feat 0026), importar planilha, Configurações e o backup dentro
+/// dela. Cobre uma função por vez, em vez de esperar a pessoa esbarrar em
+/// cada botão sozinha.
 const kTourSteps = <TourStep>[
   TourStep(
     anchor: TourAnchor.accountsAdd,
     icon: Icons.account_balance_wallet_outlined,
-    title: 'Cadastre suas contas e cartões',
+    title: 'Cadastre sua primeira conta',
     message:
-        'Comece por aqui: cadastre as contas e os cartões que você usa. '
-        'Todo cartão fica ligado a uma conta, que é quem paga a fatura dele.',
+        'Comece por uma conta corrente ou poupança: é nela que ficam seus '
+        'lançamentos do dia a dia.',
     buttonLabel: 'Cadastrar conta',
     nextRoute: AccountFormScreen.newPath,
     pushNext: true,
     // O botão fica no meio da tela vazia: "abaixo" (o padrão) empurrava a
     // bolha até estourar a borda de baixo. Achado no celular real, feat 0026.
     align: ContentAlign.top,
+  ),
+  TourStep(
+    // Achado testando com um amigo (feat 0026): o passo de conta sozinho não
+    // deixava claro que cartão é outro cadastro à parte — quem criava só a
+    // conta ficava sem saber o que fazer a seguir. Este passo aponta pro
+    // item "Cadastrar um cartão" que já existe no `FirstStepsCard` da home.
+    anchor: TourAnchor.cardAdd,
+    icon: Icons.credit_card_outlined,
+    title: 'Tem cartão de crédito?',
+    message:
+        'Cadastre agora: ele fica ligado à conta que você acabou de criar, '
+        'que paga a fatura dele. Não usa cartão? Pode voltar sem salvar.',
+    buttonLabel: 'Cadastrar cartão',
+    nextRoute: AccountFormScreen.newPath,
+    pushNext: true,
+    extra: AccountKind.creditCard,
   ),
   TourStep(
     anchor: TourAnchor.situationCard,

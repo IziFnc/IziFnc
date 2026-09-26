@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/double_back_to_exit.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import 'account_form_screen.dart';
@@ -21,32 +22,36 @@ class AccountsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final accounts = ref.watch(accountsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Contas e cartões')),
-      drawer: const AppDrawer(current: AppDestination.accounts),
-      floatingActionButton: TourTarget(
-        anchor: TourAnchor.accountsAdd,
-        child: FloatingActionButton(
-          tooltip: 'Nova conta',
-          onPressed: () => context.push(AccountFormScreen.newPath),
-          child: const Icon(Icons.add),
+    return DoubleBackToExit(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Contas e cartões')),
+        drawer: const AppDrawer(current: AppDestination.accounts),
+        floatingActionButton: TourTarget(
+          anchor: TourAnchor.accountsAdd,
+          child: FloatingActionButton(
+            tooltip: 'Nova conta',
+            onPressed: () => context.push(AccountFormScreen.newPath),
+            child: const Icon(Icons.add),
+          ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 88),
-        children: [
-          ...switch (accounts) {
-            AsyncData(value: final list) when list.isEmpty => [
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Nenhuma conta ainda. Toque em + para cadastrar.'),
-              ),
-            ],
-            AsyncData(value: final list) => _grouped(list),
-            AsyncError(:final error) => [Text('Erro: $error')],
-            _ => [const Center(child: CircularProgressIndicator())],
-          },
-        ],
+        body: ListView(
+          padding: const EdgeInsets.only(bottom: 88),
+          children: [
+            ...switch (accounts) {
+              AsyncData(value: final list) when list.isEmpty => [
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Nenhuma conta ainda. Toque em + para cadastrar.',
+                  ),
+                ),
+              ],
+              AsyncData(value: final list) => _grouped(list),
+              AsyncError(:final error) => [Text('Erro: $error')],
+              _ => [const Center(child: CircularProgressIndicator())],
+            },
+          ],
+        ),
       ),
     );
   }
@@ -73,7 +78,6 @@ class AccountsScreen extends ConsumerWidget {
       for (final card in orphans) _AccountTile(account: card, orphan: true),
     ];
   }
-
 }
 
 class _AccountTile extends StatelessWidget {

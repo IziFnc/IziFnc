@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/repositories.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/double_back_to_exit.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import '../../accounts/presentation/account_form_screen.dart';
@@ -90,16 +91,18 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     ref.watch(accountsProvider);
     ref.watch(monthStartDayProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Importar planilha')),
-      drawer: const AppDrawer(current: AppDestination.importSheet),
-      body: switch (_step) {
-        _Step.pickFile => _pickFileStep(),
-        _Step.pickSheet => _pickSheetStep(),
-        _Step.mapBanks => _mapBanksStep(),
-        _Step.preview => _previewStep(),
-        _Step.done => _doneStep(),
-      },
+    return DoubleBackToExit(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Importar planilha')),
+        drawer: const AppDrawer(current: AppDestination.importSheet),
+        body: switch (_step) {
+          _Step.pickFile => _pickFileStep(),
+          _Step.pickSheet => _pickSheetStep(),
+          _Step.mapBanks => _mapBanksStep(),
+          _Step.preview => _previewStep(),
+          _Step.done => _doneStep(),
+        },
+      ),
     );
   }
 
