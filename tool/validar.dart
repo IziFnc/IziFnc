@@ -9,6 +9,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'tamanho_arquivos.dart' as tamanho;
+
 /// Padrões de chave de API dos provedores usados. Exigem uma cauda longa de
 /// caracteres de chave: assim o texto destes próprios padrões (e os placeholders
 /// dos testes, como "chave-de-teste") não disparam.
@@ -45,13 +47,15 @@ Future<ProcessResult> _run(String exe, List<String> args) => Process.run(
 );
 
 String _tail(String text, [int lines = 12]) {
-  final all = text.trim().split('\n');
+  // Testes que passaram só atrapalham: as últimas linhas eram todas ✅ e a falha,
+  // que vem antes, não aparecia no log do CI.
+  final all = text.trim().split('\n').where((l) => !l.contains('✅')).toList();
   return all.skip(all.length > lines ? all.length - lines : 0).join('\n');
 }
 
 Future<String?> _flutter(List<String> args) async {
   final r = await _run('flutter', args);
-  return r.exitCode == 0 ? null : 'flutter ${args.join(' ')} saiu com ${r.exitCode}:\n${_tail('${r.stdout}\n${r.stderr}')}';
+  return r.exitCode == 0 ? null : 'flutter ${args.join(' ')} saiu com ${r.exitCode}:\n${_tail('${r.stdout}\n${r.stderr}', 60)}';
 }
 
 Future<List<String>> _trackedFiles() async {
@@ -115,6 +119,51 @@ Future<String?> _internetInMainManifest() async {
       : 'O manifesto principal não declara android.permission.INTERNET.';
 }
 
+/// `DateTime.now()` em `lib/` só no relógio (`clock.dart`) ou com `// clock-ok: motivo`
+/// na linha. Data de negócio lida direto do relógio do sistema não dá para testar
+/// (era o teste do cartão que quebrava depois do dia 22).
+Future<String?> _clockUsage() async {
+  final bad = <String>[];
+  for (final entity in Directory('lib').listSync(recursive: true)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    final path = entity.path.replaceAll('\\', '/');
+    if (path.endsWith('core/utils/clock.dart')) continue;
+    final lines = entity.readAsLinesSync();
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.trimLeft().startsWith('//')) continue;
+      if (line.contains('DateTime.now()') && !line.contains('clock-ok:')) {
+        bad.add('$path:${i + 1}');
+      }
+    }
+  }
+  return bad.isEmpty
+      ? null
+      : 'DateTime.now() sem `// clock-ok: motivo` (use clockProvider):\n  ${bad.join('\n  ')}';
+}
+
+/// Os dados financeiros não saem por backup automático do Android e o app não
+/// aceita tráfego em texto puro. Voltar atrás nisso tem de ser decisão, não descuido.
+Future<String?> _manifestHardening() async {
+  final text = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+  final missing = [
+    if (!text.contains('android:allowBackup="false"')) 'android:allowBackup="false"',
+    if (!text.contains('android:networkSecurityConfig=')) 'android:networkSecurityConfig',
+    if (!text.contains('android:dataExtractionRules=')) 'android:dataExtractionRules',
+  ];
+  final config = File('android/app/src/main/res/xml/network_security_config.xml');
+  if (!config.existsSync() || !config.readAsStringSync().contains('cleartextTrafficPermitted="false"')) {
+    missing.add('network_security_config.xml com cleartextTrafficPermitted="false"');
+  }
+  return missing.isEmpty ? null : 'Faltando no manifesto: ${missing.join(', ')}';
+}
+
+/// Tamanho dos arquivos Dart (regras e exceções em tool/tamanho_arquivos.dart).
+Future<String?> _fileSizes() async {
+  final failures = tamanho.check();
+  return failures.isEmpty ? null : failures.join('\n');
+}
+
 Future<String?> _live() async {
   final p = await Process.start(
     'dart',
@@ -125,7 +174,7 @@ Future<String?> _live() async {
   return await p.exitCode == 0 ? null : 'A avaliação ao vivo reprovou (veja a saída acima).';
 }
 
-Future<int> main(List<String> args) async {
+Future<void> main(List<String> args) async {
   final checks = [
     _Check('flutter analyze', () => _flutter(['analyze'])),
     _Check('flutter test (inclui o corpus de planilhas)', () => _flutter(['test'])),
@@ -134,6 +183,9 @@ Future<int> main(List<String> args) async {
     _Check('_local/ fora do git', _localNotTracked),
     _Check('sem .env, keystore, banco ou planilha real versionados', _forbiddenFiles),
     _Check('INTERNET no manifesto principal do Android', _internetInMainManifest),
+    _Check('DateTime.now() só pelo relógio injetável (clock.dart)', _clockUsage),
+    _Check('manifesto: sem backup automático e sem tráfego em texto puro', _manifestHardening),
+    _Check('tamanho dos arquivos (limite 400 em lib/, 500 em test/)', _fileSizes),
     if (args.contains('--live')) _Check('avaliação ao vivo dos provedores', _live),
   ];
 
@@ -149,5 +201,7 @@ Future<int> main(List<String> args) async {
   }
 
   stdout.writeln(failed == 0 ? '\nTudo certo — pode publicar.' : '\n$failed verificação(ões) falharam.');
-  return failed == 0 ? 0 : 1;
+  // Retornar um int de main() não vira código de saída no Dart: sem isto o CI
+  // ficava verde mesmo com verificação reprovada.
+  exitCode = failed == 0 ? 0 : 1;
 }

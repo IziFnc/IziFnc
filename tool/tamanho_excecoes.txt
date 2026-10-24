@@ -1,0 +1,4 @@
+# Arquivos que já passavam do limite quando a regra nasceu (0035).
+# Formato: caminho teto-de-linhas. O teto SÓ ENCOLHE: cada refatoração baixa o número,
+# e quando o arquivo entra no limite a linha sai daqui. Arquivo novo não entra na lista.
+# Ordem da refatoração: de cima para baixo (a de import_screen é a mais arriscada).

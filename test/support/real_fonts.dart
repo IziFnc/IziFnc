@@ -12,21 +12,14 @@ import 'package:flutter/services.dart';
 ///
 /// Chamar em `setUpAll`, antes de subir qualquer widget.
 Future<void> loadRealFonts() async {
-  final dir = _materialFontsDir();
+  final fonts = _findFonts();
   final roboto = FontLoader('Roboto');
-  for (final name in const [
-    'roboto-light',
-    'roboto-regular',
-    'roboto-medium',
-    'roboto-bold',
-    'roboto-italic',
-  ]) {
-    roboto.addFont(_read('$dir/$name.ttf'));
+  for (final path in fonts.roboto) {
+    roboto.addFont(_read(path));
   }
   await roboto.load();
 
-  final icons = FontLoader('MaterialIcons')
-    ..addFont(_read('$dir/materialicons-regular.otf'));
+  final icons = FontLoader('MaterialIcons')..addFont(_read(fonts.icons));
   await icons.load();
 }
 
@@ -34,26 +27,47 @@ Future<ByteData> _read(String path) async {
   return ByteData.sublistView(await File(path).readAsBytes());
 }
 
-String _materialFontsDir() {
-  const suffix = 'bin/cache/artifacts/material_fonts';
-  final candidates = <String>[];
+class _Fonts {
+  const _Fonts(this.roboto, this.icons);
+  final List<String> roboto;
+  final String icons;
+}
 
-  // O `flutter test` repassa a raiz do SDK; se faltar, sobe a partir do
-  // executável do testador (…/bin/cache/artifacts/engine/<so>/flutter_tester).
+/// Onde ficam as fontes. A pasta `material_fonts` só existe depois que o Flutter
+/// compilou algo para o aparelho (é o caso de uma máquina de desenvolvimento);
+/// no CI, que só roda testes, ela não existe. Aí cai na Roboto que vem junto do
+/// Dart SDK (recursos do DevTools): mesma família, mas sem o itálico, que então
+/// usa o regular. Medidas de texto idênticas nos pesos que as telas usam.
+_Fonts _findFonts() {
+  final roots = <String>[];
   final fromEnv = Platform.environment['FLUTTER_ROOT'];
-  if (fromEnv != null && fromEnv.isNotEmpty) candidates.add('$fromEnv/$suffix');
-
+  if (fromEnv != null && fromEnv.isNotEmpty) roots.add(fromEnv);
+  // Sobe a partir do executável do testador
+  // (…/bin/cache/artifacts/engine/<so>/flutter_tester).
   var dir = File(Platform.resolvedExecutable).parent;
   for (var i = 0; i < 8; i++) {
-    candidates.add('${dir.path}/$suffix');
+    roots.add(dir.path);
     dir = dir.parent;
   }
 
-  for (final c in candidates) {
-    if (File('$c/roboto-regular.ttf').existsSync()) return c;
+  for (final root in roots) {
+    final material = '$root/bin/cache/artifacts/material_fonts';
+    if (File('$material/roboto-regular.ttf').existsSync()) {
+      return _Fonts([
+        for (final n in const ['light', 'regular', 'medium', 'bold', 'italic']) '$material/roboto-$n.ttf',
+      ], '$material/materialicons-regular.otf');
+    }
+  }
+  for (final root in roots) {
+    final devtools = '$root/bin/cache/dart-sdk/bin/resources/devtools/assets/fonts';
+    if (File('$devtools/Roboto/Roboto-Regular.ttf').existsSync()) {
+      return _Fonts([
+        for (final n in const ['Light', 'Regular', 'Medium', 'Bold', 'Regular']) '$devtools/Roboto/Roboto-$n.ttf',
+      ], '$devtools/MaterialIcons-Regular.otf');
+    }
   }
   throw StateError(
-    'Fonte Roboto do SDK não encontrada. Procurei em:\n${candidates.join('\n')}\n'
-    'Defina FLUTTER_ROOT com a pasta do Flutter (a que contém bin/cache).',
+    'Fonte Roboto do SDK não encontrada (procurei material_fonts e o DevTools do Dart SDK '
+    'a partir de: ${roots.join(', ')}). Defina FLUTTER_ROOT com a pasta do Flutter.',
   );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/clock.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
@@ -257,7 +258,7 @@ class BackupNotice extends ConsumerWidget {
     final last = lastBackup;
     final text = last == null
         ? 'Você ainda não salvou um backup dos seus dados.'
-        : 'Faz ${DateTime.now().difference(last).inDays} dias que você não salva um backup.';
+        : 'Faz ${ref.read(clockProvider)().difference(last).inDays} dias que você não salva um backup.';
     final color = theme.colorScheme.onSecondaryContainer;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),

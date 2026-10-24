@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../data/llm_table_locator.dart';
+import '../data/xlsx_workbook.dart';
 
 /// O erro da importação como a pessoa lê: [text] diz o que aconteceu e o que
 /// fazer; [detail] guarda o texto técnico (para quem for reportar o problema) e
@@ -51,6 +52,14 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
       '$prefix A IA não achou a tabela ${error.missing} nesta aba, mesmo tentando de novo. '
       'Toque na aba outra vez (às vezes ela acha na próxima) e confira se os títulos das '
       'colunas são Nome, Valor, Tipo, Banco, Observação e Dia.',
+      detail: '$error',
+    );
+  }
+
+  if (error is XlsxTooLargeException) {
+    return ImportErrorMessage(
+      '$prefix Este arquivo é grande demais para importar. Uma planilha de lançamentos '
+      'costuma ter poucos MB; exporte só o período que quer trazer e tente de novo.',
       detail: '$error',
     );
   }

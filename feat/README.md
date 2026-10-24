@@ -34,6 +34,9 @@ e **como conferir** que funciona.
 | [0024](0024-versao-pessoal.md) | Duas versões do app: a do usuário (cola a própria chave) e a pessoal (chaves embutidas, id `.pessoal`, nunca publicada), gerada por `tool/build_pessoal.sh` | 2026-09-21 | ✅ concluído |
 | [0025](0025-importacao-planilha-real.md) | Importação com a planilha real: linhas sem data e parcelas (inclusive formato antigo) no mês da aba, fatura sem cartão perguntada no mapeamento, segunda tentativa da IA, avisos na prévia; diagnóstico `tool/diagnosticar_planilha.dart` e modelo fictício `armadilhas-do-real` | 2026-09-22 | ✅ concluído |
 | [0026](0026-guia-no-app.md) | Guia dentro do app: tour guiado de 8 paradas na primeira vez, andando sozinho de tela em tela, com "Pular o tour" e "Ver o tour de novo"; corrigidos 5 bugs visuais achados no celular real (rc.6) e separado o passo do cartão do passo da conta, com dois gestos de voltar pra sair dos destinos do menu (rc.7) | 2026-09-23/26 | ✅ concluído |
+| [0033](0033-relogio-injetavel.md) | Relógio injetável (`clockProvider`) com trava em `tool/validar.dart`, que também passou a falhar de verdade no CI | 2026-10-23 | ✅ concluído |
+| [0034](0034-seguranca.md) | Endurecimento de segurança: timeouts na IA, tetos do `.xlsx`, restauração recusa banco adulterado, manifesto sem backup automático nem texto puro, contrato de privacidade com teste, CI com permissão mínima | 2026-10-23 | ✅ concluído |
+| [0035](0035-tamanho-arquivos.md) | Limite de tamanho de arquivos no CI (400 em `lib/`, 500 em `test/`) e divisão dos oito arquivos que passavam | 2026-10-23 | ✅ concluído |
 
 ## Backlog
 
@@ -77,7 +80,8 @@ estorno/cashback em cartão · plano "serviço IziFnc" com limite (1 importaçã
 1. Copie [`TEMPLATE.md`](TEMPLATE.md) para `NNNN-nome-curto.md`, com `NNNN` sendo o
    próximo número da sequência (`0002`, `0003`, …) e o nome em kebab-case sem acento.
 2. Preencha as seções. A mais importante é **Por quê** — daqui a seis meses, é a única
-   que não dá para reconstruir olhando o código.
+   que não dá para reconstruir olhando o código. Não pule **O que não foi verificado**:
+   dizer a lacuna é parte de fechar a entrega.
 3. Adicione a linha correspondente na tabela do índice acima.
 
 ## Convenções

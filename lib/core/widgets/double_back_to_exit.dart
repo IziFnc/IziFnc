@@ -29,7 +29,7 @@ class _DoubleBackToExitState extends State<DoubleBackToExit> {
       canPop: canPop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop || canPop) return;
-        final now = DateTime.now();
+        final now = DateTime.now(); // clock-ok: janela de 2 s entre toques, não é data de negócio
         if (_lastBackPress != null && now.difference(_lastBackPress!) < const Duration(seconds: 2)) {
           SystemNavigator.pop();
           return;

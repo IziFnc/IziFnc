@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izifnc/features/import/data/xlsx_workbook.dart';
+import 'package:izifnc/features/import/domain/import_error_message.dart';
 
 /// Monta um `.xlsx` mínimo a partir das partes XML que o [XlsxWorkbook]
 /// realmente lê — sem `[Content_Types].xml` nem `_rels/.rels`, que um leitor
@@ -176,6 +177,36 @@ void main() {
       expect(columnLetterToIndex('A'), 0);
       expect(columnLetterToIndex('Z'), 25);
       expect(columnLetterToIndex('AA'), 26);
+    });
+  });
+  group('tetos contra arquivo bomba', () {
+    Uint8List zipOf(Map<String, Uint8List> parts) {
+      final archive = Archive();
+      parts.forEach((name, bytes) => archive.addFile(ArchiveFile(name, bytes.length, bytes)));
+      return ZipEncoder().encodeBytes(archive);
+    }
+
+    test('arquivo acima do teto é recusado sem nem abrir o zip', () {
+      final big = Uint8List(XlsxWorkbook.maxFileBytes + 1);
+      expect(() => XlsxWorkbook.open(big), throwsA(isA<XlsxTooLargeException>()));
+    });
+
+    test('zip pequeno que expande demais (bomba) é recusado antes de descompactar', () {
+      // 101 MB de zeros viram poucos KB no zip: o tamanho do arquivo não denuncia.
+      final zeros = Uint8List(XlsxWorkbook.maxPartBytes + 1024 * 1024);
+      final bomb = zipOf({'xl/worksheets/sheet1.xml': zeros});
+      expect(bomb.length, lessThan(XlsxWorkbook.maxFileBytes));
+      expect(() => XlsxWorkbook.open(bomb), throwsA(isA<XlsxTooLargeException>()));
+    });
+
+    test('a mensagem na tela fala de arquivo grande, não de arquivo inválido', () {
+      final m = describeImportError(const XlsxTooLargeException('x'), during: 'abrir o arquivo');
+      expect(m.text, contains('grande demais'));
+    });
+
+    test('partes demais no zip são recusadas', () {
+      final parts = {for (var i = 0; i <= XlsxWorkbook.maxEntries; i++) 'p$i.xml': Uint8List(1)};
+      expect(() => XlsxWorkbook.open(zipOf(parts)), throwsA(isA<XlsxTooLargeException>()));
     });
   });
 }

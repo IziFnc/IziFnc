@@ -4,7 +4,7 @@ Controle de finanças pessoais — offline, local e sem frescura.
 
 Os dados ficam no aparelho, num SQLite. Sem conta, sem login, sem servidor.
 
-> **Status:** 1.0.0 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
+> **Status:** 1.0.1 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
 > Funcionando: contas e cartões, lançamentos, transferências, pagamento de fatura (com juros
 > opcionais), saldos, filtros e busca, importação da planilha `.xlsx` com IA, tema/tamanho do
 > texto/alto contraste, backup e restauração do banco, e um guia dentro do app pra quem está
@@ -45,8 +45,9 @@ um arquivo `.sqlite` (uma cópia exata) onde você escolher, e **Restaurar de um
 Faça de tempos em tempos e guarde fora do aparelho.
 
 **Privacidade.** Sem conta, sem login, sem servidor. O serviço de IA que você configurar recebe
-**apenas os textos** da planilha (cabeçalhos e rótulos) para achar onde ficam as tabelas; **valores e
-datas dos lançamentos nunca saem do aparelho**. A sua chave fica guardada só no aparelho (Keystore do
+**as células de texto** da aba (cabeçalhos, nomes dos lançamentos, bancos e observações) para achar
+onde ficam as tabelas; **células de número e de data, ou seja, valores e datas dos lançamentos, nunca
+saem do aparelho** (um valor que a planilha guarda como texto, e não como número, iria junto). A sua chave fica guardada só no aparelho (Keystore do
 Android) e não entra no backup.
 
 **Limites conhecidos.** O plano grátis da Groq limita requisições por minuto (o app repete sozinho

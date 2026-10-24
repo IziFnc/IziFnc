@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:sqlite3/sqlite3.dart' as sql;
 
+import '../../../core/utils/clock.dart';
 import '../../../core/database/app_database.dart';
 
 /// O que se descobre ao olhar um arquivo escolhido para restaurar.
@@ -50,6 +51,12 @@ class BackupService {
   static const _magic = 'SQLite format 3\u0000';
   static const _requiredTables = {'accounts', 'entries', 'app_settings'};
 
+  /// Tudo o que um banco do IziFnc pode ter. Um backup com outra tabela, ou com
+  /// trigger/view (o app não cria nenhum), foi alterado à mão: o trigger rodaria
+  /// no primeiro `INSERT` depois de restaurar. Ao acrescentar uma tabela ao
+  /// schema, acrescente aqui também (o teste de exportação real avisa se esquecer).
+  static const _knownTables = {..._requiredTables, 'import_bank_mappings'};
+
   /// Quantas cópias de segurança (de antes de uma restauração) ficam guardadas.
   static const keepSafetyCopies = 3;
 
@@ -73,7 +80,7 @@ class BackupService {
   /// Guarda o banco atual antes de uma restauração, mantendo só as últimas
   /// [keepSafetyCopies]. Devolve o arquivo criado.
   Future<File> safetyCopy(AppDatabase db, {DateTime? now}) async {
-    final stamp = (now ?? DateTime.now()).toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
+    final stamp = (now ?? systemClock()).toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
     final dir = await workDir();
     final target = File('${dir.path}${Platform.pathSeparator}antes-de-restaurar-$stamp.sqlite');
     await _vacuumInto(db, target);
@@ -99,7 +106,7 @@ class BackupService {
     }
     final dir = await workDir();
     await dir.create(recursive: true);
-    final probe = File('${dir.path}${Platform.pathSeparator}conferir-${DateTime.now().microsecondsSinceEpoch}.sqlite');
+    final probe = File('${dir.path}${Platform.pathSeparator}conferir-${DateTime.now().microsecondsSinceEpoch}.sqlite'); // clock-ok: nome de arquivo temporário
     await probe.writeAsBytes(bytes, flush: true);
     sql.Database? db;
     try {
@@ -111,6 +118,18 @@ class BackupService {
       };
       if (version == 0 || !tables.containsAll(_requiredTables)) {
         return const BackupInvalid('Este arquivo não parece ser um backup do IziFnc.');
+      }
+      final extras = {
+        for (final r in db.select("SELECT type, name FROM sqlite_master WHERE type IN ('trigger', 'view')"))
+          r['name'] as String,
+        for (final t in tables)
+          if (!_knownTables.contains(t) && !t.startsWith('sqlite_')) t,
+      };
+      if (extras.isNotEmpty) {
+        return const BackupInvalid(
+          'Este arquivo tem partes que o IziFnc não cria e foi recusado por segurança. '
+          'Use um backup salvo pelo próprio app.',
+        );
       }
       if (version > currentSchemaVersion) {
         return const BackupInvalid(
@@ -146,7 +165,7 @@ class BackupService {
 
   Future<File> _snapshot(AppDatabase db, String why) async {
     final dir = await workDir();
-    final file = File('${dir.path}${Platform.pathSeparator}$why-${DateTime.now().microsecondsSinceEpoch}.sqlite');
+    final file = File('${dir.path}${Platform.pathSeparator}$why-${DateTime.now().microsecondsSinceEpoch}.sqlite'); // clock-ok: nome de arquivo temporário
     await _vacuumInto(db, file);
     return file;
   }

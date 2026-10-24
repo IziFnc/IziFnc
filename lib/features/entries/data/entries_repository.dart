@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../../core/utils/clock.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/year_month.dart';
 import '../../accounts/domain/account_kind.dart';
@@ -36,9 +37,11 @@ class EntryDraft {
 }
 
 class EntriesRepository {
-  EntriesRepository(this._db);
+  // ignore: prefer_initializing_formals
+  EntriesRepository(this._db, {Clock now = systemClock}) : _now = now;
 
   final AppDatabase _db;
+  final Clock _now;
 
   /// Lançamentos de um mês de competência, mais recentes primeiro, com a conta
   /// e (em transferência) a conta de destino.
@@ -244,7 +247,7 @@ class EntriesRepository {
       _toBalanceMap(await _balancesQuery(today).get())[accountId] ?? 0;
 
   Selectable<QueryRow> _balancesQuery(DateTime? today) {
-    final now = today ?? DateTime.now();
+    final now = today ?? _now();
     final cutoff = Variable<DateTime>(DateTime(now.year, now.month, now.day));
     return _db.customSelect(
       '''
@@ -289,7 +292,7 @@ class EntriesRepository {
     DateTime? today,
   }) async {
     final account = await _account(accountId);
-    final now = today ?? DateTime.now();
+    final now = today ?? _now();
     final date = DateTime(now.year, now.month, now.day);
 
     // Cartão: "em aberto" é dívida, e dívida é saldo negativo.

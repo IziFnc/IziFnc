@@ -4,6 +4,7 @@ import '../../features/accounts/data/accounts_repository.dart';
 import '../../features/entries/data/entries_repository.dart';
 import '../../features/import/data/import_mapping_repository.dart';
 import '../../features/settings/data/settings_repository.dart';
+import '../utils/clock.dart';
 import 'database_provider.dart';
 
 part 'repositories.g.dart';
@@ -13,8 +14,10 @@ part 'repositories.g.dart';
 // então os testes de repositório nem precisam do Riverpod.
 
 @Riverpod(keepAlive: true)
-EntriesRepository entriesRepository(Ref ref) =>
-    EntriesRepository(ref.watch(appDatabaseProvider));
+EntriesRepository entriesRepository(Ref ref) => EntriesRepository(
+  ref.watch(appDatabaseProvider),
+  now: ref.watch(clockProvider),
+);
 
 @Riverpod(keepAlive: true)
 AccountsRepository accountsRepository(Ref ref) => AccountsRepository(

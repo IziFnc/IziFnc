@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -31,6 +32,8 @@ class OpenAiCompatibleTableLocator implements PingableLocator {
     this.jsonObjectFallback = false,
     this.missingKeyMessage = 'Chave não configurada.',
     http.Client? client,
+    this.locateTimeout = defaultLocateTimeout,
+    this.pingTimeout = defaultPingTimeout,
   }) : _endpoint = chatCompletionsUrl(baseUrl),
        _apiKey = (apiKey ?? '').trim(),
        _client = client ?? http.Client();
@@ -46,6 +49,10 @@ class OpenAiCompatibleTableLocator implements PingableLocator {
 
   final bool jsonObjectFallback;
   final String missingKeyMessage;
+
+  /// Teto de espera por chamada (os testes encurtam).
+  final Duration locateTimeout;
+  final Duration pingTimeout;
 
   final Uri _endpoint;
   final String _apiKey;
@@ -148,7 +155,7 @@ class OpenAiCompatibleTableLocator implements PingableLocator {
             {'role': 'user', 'content': pingPrompt},
           ],
         }),
-      );
+      ).timeout(pingTimeout);
     } catch (_) {
       throw LlmLocatorException(pingConnectionMessage(providerName));
     }
@@ -176,7 +183,9 @@ class OpenAiCompatibleTableLocator implements PingableLocator {
             {'role': 'user', 'content': prompt},
           ],
         }),
-      );
+      ).timeout(locateTimeout);
+    } on TimeoutException {
+      throw LlmLocatorException(locateTimeoutMessage(providerName));
     } catch (e) {
       throw LlmLocatorException('Não consegui falar com $providerName: $e');
     }

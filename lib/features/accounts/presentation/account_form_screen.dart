@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/repositories.dart';
-import '../../../core/utils/cents_input_formatter.dart';
 import '../../../core/utils/formatters.dart';
 import '../data/accounts_repository.dart';
 import '../domain/account_kind.dart';
+import 'account_balance_tile.dart';
+import 'account_card_fields.dart';
 import 'accounts_providers.dart';
+import 'adjust_balance_dialog.dart';
 
 /// Criar ou editar uma conta/cartão. O tipo trava depois de criado.
 ///
@@ -174,7 +175,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_isEditing) ...[
-                    _BalanceTile(
+                    AccountBalanceTile(
                       isCard: isCard,
                       balance: ref
                           .watch(accountBalancesProvider)
@@ -217,64 +218,21 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
-                  if (isCard) ...[
-                    const SizedBox(height: 8),
-                    _OwnerPicker(
+                  if (isCard)
+                    AccountCardFields(
                       cardId: widget.accountId,
-                      selected: _ownerId,
-                      error: _ownerError,
-                      onSelected: (id) => setState(() => _ownerId = id),
+                      ownerId: _ownerId,
+                      ownerError: _ownerError,
+                      onOwnerSelected: (id) => setState(() => _ownerId = id),
+                      closingDay: _closingDay,
+                      closingError: _closingError,
+                      closingInCurrent: _closingInCurrent,
+                      onClosingInCurrent: (v) =>
+                          setState(() => _closingInCurrent = v),
+                      dueDay: _dueDay,
+                      dueError: _dueError,
+                      onChanged: () => setState(() {}),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _closingDay,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Dia do fechamento da fatura',
-                        helperText: 'Como aparece no app do banco (o "Até" da planilha).',
-                        errorText: _closingError,
-                      ),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 16),
-                    // Os bancos divergem sobre a compra feita no próprio dia do
-                    // fechamento, então a escolha é do cartão.
-                    Text(
-                      'Compra no dia do fechamento entra na:',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(value: true, label: Text('Fatura atual')),
-                        ButtonSegment(value: false, label: Text('Próxima fatura')),
-                      ],
-                      selected: {_closingInCurrent},
-                      onSelectionChanged: (s) =>
-                          setState(() => _closingInCurrent = s.single),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Itaú e Mercado Pago: atual · Nubank: próxima. Confira no app do seu banco.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _dueDay,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Vence no dia (opcional)',
-                        errorText: _dueError,
-                      ),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: _saving ? null : _save,
@@ -291,7 +249,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     final target = await showDialog<int>(
       context: context,
       builder: (_) =>
-          _AdjustBalanceDialog(isCard: _kind.isCard, initial: _pendingAdjust),
+          AdjustBalanceDialog(isCard: _kind.isCard, initial: _pendingAdjust),
     );
     if (target == null || !mounted) return;
     setState(() => _pendingAdjust = target);
@@ -428,217 +386,5 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         ),
       );
     }
-  }
-}
-
-/// "Conta vinculada" do cartão: chips com as contas (nunca outros cartões).
-class _OwnerPicker extends ConsumerWidget {
-  const _OwnerPicker({
-    required this.cardId,
-    required this.selected,
-    required this.error,
-    required this.onSelected,
-  });
-
-  final int? cardId;
-  final int? selected;
-  final String? error;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final owners = [
-      for (final a in ref.watch(accountsProvider).value ?? const [])
-        if (!a.kind.isCard && a.id != cardId) a,
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Conta vinculada', style: theme.textTheme.labelLarge),
-        const SizedBox(height: 4),
-        Text(
-          'A conta dona do cartão. É dela que sai o pagamento da fatura.',
-          style: theme.textTheme.bodySmall,
-        ),
-        const SizedBox(height: 8),
-        if (owners.isEmpty)
-          const Text(
-            'Cadastre a conta primeiro (ex.: Bradesco), depois o cartão.',
-          )
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final a in owners)
-                ChoiceChip(
-                  avatar: const Icon(Icons.account_balance_outlined, size: 18),
-                  label: Text(a.name),
-                  selected: a.id == selected,
-                  onSelected: (_) => onSelected(a.id),
-                ),
-            ],
-          ),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              error!,
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// Saldo de hoje (ou "em aberto" no cartão) + o ajuste pendente, se houver.
-class _BalanceTile extends StatelessWidget {
-  const _BalanceTile({
-    required this.isCard,
-    required this.balance,
-    required this.pendingTarget,
-    required this.onAdjust,
-    required this.onUndo,
-  });
-
-  final bool isCard;
-
-  /// Saldo com sinal; no cartão é negativo (dívida). `null` enquanto carrega.
-  final int? balance;
-
-  /// O que vai virar ao salvar, na mesma unidade que o usuário digitou (saldo
-  /// da conta, ou valor em aberto no cartão). `null` = nada pendente.
-  final int? pendingTarget;
-
-  final VoidCallback onAdjust;
-  final VoidCallback onUndo;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final value = balance;
-    final shown = value == null
-        ? '…'
-        : Formatters.money(isCard ? -value : value);
-    final pending = pendingTarget;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(isCard ? 'Em aberto hoje' : 'Saldo hoje'),
-                  Text(shown, style: theme.textTheme.titleLarge),
-                  if (pending != null)
-                    Text(
-                      '→ ${Formatters.money(pending)} ao salvar',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (pending != null)
-              IconButton(
-                tooltip: 'Desfazer ajuste',
-                icon: const Icon(Icons.undo),
-                onPressed: onUndo,
-              ),
-            OutlinedButton(
-              onPressed: onAdjust,
-              child: Text(pending == null ? 'Ajustar saldo' : 'Alterar ajuste'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Pede o valor real (o que o banco mostra). Devolve o alvo em centavos:
-/// conta corrente com sinal (cheque especial = negativo); cartão, o valor em
-/// aberto. Não grava nada — quem grava é o Salvar da tela.
-class _AdjustBalanceDialog extends StatefulWidget {
-  const _AdjustBalanceDialog({required this.isCard, this.initial});
-
-  final bool isCard;
-
-  /// Ajuste pendente anterior, para editar em vez de redigitar.
-  final int? initial;
-
-  @override
-  State<_AdjustBalanceDialog> createState() => _AdjustBalanceDialogState();
-}
-
-class _AdjustBalanceDialogState extends State<_AdjustBalanceDialog> {
-  late final _value = TextEditingController(
-    text: CentsInputFormatter.format((widget.initial ?? 0).abs()),
-  );
-  late bool _negative = (widget.initial ?? 0) < 0;
-
-  @override
-  void dispose() {
-    _value.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final cents = CentsInputFormatter.parse(_value.text);
-    Navigator.of(context).pop(_negative ? -cents : cents);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Ajustar saldo'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.isCard
-                ? 'Quanto o banco mostra em aberto nesta fatura hoje? '
-                      'Ao salvar a conta, a diferença vira um ajuste no histórico.'
-                : 'Qual o saldo que o banco mostra hoje? '
-                      'Ao salvar a conta, a diferença vira um ajuste no histórico.',
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _value,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            inputFormatters: [CentsInputFormatter()],
-            decoration: InputDecoration(
-              labelText: widget.isCard ? 'Em aberto' : 'Saldo no banco',
-              hintText: 'R\$ 0,00',
-            ),
-            onSubmitted: (_) => _submit(),
-          ),
-          if (!widget.isCard)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Saldo negativo'),
-              value: _negative,
-              onChanged: (v) => setState(() => _negative = v),
-            ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Ajustar')),
-      ],
-    );
   }
 }

@@ -83,6 +83,17 @@ String pingFailureMessage(String provider, int status) => switch (status) {
   _ => '$provider respondeu $status. Confira chave, modelo e endereço.',
 };
 
+/// Quanto esperar a resposta ao localizar tabelas. Sem teto, uma conexão
+/// pendurada deixaria a importação girando para sempre.
+const Duration defaultLocateTimeout = Duration(seconds: 60);
+
+/// Quanto esperar o teste de conexão (uma frase mínima, deve ser rápido).
+const Duration defaultPingTimeout = Duration(seconds: 20);
+
+/// Mensagem de [locate] quando o serviço não respondeu a tempo.
+String locateTimeoutMessage(String provider) =>
+    '$provider demorou demais para responder. Tente de novo daqui a pouco.';
+
 /// Mensagem do teste quando a chamada nem chegou ao serviço.
 String pingConnectionMessage(String provider) =>
     'Sem conexão com $provider. Confira a internet e o endereço.';

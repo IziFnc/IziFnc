@@ -144,6 +144,33 @@ void main() {
       expect(await service.inspect(bytes), isA<BackupInvalid>());
     });
 
+    /// Parte de um backup verdadeiro, mexido à mão.
+    Future<BackupInspection> inspectTampered(void Function(sql.Database d) tamper) async {
+      final f = File('${tmp.path}/mexido.sqlite');
+      f.writeAsBytesSync(await service.export(db));
+      final d = sql.sqlite3.open(f.path);
+      tamper(d);
+      d.close();
+      return service.inspect(f.readAsBytesSync());
+    }
+
+    test('com trigger (rodaria no primeiro lançamento depois de restaurar)', () async {
+      final r = await inspectTampered(
+        (d) => d.execute('CREATE TRIGGER t AFTER INSERT ON entries BEGIN DELETE FROM accounts; END'),
+      );
+      expect(reasonOf(r), contains('recusado por segurança'));
+    });
+
+    test('com view', () async {
+      final r = await inspectTampered((d) => d.execute('CREATE VIEW v AS SELECT * FROM entries'));
+      expect(reasonOf(r), contains('recusado por segurança'));
+    });
+
+    test('com tabela que o app não cria', () async {
+      final r = await inspectTampered((d) => d.execute('CREATE TABLE intruso (id INTEGER)'));
+      expect(reasonOf(r), contains('recusado por segurança'));
+    });
+
     test('feito por uma versão mais nova do app', () async {
       final f = File('${tmp.path}/novo.sqlite');
       f.writeAsBytesSync(await service.export(db));

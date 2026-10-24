@@ -2,28 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/clock.dart';
 import '../../../core/database/app_database.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/utils/year_month.dart';
 import '../../../core/widgets/app_drawer.dart';
 import '../../../core/widgets/double_back_to_exit.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
-import '../../accounts/presentation/account_form_screen.dart';
-import '../../accounts/presentation/account_label.dart';
 import '../../accounts/presentation/accounts_providers.dart';
 import '../../settings/presentation/data_settings_screen.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../domain/competence.dart';
 import '../domain/entry_filters.dart';
-import '../domain/entry_type.dart';
-import '../domain/entry_with_account.dart';
 import '../domain/month_situation.dart';
 import '../domain/month_summary.dart';
 import 'entry_filters_provider.dart';
 import 'entry_form_screen.dart';
 import 'month_filters.dart';
+import 'entry_tile.dart';
 import 'month_providers.dart';
+import 'no_accounts_view.dart';
 import 'month_situation_widgets.dart';
 
 /// Home: os lançamentos de um mês de competência e a situação de relance.
@@ -64,7 +62,7 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
     final hasAccounts = list != null && list.isNotEmpty && start != null;
     final month = hasAccounts
         ? (ref.watch(selectedMonthProvider) ??
-              competenceOf(DateTime.now(), start))
+              competenceOf(ref.read(clockProvider)(), start))
         : null;
     final searchOpen = _searching || query.isNotEmpty;
 
@@ -110,7 +108,7 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
             : AppBar(title: const Text('IziFnc')),
         drawer: const AppDrawer(current: AppDestination.home),
         body: switch ((accounts, startDay)) {
-          (AsyncData(), AsyncData()) when !hasAccounts => const _NoAccounts(),
+          (AsyncData(), AsyncData()) when !hasAccounts => const NoAccountsView(),
           (AsyncData(), AsyncData()) => _MonthBody(
             accounts: list!,
             month: month!,
@@ -209,7 +207,7 @@ class _MonthBody extends ConsumerWidget {
         lastBackup.hasValue &&
         (last == null
             ? (entryCount ?? 0) >= 10
-            : DateTime.now().difference(last) > DataSettingsScreen.staleAfter);
+            : ref.read(clockProvider)().difference(last) > DataSettingsScreen.staleAfter);
 
     // Um scroll só: o topo rola junto com a lista.
     return ListView(
@@ -260,7 +258,7 @@ class _MonthBody extends ConsumerWidget {
                     ),
                   )
                 else
-                  for (final row in shown) _EntryTile(row: row),
+                  for (final row in shown) EntryTile(row: row),
               ],
             },
           ],
@@ -293,123 +291,6 @@ class _FilterStatus extends StatelessWidget {
           Expanded(child: Text('Mostrando $shown de $total lançamento(s)')),
           TextButton(onPressed: onClear, child: const Text('Limpar filtros')),
         ],
-      ),
-    );
-  }
-}
-
-class _EntryTile extends StatelessWidget {
-  const _EntryTile({required this.row});
-
-  final EntryWithAccount row;
-
-  @override
-  Widget build(BuildContext context) {
-    final EntryWithAccount(:entry, :account, :toAccount) = row;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final amount = Formatters.money(entry.amountCents);
-
-    // Transferência "Bradesco → C6" e pagamento "Bradesco → fatura Amazon":
-    // valor neutro (não é gasto). Ajuste: sinal explícito, também neutro.
-    final (icon, where, shownAmount, color) = switch (entry.type) {
-      EntryType.transfer => (
-        Icons.swap_horiz,
-        '${accountLabel(account)} → ${toAccount == null ? '?' : accountLabel(toAccount)}',
-        amount,
-        colors.onSurfaceVariant,
-      ),
-      EntryType.billPayment => (
-        Icons.receipt_long_outlined,
-        '${accountLabel(account)} → fatura ${toAccount?.name ?? '?'}',
-        amount,
-        colors.onSurfaceVariant,
-      ),
-      EntryType.adjustmentIncrease => (
-        Icons.tune,
-        accountLabel(account),
-        '+ $amount',
-        colors.onSurfaceVariant,
-      ),
-      EntryType.adjustmentDecrease => (
-        Icons.tune,
-        accountLabel(account),
-        '− $amount',
-        colors.onSurfaceVariant,
-      ),
-      EntryType.income => (
-        accountIcon(account),
-        accountLabel(account),
-        '+ $amount',
-        colors.primary,
-      ),
-      EntryType.expense => (
-        accountIcon(account),
-        accountLabel(account),
-        amount,
-        null,
-      ),
-    };
-
-    return ListTile(
-      leading: Icon(icon, color: colors.onSurfaceVariant),
-      title: Text(entry.description),
-      subtitle: Text(
-        [Formatters.dayMonth(entry.date), where, ?entry.note].join(' · '),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      // O valor é o que se procura na lista: no tamanho do texto do nome (o padrão
-      // do trailing era ~11 sp) e em negrito leve.
-      trailing: Text(
-        shownAmount,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-      ),
-      onTap: () => context.push(EntryFormScreen.editPath(entry.id)),
-    );
-  }
-}
-
-class _NoAccounts extends StatelessWidget {
-  const _NoAccounts();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 56,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Cadastre sua primeira conta',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Conta corrente ou cartão. Os lançamentos vão para ela.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            TourTarget(
-              anchor: TourAnchor.accountsAdd,
-              child: FilledButton(
-                onPressed: () => context.push(AccountFormScreen.newPath),
-                child: const Text('Cadastrar conta'),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

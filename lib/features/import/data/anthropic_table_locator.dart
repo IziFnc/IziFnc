@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -12,13 +13,22 @@ import 'xlsx_workbook.dart';
 /// modelo a chamá-la — assim a resposta já chega no formato certo, sem parsear
 /// texto livre.
 class AnthropicTableLocator implements PingableLocator {
-  AnthropicTableLocator({http.Client? client, String? apiKey, String? model})
-    : _client = client ?? http.Client(),
+  AnthropicTableLocator({
+    http.Client? client,
+    String? apiKey,
+    String? model,
+    this.locateTimeout = defaultLocateTimeout,
+    this.pingTimeout = defaultPingTimeout,
+  }) : _client = client ?? http.Client(),
       _apiKey = apiKey ?? const String.fromEnvironment('ANTHROPIC_API_KEY'),
       modelName = (model == null || model.trim().isEmpty) ? _defaultModel : model.trim();
 
   final http.Client _client;
   final String _apiKey;
+
+  /// Teto de espera por chamada (os testes encurtam).
+  final Duration locateTimeout;
+  final Duration pingTimeout;
 
   static const _endpoint = 'https://api.anthropic.com/v1/messages';
   /// `--dart-define=ANTHROPIC_MODEL=...` troca o modelo sem editar código.
@@ -60,7 +70,7 @@ class AnthropicTableLocator implements PingableLocator {
             {'role': 'user', 'content': pingPrompt},
           ],
         }),
-      );
+      ).timeout(pingTimeout);
     } catch (_) {
       throw LlmLocatorException(pingConnectionMessage(providerName));
     }
@@ -112,7 +122,9 @@ class AnthropicTableLocator implements PingableLocator {
             {'role': 'user', 'content': buildLocatePrompt(grid, sheetName)},
           ],
         }),
-      );
+      ).timeout(locateTimeout);
+    } on TimeoutException {
+      throw LlmLocatorException(locateTimeoutMessage('Anthropic'));
     } catch (e) {
       throw LlmLocatorException('Não consegui falar com a Anthropic: $e');
     }

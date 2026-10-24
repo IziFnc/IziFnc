@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/clock.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/repositories.dart';
 import '../data/backup_service.dart';
@@ -20,7 +21,7 @@ class BackupActions {
   Future<Uint8List> exportBytes() => _service.export(_ref.read(appDatabaseProvider));
 
   /// Anota que o backup foi salvo (alimenta o "último backup" da tela).
-  Future<void> markExported() => _ref.read(settingsRepositoryProvider).markBackup(DateTime.now());
+  Future<void> markExported() => _ref.read(settingsRepositoryProvider).markBackup(_ref.read(clockProvider)());
 
   Future<BackupInspection> inspect(Uint8List bytes) => _service.inspect(bytes);
 

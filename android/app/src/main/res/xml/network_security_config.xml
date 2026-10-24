@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- O app só fala com os provedores de IA, e sempre por https (a tela de IA já
+     recusa endereço sem https). Isto garante o mesmo na camada do sistema: nenhuma
+     chamada em texto puro, nem por engano de uma dependência. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

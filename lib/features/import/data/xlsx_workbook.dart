@@ -83,6 +83,20 @@ String columnIndexToLetter(int index) {
 /// **estilo**, e a forma mais segura de garantir isso é ler o XML na mão —
 /// exatamente a lógica já validada manualmente (script Python) durante a
 /// análise, portada aqui.
+/// O arquivo passa dos tetos de [XlsxWorkbook.open]: grande demais, entradas
+/// demais ou, uma vez descompactado, maior do que o app aceita ler. Um .xlsx
+/// real é um zip pequeno; um "zip bomba" caberia em poucos KB e pediria
+/// gigabytes de memória.
+class XlsxTooLargeException implements Exception {
+  const XlsxTooLargeException(this.reason);
+
+  /// O que passou do teto (para o detalhe do erro).
+  final String reason;
+
+  @override
+  String toString() => 'Arquivo grande demais: $reason';
+}
+
 class XlsxWorkbook {
   XlsxWorkbook._(this._archive, this._sheetTargets, this._sharedStrings, this._dateStyleIndices);
 
@@ -93,8 +107,20 @@ class XlsxWorkbook {
 
   static const _relNs = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 
+  /// Tetos conferidos **antes** de descompactar qualquer parte. Folgados para
+  /// planilhas pessoais (a real, com um ano de abas, tem poucos MB).
+  static const maxFileBytes = 25 * 1024 * 1024;
+  static const maxEntries = 2000;
+  static const maxPartBytes = 100 * 1024 * 1024;
+  static const maxTotalExpandedBytes = 250 * 1024 * 1024;
+
   static XlsxWorkbook open(Uint8List bytes) {
+    if (bytes.length > maxFileBytes) {
+      throw XlsxTooLargeException('o arquivo tem ${bytes.length ~/ (1024 * 1024)} MB (limite ${maxFileBytes ~/ (1024 * 1024)} MB)');
+    }
+    // decodeBytes lê só o diretório do zip; o conteúdo é descompactado sob demanda.
     final archive = ZipDecoder().decodeBytes(bytes);
+    _checkExpansion(archive);
 
     String textOf(String path) {
       final file = archive.findFile(path);
@@ -143,6 +169,24 @@ class XlsxWorkbook {
 
   /// Na ordem das abas do arquivo (a ordem em que aparecem no Excel).
   List<String> get sheetNames => _sheetTargets.keys.toList();
+
+  /// Soma o tamanho **declarado** de cada parte: uma bomba declara (ou esconde)
+  /// o que vai virar depois de aberta, então confere-se antes de ler.
+  static void _checkExpansion(Archive archive) {
+    if (archive.length > maxEntries) {
+      throw XlsxTooLargeException('${archive.length} partes (limite $maxEntries)');
+    }
+    var total = 0;
+    for (final file in archive) {
+      if (file.size > maxPartBytes) {
+        throw XlsxTooLargeException('a parte ${file.name} descompactada passa de ${maxPartBytes ~/ (1024 * 1024)} MB');
+      }
+      total += file.size;
+      if (total > maxTotalExpandedBytes) {
+        throw XlsxTooLargeException('descompactado passa de ${maxTotalExpandedBytes ~/ (1024 * 1024)} MB');
+      }
+    }
+  }
 
   SheetGrid readSheet(String name) {
     final target = _sheetTargets[name];

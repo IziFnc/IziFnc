@@ -16,7 +16,7 @@
   Lógica pura em [`import_error_message.dart`](../lib/features/import/domain/import_error_message.dart).
 - **"Fecha no dia (o "Até")" virou "Dia do fechamento da fatura"** (o "Até" é da planilha, não do usuário).
 - **Rede de acessibilidade** na matriz de telas: alvo de toque de 48 dp e rótulo para leitor de tela em
-  todas as telas (texto normal e grande, claro e escuro). Uma exceção conhecida e com autor:
+  todas as telas (texto normal e grande, claro e escuro). Uma exceção conhecida e com dono:
   as linhas de saldo da home (28–34 dp), corrigidas na 0022; o teste **exige que o problema ainda exista**
   para a exceção sair da lista quando for corrigido.
 - **Ferramenta de auditoria** versionada em [`tool/audit/`](../tool/audit/capturar_telas_test.dart):

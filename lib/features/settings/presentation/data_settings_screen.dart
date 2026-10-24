@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
@@ -39,7 +40,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       final bytes = await actions.exportBytes();
       final saved = await FilePicker.saveFile(
         dialogTitle: 'Salvar backup',
-        fileName: BackupService.fileNameFor(DateTime.now()),
+        fileName: BackupService.fileNameFor(ref.read(clockProvider)()),
         bytes: bytes,
       );
       if (saved == null) return; // cancelou
@@ -109,7 +110,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final last = ref.watch(lastBackupProvider).value;
-    final stale = last == null || DateTime.now().difference(last) > DataSettingsScreen.staleAfter;
+    final stale = last == null || ref.read(clockProvider)().difference(last) > DataSettingsScreen.staleAfter;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dados')),
