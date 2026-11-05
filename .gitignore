@@ -54,3 +54,6 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+
+# Configuração pessoal de ferramentas
+/.mcp.json

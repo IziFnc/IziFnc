@@ -1,0 +1,14 @@
+# Atualizações semanais de dependências (pub e actions do CI). As actions do CI
+# estão fixadas por SHA; o Dependabot propõe a troca do SHA quando sai versão nova.
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
