@@ -37,7 +37,11 @@ class BackupActions {
     final db = _ref.read(appDatabaseProvider);
     try {
       await _service.safetyCopy(db);
-      await db.close();
+      // O close() do Drift pode não terminar enquanto algum stream de tela
+      // ainda está pausado (visto no aparelho: a restauração travava aqui e o
+      // backup não era aplicado). A cópia de segurança já está feita; seguir
+      // adiante troca o arquivo e o provider reabre um banco novo.
+      await db.close().timeout(const Duration(seconds: 3), onTimeout: () {});
       await _service.replaceDatabase(bytes);
     } finally {
       _ref.invalidate(appDatabaseProvider);

@@ -26,6 +26,14 @@ class AccountOwnerPicker extends ConsumerWidget {
         if (!a.kind.isCard && a.id != cardId) a,
     ];
 
+    // Uma única conta possível: já vem escolhida, em vez de parecer opção solta
+    // e só reclamar ao Salvar (júri 1.0.2, Q2).
+    if (selected == null && owners.length == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) onSelected(owners.first.id);
+      });
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

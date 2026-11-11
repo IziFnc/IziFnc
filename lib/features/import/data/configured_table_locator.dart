@@ -29,6 +29,7 @@ class ConfiguredTableLocator implements LlmTableLocator {
     this.resolveSlots = envSlotsResolver,
     this.client,
     this.retryDelay = const Duration(seconds: 2),
+    this.authorize,
     this.missingKeyMessage =
         'Nenhuma chave de LLM configurada — rebuilde com '
         '--dart-define=GROQ_API_KEY=... (e, opcionalmente, ANTHROPIC_API_KEY=...).',
@@ -39,17 +40,31 @@ class ConfiguredTableLocator implements LlmTableLocator {
   final Duration retryDelay;
   final String missingKeyMessage;
 
+  /// Confere, a cada chamada, se os [slots] que vão receber o texto estão
+  /// autorizados (feat 0038). Fecha a janela entre o aceite na tela e uma
+  /// segunda chamada depois de a pessoa trocar a configuração.
+  final Future<bool> Function(List<LlmSlot> slots)? authorize;
+
   @override
   String get providerName => 'IA configurada';
 
   @override
   Future<TableLocations> locate(SheetGrid grid, {required String sheetName}) async {
-    final chain = [
+    final slots = [
       for (final slot in await resolveSlots())
-        if (slot.isUsable)
-          RetryingTableLocator(slot.buildLocator(client: client), retryDelay: retryDelay),
+        if (slot.isUsable) slot,
     ];
-    if (chain.isEmpty) throw LlmLocatorException.noKey(missingKeyMessage);
+    if (slots.isEmpty) throw LlmLocatorException.noKey(missingKeyMessage);
+    if (authorize != null && !await authorize!(slots)) {
+      throw const LlmLocatorException(
+        'A configuração de IA mudou e o novo serviço ainda não foi autorizado. '
+        'Tente de novo para ver a autorização.',
+      );
+    }
+    final chain = [
+      for (final slot in slots)
+        RetryingTableLocator(slot.buildLocator(client: client), retryDelay: retryDelay),
+    ];
 
     // Um serviço só dispensa o decorador de reserva (e a mensagem agregada).
     final locator = chain.length == 1 ? chain.single : FallbackTableLocator(chain);

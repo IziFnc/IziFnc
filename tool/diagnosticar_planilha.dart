@@ -115,7 +115,13 @@ List<String> _entradaProblems(RawTableRow r) => [
   if (r[4] is! XlsxDate && r[4] is! XlsxNumber) 'Dia(${_kind(r[4])})',
 ];
 
-Future<int> main(List<String> args) async {
+/// Em Dart o valor devolvido por `main` não vira código de saída: precisa ser `exitCode`.
+/// Sem isso, `validar --live` nunca reprovava (lição da 0033).
+Future<void> main(List<String> args) async {
+  exitCode = await _run(args);
+}
+
+Future<int> _run(List<String> args) async {
   String? opt(String name) {
     final i = args.indexOf('--$name');
     return i >= 0 && i + 1 < args.length ? args[i + 1] : null;

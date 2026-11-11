@@ -11,6 +11,7 @@ import 'package:izifnc/features/accounts/data/accounts_repository.dart';
 import 'package:izifnc/features/accounts/domain/account_kind.dart';
 import 'package:izifnc/features/entries/data/entries_repository.dart';
 import 'package:izifnc/features/entries/domain/entry_type.dart';
+import 'package:izifnc/features/entries/presentation/month_situation_widgets.dart';
 import 'package:izifnc/features/settings/data/settings_repository.dart';
 
 import '../../support/real_fonts.dart';
@@ -143,7 +144,10 @@ void main() {
       await pumpHome(tester);
       expect(find.text(nunca), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Dispensar'));
+      // Há dois avisos dispensáveis na home (backup e privacidade): este é o do backup.
+      await tester.tap(
+        find.descendant(of: find.byType(BackupNotice), matching: find.byTooltip('Dispensar')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text(nunca), findsNothing);

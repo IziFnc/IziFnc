@@ -40,7 +40,7 @@ void showEntryDeletedUndo(ScaffoldMessengerState messenger, EntriesRepository re
     ..showSnackBar(
       SnackBar(
         content: const Text('Lançamento excluído.'),
-        duration: const Duration(seconds: 6),
+        duration: const Duration(seconds: 10),
         action: SnackBarAction(label: 'Desfazer', onPressed: () => repo.restore(entry)),
       ),
     );

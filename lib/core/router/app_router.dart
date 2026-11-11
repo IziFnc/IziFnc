@@ -9,6 +9,7 @@ import '../../features/import/presentation/import_screen.dart';
 import '../../features/settings/presentation/ai_settings_screen.dart';
 import '../../features/settings/presentation/data_settings_screen.dart';
 import '../../features/settings/presentation/general_settings_screen.dart';
+import '../../features/settings/presentation/privacy_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../widgets/tour_target.dart';
 
@@ -71,6 +72,10 @@ GoRouter createAppRouter() => GoRouter(
     GoRoute(
       path: DataSettingsScreen.path,
       builder: (context, state) => const DataSettingsScreen(),
+    ),
+    GoRoute(
+      path: PrivacyScreen.path,
+      builder: (context, state) => const PrivacyScreen(),
     ),
   ],
 );

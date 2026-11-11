@@ -927,6 +927,170 @@ i1.GeneratedColumn<int> _column_23(String aliasedName) =>
       $customConstraints: 'NOT NULL DEFAULT 0',
       defaultValue: const i1.CustomExpression('0'),
     );
+
+final class Schema9 extends i0.VersionedSchema {
+  Schema9({required super.database}) : super(version: 9);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    accounts,
+    entries,
+    appSettings,
+    importBankMappings,
+    entriesCompetence,
+    entriesAccountDate,
+    entriesToAccount,
+  ];
+  late final Shape6 accounts = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'accounts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_2,
+        _column_16,
+        _column_3,
+        _column_21,
+        _column_4,
+        _column_5,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape1 entries = Shape1(
+    source: i0.VersionedTable(
+      entityName: 'entries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_0,
+        _column_6,
+        _column_7,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_5,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 appSettings = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'app_settings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_14,
+        _column_15,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_25,
+        _column_26,
+        _column_27,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 importBankMappings = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'import_bank_mappings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(raw_key)'],
+      columns: [_column_17, _column_6],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index entriesCompetence = i1.Index(
+    'entries_competence',
+    'CREATE INDEX entries_competence ON entries (competence)',
+  );
+  final i1.Index entriesAccountDate = i1.Index(
+    'entries_account_date',
+    'CREATE INDEX entries_account_date ON entries (account_id, date)',
+  );
+  final i1.Index entriesToAccount = i1.Index(
+    'entries_to_account',
+    'CREATE INDEX entries_to_account ON entries (to_account_id)',
+  );
+}
+
+class Shape9 extends i0.VersionedTable {
+  Shape9({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get monthStartDay =>
+      columnsByName['month_start_day']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get themeMode =>
+      columnsByName['theme_mode']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<double> get textScale =>
+      columnsByName['text_scale']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<int> get highContrast =>
+      columnsByName['high_contrast']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get lastBackupAt =>
+      columnsByName['last_backup_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get tourStep =>
+      columnsByName['tour_step']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get aiConsentAt =>
+      columnsByName['ai_consent_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get aiConsentVersion =>
+      columnsByName['ai_consent_version']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get aiConsentServices =>
+      columnsByName['ai_consent_services']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get privacyNoticeVersion =>
+      columnsByName['privacy_notice_version']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_24(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'ai_consent_at',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_25(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'ai_consent_version',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0',
+      defaultValue: const i1.CustomExpression('0'),
+    );
+i1.GeneratedColumn<String> _column_26(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'ai_consent_services',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL DEFAULT \'\'',
+      defaultValue: const i1.CustomExpression('\'\''),
+    );
+i1.GeneratedColumn<int> _column_27(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'privacy_notice_version',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0',
+      defaultValue: const i1.CustomExpression('0'),
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -935,6 +1099,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
+  required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -973,6 +1138,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from7To8(migrator, schema);
         return 8;
+      case 8:
+        final schema = Schema9(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from8To9(migrator, schema);
+        return 9;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -987,6 +1157,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
+  required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -996,5 +1167,6 @@ i1.OnUpgrade stepByStep({
     from5To6: from5To6,
     from6To7: from6To7,
     from7To8: from7To8,
+    from8To9: from8To9,
   ),
 );

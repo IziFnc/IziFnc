@@ -54,7 +54,7 @@ final class EntriesRepositoryProvider
   }
 }
 
-String _$entriesRepositoryHash() => r'11249c0c5f781109fc6559c2014c80ac98127301';
+String _$entriesRepositoryHash() => r'5a688e0ddd560be4cffeee3381e304281281b193';
 
 @ProviderFor(accountsRepository)
 final accountsRepositoryProvider = AccountsRepositoryProvider._();

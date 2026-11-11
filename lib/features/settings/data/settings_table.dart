@@ -37,6 +37,22 @@ class AppSettings extends Table {
   /// pulado). Adicionada no schema v8.
   IntColumn get tourStep => integer().withDefault(const Constant(0))();
 
+  /// Quando a pessoa autorizou o envio do texto da planilha a um serviço de IA
+  /// (feat 0038). Nulo = nunca autorizou. Adicionada no schema v9.
+  DateTimeColumn get aiConsentAt => dateTime().nullable()();
+
+  /// Versão do texto de privacidade que valeu na autorização. Texto novo
+  /// (versão maior) pede a autorização de novo. 0 = nenhuma. Schema v9.
+  IntColumn get aiConsentVersion => integer().withDefault(const Constant(0))();
+
+  /// Para quem a pessoa autorizou, separado por `|` (`groq|anthropic|custom:host`).
+  /// Trocar de serviço muda o destinatário, então pede de novo. Schema v9.
+  TextColumn get aiConsentServices => text().withDefault(const Constant(''))();
+
+  /// Versão do aviso de privacidade que a pessoa já viu na tela inicial.
+  /// 0 = ainda não viu. Schema v9.
+  IntColumn get privacyNoticeVersion => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

@@ -7,8 +7,8 @@ IziFnc.
 ## 1. Impressão digital do arquivo (SHA-256)
 
 ```bash
-sha256sum IziFnc-1.0.1-arm64.apk        # Linux e macOS: shasum -a 256
-Get-FileHash IziFnc-1.0.1-arm64.apk     # Windows (PowerShell)
+sha256sum IziFnc-1.0.2-arm64.apk        # Linux e macOS: shasum -a 256
+Get-FileHash IziFnc-1.0.2-arm64.apk     # Windows (PowerShell)
 ```
 
 O resultado tem de ser igual ao da tabela (e ao das notas da Release).
@@ -18,7 +18,7 @@ O resultado tem de ser igual ao da tabela (e ao das notas da Release).
 Com o `apksigner` do Android SDK (pasta `build-tools`):
 
 ```bash
-apksigner verify --print-certs IziFnc-1.0.1-arm64.apk
+apksigner verify --print-certs IziFnc-1.0.2-arm64.apk
 ```
 
 Deve dizer `Verifies` e mostrar o certificado `CN=IziFnc, O=IziFnc, C=BR` com o SHA-256 da tabela.
@@ -28,6 +28,7 @@ O certificado é o mesmo em todas as versões: se mudar, **não instale** e abra
 
 | Versão | SHA-256 do APK (`arm64`) |
 |---|---|
+| 1.0.2 | `3853b7aa31bcb1f42bf85b8895c44b31a9adb3de31d7f6b3c00f606b586db1f4` |
 | 1.0.1 | `3866365c3191a3a8a4eb97eb13a5855bdd8e09e6d55c3ff639598d7ab484f78f` |
 
 | | SHA-256 do certificado de assinatura |

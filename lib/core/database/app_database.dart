@@ -49,7 +49,8 @@ class AppDatabase extends _$AppDatabase {
   /// - v6: `accounts.closing_day_in_current`, regra do dia do fechamento (feat 0012)
   /// - v7: `app_settings.last_backup_at` e os índices de `entries` para saldo (feat 0018)
   /// - v8: `app_settings.tour_step`, parada atual do tour guiado (feat 0026)
-  static const int currentSchemaVersion = 8;
+  /// - v9: consentimento de IA e aviso de privacidade em `app_settings` (feat 0038)
+  static const int currentSchemaVersion = 9;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -115,6 +116,15 @@ class AppDatabase extends _$AppDatabase {
         // novo sozinho, sem incomodar ninguém. "Ver o tour de novo" em
         // Configurações continua disponível para quem quiser rever.
         await m.addColumn(schema.appSettings, schema.appSettings.tourStep);
+      },
+      from8To9: (m, schema) async {
+        // Só adiciona quatro colunas, todas com padrão "nunca autorizou / nunca
+        // viu": quem já usa o app passa a ver o aviso de privacidade e é
+        // perguntado antes do próximo envio à IA. Nenhum dado existente muda.
+        await m.addColumn(schema.appSettings, schema.appSettings.aiConsentAt);
+        await m.addColumn(schema.appSettings, schema.appSettings.aiConsentVersion);
+        await m.addColumn(schema.appSettings, schema.appSettings.aiConsentServices);
+        await m.addColumn(schema.appSettings, schema.appSettings.privacyNoticeVersion);
       },
     ),
     beforeOpen: (details) async {

@@ -92,7 +92,13 @@ String _describe(TableLocation? l) => l == null ? 'null' : 'L${l.headerRow}/C${l
 bool _same(TableLocation? a, TableLocation? b) =>
     (a == null && b == null) || (a != null && b != null && a.headerRow == b.headerRow && a.startCol == b.startCol);
 
-Future<int> main(List<String> args) async {
+/// Em Dart o valor devolvido por `main` não vira código de saída: precisa ser `exitCode`.
+/// Sem isso, `validar --live` nunca reprovava (lição da 0033).
+Future<void> main(List<String> args) async {
+  exitCode = await _run(args);
+}
+
+Future<int> _run(List<String> args) async {
   String? opt(String name) {
     final i = args.indexOf('--$name');
     return i >= 0 && i + 1 < args.length ? args[i + 1] : null;

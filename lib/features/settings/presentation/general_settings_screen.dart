@@ -7,6 +7,7 @@ import '../../accounts/presentation/accounts_providers.dart';
 import '../../entries/presentation/month_screen.dart';
 import '../domain/appearance.dart';
 import 'month_start_day_dialog.dart';
+import 'privacy_screen.dart';
 import 'settings_providers.dart';
 
 /// Aparência, acessibilidade, o dia de virada do mês e a versão do app. Cada
@@ -109,6 +110,28 @@ class GeneralSettingsScreen extends ConsumerWidget {
               await repo.restartTour();
               if (context.mounted) context.go(MonthScreen.path);
             },
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.lock_outline),
+            title: const Text('Privacidade'),
+            subtitle: const Text('O que fica no aparelho, o que sai e a sua autorização.'),
+            onTap: () => context.push(PrivacyScreen.path),
+          ),
+          // Mostra a licença do app e a de cada pacote que ele usa (BSD, MIT e
+          // Apache pedem que o aviso acompanhe o app).
+          AboutListTile(
+            icon: const Icon(Icons.description_outlined),
+            applicationName: 'IziFnc',
+            applicationVersion: switch (info) {
+              AsyncData(value: final i) => '${i.version} (build ${i.buildNumber})',
+              _ => '',
+            },
+            applicationLegalese:
+                '© 2026 IziFnc. Código aberto sob a licença MIT. O app é oferecido "como está", '
+                'sem garantias além das que a lei impõe, e não é aconselhamento financeiro. '
+                'Confira os valores e faça backup de vez em quando.',
+            child: const Text('Licenças e aviso legal'),
           ),
         ],
       ),

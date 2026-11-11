@@ -27,6 +27,12 @@ class EntryAccountChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Uma única opção: já vem escolhida (júri 1.0.2, Q2).
+    if (selected == null && options.length == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) onSelect(options.first.id);
+      });
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

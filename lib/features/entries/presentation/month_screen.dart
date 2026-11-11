@@ -19,6 +19,7 @@ import '../domain/month_summary.dart';
 import 'entry_filters_provider.dart';
 import 'entry_form_screen.dart';
 import 'month_filters.dart';
+import '../../settings/presentation/privacy_notice.dart';
 import 'entry_tile.dart';
 import 'month_providers.dart';
 import 'no_accounts_view.dart';
@@ -213,6 +214,7 @@ class _MonthBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 88), // espaço do FAB
       children: [
+        const PrivacyNotice(),
         if (showBackupNotice) BackupNotice(lastBackup: last),
         if (situation != null)
           TourTarget(

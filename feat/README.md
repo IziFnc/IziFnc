@@ -37,6 +37,8 @@ e **como conferir** que funciona.
 | [0033](0033-relogio-injetavel.md) | Relógio injetável (`clockProvider`) com trava em `tool/validar.dart`, que também passou a falhar de verdade no CI | 2026-10-23 | ✅ concluído |
 | [0034](0034-seguranca.md) | Endurecimento de segurança: timeouts na IA, tetos do `.xlsx`, restauração recusa banco adulterado, manifesto sem backup automático nem texto puro, contrato de privacidade com teste, CI com permissão mínima | 2026-10-23 | ✅ concluído |
 | [0035](0035-tamanho-arquivos.md) | Limite de tamanho de arquivos no CI (400 em `lib/`, 500 em `test/`) e divisão dos oito arquivos que passavam | 2026-10-23 | ✅ concluído |
+| [0038](0038-juridico.md) | Privacidade e consentimento dentro do app: política em PT-BR, autorização específica antes de enviar texto à IA (revogável, versionada), licenças dos pacotes e aviso legal; migração v8→v9 | 2026-10-25 | ✅ concluído |
+| [0039](0039-publico.md) | O que o público enxerga: `SECURITY.md`, guia para conferir o APK (SHA-256 e certificado), Dependabot e `.mcp.json` fora do git | 2026-10-25 | ✅ concluído |
 
 ## Backlog
 
@@ -51,6 +53,8 @@ Próximas entregas, **em ordem**. Cada uma pequena e fechada antes da seguinte.
 | 0030 | Exportar relatório do mês | Para o agente externo de análise que o autor já usa. (1.1+) |
 | 0031 | Parcelamento de compras e de fatura | Na planilha, as parcelas são linhas repetidas mês a mês; parcelas futuras servem aos dois. (1.1+) |
 | 0032 | Recorrentes (inclui importar a tabela "Gastos Recorrentes") | Mesma lógica: dá para importar como lançamentos simples antes. (1.1+) |
+| 0036 | Nota da prévia da importação só para o que o app desmarcou | Achado no roteiro do 1.0.1: `importNotes` conta qualquer linha desmarcada e diz "vieram desmarcadas para você revisar (já importada antes, ou data longe do mês)", inclusive as que a pessoa acabou de desmarcar. Vem da 0025. Pequeno.
+| 0037 | Conta dona do cartão pré-selecionada ao cadastrar o primeiro cartão | Achado no mesmo roteiro: o tour diz que o cartão "fica ligado à conta que você acabou de criar", mas o chip da conta vem sem seleção. Com uma conta só, selecionar sozinha (como o formulário de lançamento já faz). Pequeno.
 
 **Futuras, sem ordem:** poupança (junto com rendimento de investimentos, talvez um app
 à parte) · fatura parcial com saldo rolando para o mês seguinte · extrato bancário (um

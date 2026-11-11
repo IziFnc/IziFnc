@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../import/data/ai_slots_store.dart';
 import 'ai_slots_controller.dart';
+import 'ai_consent_card.dart';
 import 'ai_intro_card.dart';
 import 'ai_slot_card.dart';
 
@@ -30,6 +31,8 @@ class AiSettingsScreen extends ConsumerWidget {
             AiSlotCard(key: const ValueKey('slot-primary'), slot: AiSlot.primary, slots: value),
             const SizedBox(height: 12),
             AiSlotCard(key: const ValueKey('slot-backup'), slot: AiSlot.backup, slots: value),
+            const SizedBox(height: 12),
+            const AiConsentCard(),
           ],
         ),
         AsyncError(:final error) => Center(child: Text('Erro ao carregar: $error')),

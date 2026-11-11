@@ -25,6 +25,14 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
   if (error is LlmLocatorException) {
     // Falta de chave já é uma frase para a pessoa, e leva à configuração.
     if (error.missingKey) return ImportErrorMessage(error.message);
+    // O localizador embrulha a falha de rede numa LlmLocatorException; sem isso a
+    // pessoa leria "o serviço não respondeu" quando na verdade está sem internet.
+    if (error.message.contains('SocketException')) {
+      return ImportErrorMessage(
+        '$prefix Sem conexão com a internet. A importação usa a internet só para a IA achar as tabelas.',
+        detail: error.message,
+      );
+    }
     final status = int.tryParse(RegExp(r'respondeu (\d{3})').firstMatch(error.message)?.group(1) ?? '');
     final reason = switch (status) {
       401 || 403 =>

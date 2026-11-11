@@ -55,5 +55,5 @@ app.*.map.json
 .env.*
 !.env.example
 
-# Configuração pessoal de ferramentas
+# Configuração pessoal de ferramentas do autor (MCPs com `npx ...@latest`): não vai ao repositório.
 /.mcp.json

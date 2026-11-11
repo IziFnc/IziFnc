@@ -1276,6 +1276,53 @@ class $AppSettingsTable extends AppSettings
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _aiConsentAtMeta = const VerificationMeta(
+    'aiConsentAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> aiConsentAt = GeneratedColumn<DateTime>(
+    'ai_consent_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _aiConsentVersionMeta = const VerificationMeta(
+    'aiConsentVersion',
+  );
+  @override
+  late final GeneratedColumn<int> aiConsentVersion = GeneratedColumn<int>(
+    'ai_consent_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _aiConsentServicesMeta = const VerificationMeta(
+    'aiConsentServices',
+  );
+  @override
+  late final GeneratedColumn<String> aiConsentServices =
+      GeneratedColumn<String>(
+        'ai_consent_services',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _privacyNoticeVersionMeta =
+      const VerificationMeta('privacyNoticeVersion');
+  @override
+  late final GeneratedColumn<int> privacyNoticeVersion = GeneratedColumn<int>(
+    'privacy_notice_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1285,6 +1332,10 @@ class $AppSettingsTable extends AppSettings
     highContrast,
     lastBackupAt,
     tourStep,
+    aiConsentAt,
+    aiConsentVersion,
+    aiConsentServices,
+    privacyNoticeVersion,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1346,6 +1397,42 @@ class $AppSettingsTable extends AppSettings
         tourStep.isAcceptableOrUnknown(data['tour_step']!, _tourStepMeta),
       );
     }
+    if (data.containsKey('ai_consent_at')) {
+      context.handle(
+        _aiConsentAtMeta,
+        aiConsentAt.isAcceptableOrUnknown(
+          data['ai_consent_at']!,
+          _aiConsentAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ai_consent_version')) {
+      context.handle(
+        _aiConsentVersionMeta,
+        aiConsentVersion.isAcceptableOrUnknown(
+          data['ai_consent_version']!,
+          _aiConsentVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ai_consent_services')) {
+      context.handle(
+        _aiConsentServicesMeta,
+        aiConsentServices.isAcceptableOrUnknown(
+          data['ai_consent_services']!,
+          _aiConsentServicesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('privacy_notice_version')) {
+      context.handle(
+        _privacyNoticeVersionMeta,
+        privacyNoticeVersion.isAcceptableOrUnknown(
+          data['privacy_notice_version']!,
+          _privacyNoticeVersionMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1383,6 +1470,22 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.int,
         data['${effectivePrefix}tour_step'],
       )!,
+      aiConsentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ai_consent_at'],
+      ),
+      aiConsentVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ai_consent_version'],
+      )!,
+      aiConsentServices: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_consent_services'],
+      )!,
+      privacyNoticeVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}privacy_notice_version'],
+      )!,
     );
   }
 
@@ -1418,6 +1521,22 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
   /// próximo `TourAnchor` a mostrar; `kTourSteps.length` = tour concluído (ou
   /// pulado). Adicionada no schema v8.
   final int tourStep;
+
+  /// Quando a pessoa autorizou o envio do texto da planilha a um serviço de IA
+  /// (feat 0038). Nulo = nunca autorizou. Adicionada no schema v9.
+  final DateTime? aiConsentAt;
+
+  /// Versão do texto de privacidade que valeu na autorização. Texto novo
+  /// (versão maior) pede a autorização de novo. 0 = nenhuma. Schema v9.
+  final int aiConsentVersion;
+
+  /// Para quem a pessoa autorizou, separado por `|` (`groq|anthropic|custom:host`).
+  /// Trocar de serviço muda o destinatário, então pede de novo. Schema v9.
+  final String aiConsentServices;
+
+  /// Versão do aviso de privacidade que a pessoa já viu na tela inicial.
+  /// 0 = ainda não viu. Schema v9.
+  final int privacyNoticeVersion;
   const AppSettingsRow({
     required this.id,
     required this.monthStartDay,
@@ -1426,6 +1545,10 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     required this.highContrast,
     this.lastBackupAt,
     required this.tourStep,
+    this.aiConsentAt,
+    required this.aiConsentVersion,
+    required this.aiConsentServices,
+    required this.privacyNoticeVersion,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1439,6 +1562,12 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       map['last_backup_at'] = Variable<DateTime>(lastBackupAt);
     }
     map['tour_step'] = Variable<int>(tourStep);
+    if (!nullToAbsent || aiConsentAt != null) {
+      map['ai_consent_at'] = Variable<DateTime>(aiConsentAt);
+    }
+    map['ai_consent_version'] = Variable<int>(aiConsentVersion);
+    map['ai_consent_services'] = Variable<String>(aiConsentServices);
+    map['privacy_notice_version'] = Variable<int>(privacyNoticeVersion);
     return map;
   }
 
@@ -1453,6 +1582,12 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           ? const Value.absent()
           : Value(lastBackupAt),
       tourStep: Value(tourStep),
+      aiConsentAt: aiConsentAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aiConsentAt),
+      aiConsentVersion: Value(aiConsentVersion),
+      aiConsentServices: Value(aiConsentServices),
+      privacyNoticeVersion: Value(privacyNoticeVersion),
     );
   }
 
@@ -1469,6 +1604,12 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       highContrast: serializer.fromJson<bool>(json['highContrast']),
       lastBackupAt: serializer.fromJson<DateTime?>(json['lastBackupAt']),
       tourStep: serializer.fromJson<int>(json['tourStep']),
+      aiConsentAt: serializer.fromJson<DateTime?>(json['aiConsentAt']),
+      aiConsentVersion: serializer.fromJson<int>(json['aiConsentVersion']),
+      aiConsentServices: serializer.fromJson<String>(json['aiConsentServices']),
+      privacyNoticeVersion: serializer.fromJson<int>(
+        json['privacyNoticeVersion'],
+      ),
     );
   }
   @override
@@ -1482,6 +1623,10 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
       'highContrast': serializer.toJson<bool>(highContrast),
       'lastBackupAt': serializer.toJson<DateTime?>(lastBackupAt),
       'tourStep': serializer.toJson<int>(tourStep),
+      'aiConsentAt': serializer.toJson<DateTime?>(aiConsentAt),
+      'aiConsentVersion': serializer.toJson<int>(aiConsentVersion),
+      'aiConsentServices': serializer.toJson<String>(aiConsentServices),
+      'privacyNoticeVersion': serializer.toJson<int>(privacyNoticeVersion),
     };
   }
 
@@ -1493,6 +1638,10 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     bool? highContrast,
     Value<DateTime?> lastBackupAt = const Value.absent(),
     int? tourStep,
+    Value<DateTime?> aiConsentAt = const Value.absent(),
+    int? aiConsentVersion,
+    String? aiConsentServices,
+    int? privacyNoticeVersion,
   }) => AppSettingsRow(
     id: id ?? this.id,
     monthStartDay: monthStartDay ?? this.monthStartDay,
@@ -1501,6 +1650,10 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     highContrast: highContrast ?? this.highContrast,
     lastBackupAt: lastBackupAt.present ? lastBackupAt.value : this.lastBackupAt,
     tourStep: tourStep ?? this.tourStep,
+    aiConsentAt: aiConsentAt.present ? aiConsentAt.value : this.aiConsentAt,
+    aiConsentVersion: aiConsentVersion ?? this.aiConsentVersion,
+    aiConsentServices: aiConsentServices ?? this.aiConsentServices,
+    privacyNoticeVersion: privacyNoticeVersion ?? this.privacyNoticeVersion,
   );
   AppSettingsRow copyWithCompanion(AppSettingsCompanion data) {
     return AppSettingsRow(
@@ -1517,6 +1670,18 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           ? data.lastBackupAt.value
           : this.lastBackupAt,
       tourStep: data.tourStep.present ? data.tourStep.value : this.tourStep,
+      aiConsentAt: data.aiConsentAt.present
+          ? data.aiConsentAt.value
+          : this.aiConsentAt,
+      aiConsentVersion: data.aiConsentVersion.present
+          ? data.aiConsentVersion.value
+          : this.aiConsentVersion,
+      aiConsentServices: data.aiConsentServices.present
+          ? data.aiConsentServices.value
+          : this.aiConsentServices,
+      privacyNoticeVersion: data.privacyNoticeVersion.present
+          ? data.privacyNoticeVersion.value
+          : this.privacyNoticeVersion,
     );
   }
 
@@ -1529,7 +1694,11 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           ..write('textScale: $textScale, ')
           ..write('highContrast: $highContrast, ')
           ..write('lastBackupAt: $lastBackupAt, ')
-          ..write('tourStep: $tourStep')
+          ..write('tourStep: $tourStep, ')
+          ..write('aiConsentAt: $aiConsentAt, ')
+          ..write('aiConsentVersion: $aiConsentVersion, ')
+          ..write('aiConsentServices: $aiConsentServices, ')
+          ..write('privacyNoticeVersion: $privacyNoticeVersion')
           ..write(')'))
         .toString();
   }
@@ -1543,6 +1712,10 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
     highContrast,
     lastBackupAt,
     tourStep,
+    aiConsentAt,
+    aiConsentVersion,
+    aiConsentServices,
+    privacyNoticeVersion,
   );
   @override
   bool operator ==(Object other) =>
@@ -1554,7 +1727,11 @@ class AppSettingsRow extends DataClass implements Insertable<AppSettingsRow> {
           other.textScale == this.textScale &&
           other.highContrast == this.highContrast &&
           other.lastBackupAt == this.lastBackupAt &&
-          other.tourStep == this.tourStep);
+          other.tourStep == this.tourStep &&
+          other.aiConsentAt == this.aiConsentAt &&
+          other.aiConsentVersion == this.aiConsentVersion &&
+          other.aiConsentServices == this.aiConsentServices &&
+          other.privacyNoticeVersion == this.privacyNoticeVersion);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
@@ -1565,6 +1742,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
   final Value<bool> highContrast;
   final Value<DateTime?> lastBackupAt;
   final Value<int> tourStep;
+  final Value<DateTime?> aiConsentAt;
+  final Value<int> aiConsentVersion;
+  final Value<String> aiConsentServices;
+  final Value<int> privacyNoticeVersion;
   const AppSettingsCompanion({
     this.id = const Value.absent(),
     this.monthStartDay = const Value.absent(),
@@ -1573,6 +1754,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     this.highContrast = const Value.absent(),
     this.lastBackupAt = const Value.absent(),
     this.tourStep = const Value.absent(),
+    this.aiConsentAt = const Value.absent(),
+    this.aiConsentVersion = const Value.absent(),
+    this.aiConsentServices = const Value.absent(),
+    this.privacyNoticeVersion = const Value.absent(),
   });
   AppSettingsCompanion.insert({
     this.id = const Value.absent(),
@@ -1582,6 +1767,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     this.highContrast = const Value.absent(),
     this.lastBackupAt = const Value.absent(),
     this.tourStep = const Value.absent(),
+    this.aiConsentAt = const Value.absent(),
+    this.aiConsentVersion = const Value.absent(),
+    this.aiConsentServices = const Value.absent(),
+    this.privacyNoticeVersion = const Value.absent(),
   });
   static Insertable<AppSettingsRow> custom({
     Expression<int>? id,
@@ -1591,6 +1780,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     Expression<bool>? highContrast,
     Expression<DateTime>? lastBackupAt,
     Expression<int>? tourStep,
+    Expression<DateTime>? aiConsentAt,
+    Expression<int>? aiConsentVersion,
+    Expression<String>? aiConsentServices,
+    Expression<int>? privacyNoticeVersion,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1600,6 +1793,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
       if (highContrast != null) 'high_contrast': highContrast,
       if (lastBackupAt != null) 'last_backup_at': lastBackupAt,
       if (tourStep != null) 'tour_step': tourStep,
+      if (aiConsentAt != null) 'ai_consent_at': aiConsentAt,
+      if (aiConsentVersion != null) 'ai_consent_version': aiConsentVersion,
+      if (aiConsentServices != null) 'ai_consent_services': aiConsentServices,
+      if (privacyNoticeVersion != null)
+        'privacy_notice_version': privacyNoticeVersion,
     });
   }
 
@@ -1611,6 +1809,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     Value<bool>? highContrast,
     Value<DateTime?>? lastBackupAt,
     Value<int>? tourStep,
+    Value<DateTime?>? aiConsentAt,
+    Value<int>? aiConsentVersion,
+    Value<String>? aiConsentServices,
+    Value<int>? privacyNoticeVersion,
   }) {
     return AppSettingsCompanion(
       id: id ?? this.id,
@@ -1620,6 +1822,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
       highContrast: highContrast ?? this.highContrast,
       lastBackupAt: lastBackupAt ?? this.lastBackupAt,
       tourStep: tourStep ?? this.tourStep,
+      aiConsentAt: aiConsentAt ?? this.aiConsentAt,
+      aiConsentVersion: aiConsentVersion ?? this.aiConsentVersion,
+      aiConsentServices: aiConsentServices ?? this.aiConsentServices,
+      privacyNoticeVersion: privacyNoticeVersion ?? this.privacyNoticeVersion,
     );
   }
 
@@ -1647,6 +1853,18 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
     if (tourStep.present) {
       map['tour_step'] = Variable<int>(tourStep.value);
     }
+    if (aiConsentAt.present) {
+      map['ai_consent_at'] = Variable<DateTime>(aiConsentAt.value);
+    }
+    if (aiConsentVersion.present) {
+      map['ai_consent_version'] = Variable<int>(aiConsentVersion.value);
+    }
+    if (aiConsentServices.present) {
+      map['ai_consent_services'] = Variable<String>(aiConsentServices.value);
+    }
+    if (privacyNoticeVersion.present) {
+      map['privacy_notice_version'] = Variable<int>(privacyNoticeVersion.value);
+    }
     return map;
   }
 
@@ -1659,7 +1877,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingsRow> {
           ..write('textScale: $textScale, ')
           ..write('highContrast: $highContrast, ')
           ..write('lastBackupAt: $lastBackupAt, ')
-          ..write('tourStep: $tourStep')
+          ..write('tourStep: $tourStep, ')
+          ..write('aiConsentAt: $aiConsentAt, ')
+          ..write('aiConsentVersion: $aiConsentVersion, ')
+          ..write('aiConsentServices: $aiConsentServices, ')
+          ..write('privacyNoticeVersion: $privacyNoticeVersion')
           ..write(')'))
         .toString();
   }
@@ -2898,6 +3120,10 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<bool> highContrast,
       Value<DateTime?> lastBackupAt,
       Value<int> tourStep,
+      Value<DateTime?> aiConsentAt,
+      Value<int> aiConsentVersion,
+      Value<String> aiConsentServices,
+      Value<int> privacyNoticeVersion,
     });
 typedef $$AppSettingsTableUpdateCompanionBuilder =
     AppSettingsCompanion Function({
@@ -2908,6 +3134,10 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<bool> highContrast,
       Value<DateTime?> lastBackupAt,
       Value<int> tourStep,
+      Value<DateTime?> aiConsentAt,
+      Value<int> aiConsentVersion,
+      Value<String> aiConsentServices,
+      Value<int> privacyNoticeVersion,
     });
 
 class $$AppSettingsTableFilterComposer
@@ -2951,6 +3181,26 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<int> get tourStep => $composableBuilder(
     column: $table.tourStep,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get aiConsentAt => $composableBuilder(
+    column: $table.aiConsentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aiConsentVersion => $composableBuilder(
+    column: $table.aiConsentVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aiConsentServices => $composableBuilder(
+    column: $table.aiConsentServices,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get privacyNoticeVersion => $composableBuilder(
+    column: $table.privacyNoticeVersion,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2998,6 +3248,26 @@ class $$AppSettingsTableOrderingComposer
     column: $table.tourStep,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get aiConsentAt => $composableBuilder(
+    column: $table.aiConsentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get aiConsentVersion => $composableBuilder(
+    column: $table.aiConsentVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aiConsentServices => $composableBuilder(
+    column: $table.aiConsentServices,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get privacyNoticeVersion => $composableBuilder(
+    column: $table.privacyNoticeVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$AppSettingsTableAnnotationComposer
@@ -3035,6 +3305,26 @@ class $$AppSettingsTableAnnotationComposer
 
   GeneratedColumn<int> get tourStep =>
       $composableBuilder(column: $table.tourStep, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get aiConsentAt => $composableBuilder(
+    column: $table.aiConsentAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get aiConsentVersion => $composableBuilder(
+    column: $table.aiConsentVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get aiConsentServices => $composableBuilder(
+    column: $table.aiConsentServices,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get privacyNoticeVersion => $composableBuilder(
+    column: $table.privacyNoticeVersion,
+    builder: (column) => column,
+  );
 }
 
 class $$AppSettingsTableTableManager
@@ -3075,6 +3365,10 @@ class $$AppSettingsTableTableManager
                 Value<bool> highContrast = const Value.absent(),
                 Value<DateTime?> lastBackupAt = const Value.absent(),
                 Value<int> tourStep = const Value.absent(),
+                Value<DateTime?> aiConsentAt = const Value.absent(),
+                Value<int> aiConsentVersion = const Value.absent(),
+                Value<String> aiConsentServices = const Value.absent(),
+                Value<int> privacyNoticeVersion = const Value.absent(),
               }) => AppSettingsCompanion(
                 id: id,
                 monthStartDay: monthStartDay,
@@ -3083,6 +3377,10 @@ class $$AppSettingsTableTableManager
                 highContrast: highContrast,
                 lastBackupAt: lastBackupAt,
                 tourStep: tourStep,
+                aiConsentAt: aiConsentAt,
+                aiConsentVersion: aiConsentVersion,
+                aiConsentServices: aiConsentServices,
+                privacyNoticeVersion: privacyNoticeVersion,
               ),
           createCompanionCallback:
               ({
@@ -3093,6 +3391,10 @@ class $$AppSettingsTableTableManager
                 Value<bool> highContrast = const Value.absent(),
                 Value<DateTime?> lastBackupAt = const Value.absent(),
                 Value<int> tourStep = const Value.absent(),
+                Value<DateTime?> aiConsentAt = const Value.absent(),
+                Value<int> aiConsentVersion = const Value.absent(),
+                Value<String> aiConsentServices = const Value.absent(),
+                Value<int> privacyNoticeVersion = const Value.absent(),
               }) => AppSettingsCompanion.insert(
                 id: id,
                 monthStartDay: monthStartDay,
@@ -3101,6 +3403,10 @@ class $$AppSettingsTableTableManager
                 highContrast: highContrast,
                 lastBackupAt: lastBackupAt,
                 tourStep: tourStep,
+                aiConsentAt: aiConsentAt,
+                aiConsentVersion: aiConsentVersion,
+                aiConsentServices: aiConsentServices,
+                privacyNoticeVersion: privacyNoticeVersion,
               ),
           withReferenceMapper: (p0) => p0
               .map(

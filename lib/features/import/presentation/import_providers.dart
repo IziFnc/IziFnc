@@ -7,6 +7,8 @@ import '../data/ai_slots_store.dart';
 import '../data/configured_table_locator.dart';
 import '../data/llm_slot.dart';
 import '../data/llm_table_locator.dart';
+import '../../../core/database/repositories.dart';
+import '../../settings/presentation/ai_consent_sheet.dart';
 
 /// Escolhe a planilha e devolve os bytes (nulo = a pessoa cancelou). Existe como
 /// provider para os testes trocarem o seletor de arquivos do Android por um de
@@ -35,6 +37,8 @@ final aiSlotsStoreProvider = Provider<AiSlotsStore>((ref) => SecureAiSlotsStore(
 final llmTableLocatorProvider = Provider<LlmTableLocator>(
   (ref) => ConfiguredTableLocator(
     resolveSlots: storedSlotsResolver(ref.watch(aiSlotsStoreProvider)),
+    authorize: (slots) async =>
+        (await ref.read(settingsRepositoryProvider).aiConsent()).covers({for (final s in slots) consentKeyOf(s)}),
     missingKeyMessage:
         'Nenhuma IA configurada. Abra o menu › Configurações › Inteligência '
         'artificial e configure a Principal — a chave grátis da Groq basta.',

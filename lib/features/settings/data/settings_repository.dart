@@ -4,6 +4,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../accounts/domain/account_kind.dart';
 import '../../entries/data/entries_repository.dart';
+import '../domain/ai_consent.dart';
 import '../domain/appearance.dart';
 
 class SettingsRepository {
@@ -104,4 +105,52 @@ class SettingsRepository {
         .update(_db.appSettings)
         .write(AppSettingsCompanion(tourStep: Value(start)));
   });
+
+  /// A autorização de envio do texto da planilha à IA (feat 0038).
+  Stream<AiConsent> watchAiConsent() => _db.select(_db.appSettings).watchSingle().map(_consentOf);
+
+  Future<AiConsent> aiConsent() async => _consentOf(await (_db.select(_db.appSettings)..limit(1)).getSingle());
+
+  static AiConsent _consentOf(AppSettingsRow s) => AiConsent(
+    at: s.aiConsentAt,
+    version: s.aiConsentVersion,
+    services: AiConsent.parseServices(s.aiConsentServices),
+  );
+
+  /// Registra a autorização para [services] na versão [version] do texto.
+  /// Acrescenta aos serviços já autorizados, desde que a versão seja a mesma;
+  /// numa versão nova, recomeça só com os de agora.
+  Future<void> grantAiConsent(Set<String> services, DateTime at, {required int version}) =>
+      _db.transaction(() async {
+        final current = await aiConsent();
+        final merged = current.version == version ? {...current.services, ...services} : {...services};
+        await _db
+            .update(_db.appSettings)
+            .write(
+              AppSettingsCompanion(
+                aiConsentAt: Value(at),
+                aiConsentVersion: Value(version),
+                aiConsentServices: Value(AiConsent.joinServices(merged)),
+              ),
+            );
+      });
+
+  /// "Revogar": a importação com IA volta a pedir a autorização.
+  Future<void> revokeAiConsent() => _db
+      .update(_db.appSettings)
+      .write(
+        const AppSettingsCompanion(
+          aiConsentAt: Value(null),
+          aiConsentVersion: Value(0),
+          aiConsentServices: Value(''),
+        ),
+      );
+
+  /// Versão do aviso de privacidade que a pessoa já viu na tela inicial.
+  Stream<int> watchPrivacyNoticeVersion() =>
+      _db.select(_db.appSettings).watchSingle().map((s) => s.privacyNoticeVersion);
+
+  Future<void> markPrivacyNoticeSeen(int version) => _db
+      .update(_db.appSettings)
+      .write(AppSettingsCompanion(privacyNoticeVersion: Value(version)));
 }

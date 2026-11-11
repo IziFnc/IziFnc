@@ -24,8 +24,9 @@ class AiIntroCard extends StatelessWidget {
                     // O app não vem com chave nenhuma: sem configurar aqui, a
                     // importação não funciona. A frase diz isso logo de cara.
                     'Para importar uma planilha você precisa de uma chave de IA. '
-                    'A Groq tem plano grátis: crie a chave em console.groq.com/keys '
-                    'e cole em Principal.',
+                    'A chave é como uma senha que liga o app ao serviço de IA: ela é criada '
+                    'num navegador (no celular ou no computador), grátis na Groq, em '
+                    'console.groq.com/keys. Depois, cole em Principal.',
                     style: theme.textTheme.bodyMedium?.copyWith(color: color),
                   ),
                 ),
@@ -46,9 +47,10 @@ class AiIntroCard extends StatelessWidget {
                 expandedCrossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'A IA só serve para achar onde ficam as tabelas: vão apenas os '
-                    'textos dos cabeçalhos. Valores e datas nunca saem do aparelho, e '
-                    'as chaves ficam guardadas só nele.\n\n'
+                    'A IA só serve para achar onde ficam as tabelas: vai todo o '
+                    'texto da aba, inclusive anotações fora das tabelas e o nome da aba '
+                    '(cabeçalhos, nomes dos lançamentos, bancos, observações). '
+                    'Valores e datas nunca saem do aparelho, e a chave fica guardada só nele.\n\n'
                     'A Reserva é opcional: só é chamada se a Principal falhar. O botão '
                     'Testar envia uma mensagem mínima e só roda quando você toca nele.',
                     style: theme.textTheme.bodyMedium?.copyWith(color: color),

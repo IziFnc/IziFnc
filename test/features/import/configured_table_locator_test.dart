@@ -239,4 +239,17 @@ void main() {
       expect(await envSlotsResolver(), isEmpty);
     });
   });
+
+  group('autorização a cada chamada (0038)', () {
+    test('serviço não autorizado: não chama a rede', () async {
+      final router = _Router(groq: () => http.Response(_groqOk(), 200));
+      final locator = ConfiguredTableLocator(
+        resolveSlots: _slots([_groq()]),
+        client: router.client,
+        authorize: (_) async => false,
+      );
+      await expectLater(locator.locate(_grid, sheetName: 'x'), throwsA(isA<LlmLocatorException>()));
+      expect(router.calls, isEmpty);
+    });
+  });
 }

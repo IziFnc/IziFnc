@@ -19,6 +19,16 @@ void main() {
       expect(of(LlmLocatorException.http('Groq', 403, 'x')).text, contains('chave'));
     });
 
+    test('falha de rede embrulhada pelo localizador diz "sem conexão", não "serviço não respondeu"', () {
+      final m = of(
+        const LlmLocatorException(
+          "Não consegui falar com Groq: ClientException with SocketException: Failed host lookup: 'api.groq.com'",
+        ),
+      );
+      expect(m.text, contains('Sem conexão com a internet'));
+      expect(m.detail, contains('Failed host lookup'), reason: 'o detalhe técnico continua disponível');
+    });
+
     test('modelo não encontrado (404) manda trocar o modelo', () {
       final m = of(LlmLocatorException.http('Groq', 404, 'model_not_found'));
       expect(m.text, contains('modelo'));

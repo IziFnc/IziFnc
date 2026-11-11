@@ -7,6 +7,7 @@ import '../../../core/widgets/double_back_to_exit.dart';
 import '../../accounts/presentation/accounts_providers.dart';
 import '../../entries/domain/competence.dart';
 import '../../entries/presentation/month_providers.dart';
+import '../../settings/presentation/ai_consent_sheet.dart';
 import '../data/llm_table_locator.dart';
 import '../data/xlsx_workbook.dart';
 import '../domain/build_import_plan.dart';
@@ -163,6 +164,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   /// botão fica desligado, em vez de a pessoa escolher arquivo e aba e só então
   /// esbarrar no erro.
   Future<void> _pickFile() async {
+    // Antes de qualquer texto da planilha seguir para a IA: a autorização
+    // específica (feat 0038). Sem ela a importação não começa. Pede **antes** de
+    // ligar o "ocupado", senão o botão fica girando atrás da folha.
+    if (!await ensureAiConsent(context, ref)) return;
+    if (!mounted) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -189,6 +195,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   // --- Passo 2: escolher aba -----------------------------------------------
 
   Future<void> _pickSheet(String name) async {
+    // Defesa em profundidade: a autorização já foi pedida ao escolher o arquivo;
+    // aqui só confere (não pergunta de novo se estiver valendo).
+    if (!await ensureAiConsent(context, ref)) return;
+    if (!mounted) return;
     setState(() {
       _busy = true;
       _error = null;

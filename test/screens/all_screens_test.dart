@@ -24,6 +24,7 @@ import 'package:izifnc/features/import/presentation/import_providers.dart';
 import 'package:izifnc/features/settings/presentation/ai_settings_screen.dart';
 import 'package:izifnc/features/settings/presentation/data_settings_screen.dart';
 import 'package:izifnc/features/settings/presentation/general_settings_screen.dart';
+import 'package:izifnc/features/settings/presentation/privacy_screen.dart';
 import 'package:izifnc/features/settings/presentation/settings_screen.dart';
 
 import '../support/real_fonts.dart';
@@ -278,5 +279,12 @@ final _screens = <_Screen>[
   _Screen('Configurações', (tester) => _go(tester, SettingsScreen.path)),
   _Screen('Configurações · Geral', (tester) => _go(tester, GeneralSettingsScreen.path)),
   _Screen('Configurações · Dados', (tester) => _go(tester, DataSettingsScreen.path)),
+  _Screen('Privacidade', (tester) => _go(tester, PrivacyScreen.path)),
+  _Screen('Importar · folha de autorização da IA', (tester) async {
+    await _go(tester, ImportScreen.path);
+    // Com texto grande o botão fica abaixo da dobra e a lista nem o constrói: rola até ele.
+    await tester.scrollUntilVisible(find.text('Escolher arquivo'), 300, scrollable: find.byType(Scrollable).first);
+    await _tap(tester, find.text('Escolher arquivo'));
+  }),
   _Screen('Configurações · Inteligência artificial', (tester) => _go(tester, AiSettingsScreen.path)),
 ];

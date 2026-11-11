@@ -15,6 +15,8 @@ import 'package:izifnc/features/accounts/data/accounts_repository.dart';
 import 'package:izifnc/features/accounts/domain/account_kind.dart';
 import 'package:izifnc/features/entries/data/entries_repository.dart';
 import 'package:izifnc/features/import/data/ai_slots_store.dart';
+import 'package:izifnc/features/settings/data/settings_repository.dart';
+import 'package:izifnc/features/settings/domain/privacy_text.dart';
 import 'package:izifnc/features/import/data/llm_slot.dart';
 import 'package:izifnc/features/import/data/llm_table_locator.dart';
 import 'package:izifnc/features/import/data/xlsx_workbook.dart';
@@ -55,6 +57,9 @@ void main() {
     final azul = await accounts.create(name: 'Azul', kind: AccountKind.checking);
     await accounts.create(name: 'Verde', kind: AccountKind.checking);
     await accounts.create(name: 'Roxo', kind: AccountKind.creditCard, linkedAccountId: azul, closingDay: 20);
+    // O envio à IA exige autorização (feat 0038): estes testes são do fluxo, não dela.
+    await SettingsRepository(db, EntriesRepository(db))
+        .grantAiConsent({'groq'}, DateTime(2026, 10, 25), version: kPrivacyVersion);
   });
   tearDown(() => db.close().timeout(const Duration(seconds: 5), onTimeout: () {}));
 

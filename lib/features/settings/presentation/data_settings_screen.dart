@@ -118,7 +118,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Seus dados ficam só neste aparelho. Se ele for perdido, trocado ou '
+            'Seus dados ficam neste aparelho (a importação com IA e o backup que você guardar fora dele são as exceções). Se ele for perdido, trocado ou '
             'formatado, sem um backup eles somem. Salve uma cópia de tempos em tempos.',
             style: theme.textTheme.bodyMedium,
           ),

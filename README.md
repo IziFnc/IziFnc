@@ -4,7 +4,7 @@ Controle de finanças pessoais — offline, local e sem frescura.
 
 Os dados ficam no aparelho, num SQLite. Sem conta, sem login, sem servidor.
 
-> **Status:** 1.0.1 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
+> **Status:** 1.0.2 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
 > Funcionando: contas e cartões, lançamentos, transferências, pagamento de fatura (com juros
 > opcionais), saldos, filtros e busca, importação da planilha `.xlsx` com IA, tema/tamanho do
 > texto/alto contraste, backup e restauração do banco, e um guia dentro do app pra quem está
@@ -44,11 +44,16 @@ Valor** (`Nome, Valor, Banco, Observação, Dia`); planilhas com outro layout pr
 um arquivo `.sqlite` (uma cópia exata) onde você escolher, e **Restaurar de um arquivo** traz de volta.
 Faça de tempos em tempos e guarde fora do aparelho.
 
-**Privacidade.** Sem conta, sem login, sem servidor. O serviço de IA que você configurar recebe
-**as células de texto** da aba (cabeçalhos, nomes dos lançamentos, bancos e observações) para achar
-onde ficam as tabelas; **células de número e de data, ou seja, valores e datas dos lançamentos, nunca
-saem do aparelho** (um valor que a planilha guarda como texto, e não como número, iria junto). A sua chave fica guardada só no aparelho (Keystore do
-Android) e não entra no backup.
+**Privacidade.** Sem conta, sem login, sem servidor: seus dados ficam só no aparelho, e quem
+desenvolve o app não recebe nada. A exceção é a importação com IA, que você escolhe usar: o serviço
+de IA configurado recebe **as células de texto** da aba (cabeçalhos, nomes dos lançamentos, bancos e
+observações) para achar onde ficam as tabelas; **células de número e de data, ou seja, valores e
+datas dos lançamentos, nunca saem do aparelho** (um valor que a planilha guarda como texto, e não
+como número, iria junto). Antes do primeiro envio o app pede a **sua autorização**, por serviço,
+e você pode revogá-la quando quiser em Configurações › Inteligência artificial. A chave de IA fica
+só no aparelho (Keystore do Android) e não entra no backup. Texto completo, com o que cada serviço
+faz com os dados: [PRIVACIDADE.md](PRIVACIDADE.md) (também dentro do app, em Configurações › Geral ›
+Privacidade).
 
 **Limites conhecidos.** O plano grátis da Groq limita requisições por minuto (o app repete sozinho
 em 429/503). Modelos de IA são aposentados com frequência: se aparecer "model not found", troque o
