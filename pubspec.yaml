@@ -50,7 +50,7 @@ dependencies:
   package_info_plus: ^10.2.2
   # Já vinha com o drift; declarado porque o backup abre o arquivo escolhido
   # para conferir que é um banco do IziFnc antes de restaurar.
-  sqlite3: ^3.5.2
+  sqlite3: ^3.9.1
   # Guarda a chave de IA do usuário no Keystore do Android (criptografada).
   flutter_secure_storage: ^11.2.0
   # Dicas ("coach marks") apontando para botões reais, na primeira visita a
