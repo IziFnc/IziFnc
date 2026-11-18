@@ -127,6 +127,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               _mapped.remove(key);
             }),
             onContinue: _buildPlan,
+            problems: _parsed?.rowErrors ?? const [],
           ),
           _Step.preview => ImportPreviewStep(
             banner: banner,

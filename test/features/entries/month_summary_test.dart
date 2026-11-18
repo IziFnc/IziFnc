@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/domain/entry_with_account.dart';
-import 'package:izifnc/features/entries/domain/month_summary.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/domain/entry_with_account.dart';
+import 'package:ambrio/features/entries/domain/month_summary.dart';
 
 void main() {
   final created = DateTime(2025);

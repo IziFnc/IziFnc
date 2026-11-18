@@ -45,7 +45,9 @@ String _two(int n) => n.toString().padLeft(2, '0');
 /// está escrito na planilha, para nenhuma linha "sumir" sem explicação. A
 /// planilha real mostrou que, sem isso, a pessoa conta as linhas e não bate.
 List<String> importNotes(ParsedSheetData parsed, List<ImportPlanRow> plan) {
-  final unchecked = plan.where((p) => !p.include).length;
+  // Só o que o **app** desmarcou (já importada, data fora do mês). O que a própria pessoa
+  // desmarcou na prévia não entra: a nota dizia "vieram desmarcadas" até para essas (0036).
+  final unchecked = plan.where((p) => p.reason != null).length;
   final undated = plan.where((p) => p.row.undated).length;
   final parcelas = plan.where((p) => p.row.originalDate != null).length;
   final semCartao = plan.where((p) => p.row.cardUnknown).length;
@@ -57,8 +59,8 @@ List<String> importNotes(ParsedSheetData parsed, List<ImportPlanRow> plan) {
     if (undated > 0) '$undated linha(s) estavam sem data na planilha e entram com a última data da aba.',
     if (semCartao > 0) '$semCartao fatura(s) sem o cartão na planilha usam o cartão escolhido no passo anterior.',
     if (parsed.mirrorsConsumed > 0)
-      '${parsed.mirrorsConsumed} transferência(s) aparecem duas vezes na planilha (saída e entrada) e entram uma vez só.',
-    'A tabela "Gastos Recorrentes" ainda não é importada.',
+      '${parsed.mirrorsConsumed} transferência(s) apareciam duas vezes (saída e entrada) e entram uma vez só.',
+    'Tabelas de gastos recorrentes ainda não são importadas.',
   ];
 }
 

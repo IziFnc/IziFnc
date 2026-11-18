@@ -15,20 +15,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
 
 import '../../test/support/real_fonts.dart';
 
 /// Onde as imagens são gravadas: a variável `AUDIT_OUT`, ou a pasta temporária do sistema.
-final out = Platform.environment['AUDIT_OUT'] ?? '${Directory.systemTemp.path}${Platform.pathSeparator}izifnc-audit';
+final out = Platform.environment['AUDIT_OUT'] ?? '${Directory.systemTemp.path}${Platform.pathSeparator}ambrio-audit';
 
 void main() {
   setUpAll(() async {
@@ -96,7 +96,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           aiSlotsStoreProvider.overrideWithValue(MemoryAiSlotsStore()),
         ],
-        child: RepaintBoundary(key: key, child: const IziFncApp()),
+        child: RepaintBoundary(key: key, child: const AmbrioApp()),
       ),
     );
     await tester.pumpAndSettle();

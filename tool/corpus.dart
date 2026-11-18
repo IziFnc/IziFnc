@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
 
 /// Onde procurar planilhas de teste: as fictícias (versionadas) e as reais
 /// (privadas, nunca versionadas — `/_local/` está no `.gitignore`).

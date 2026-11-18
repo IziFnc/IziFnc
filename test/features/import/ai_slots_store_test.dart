@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/data/llm_slot.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/data/llm_slot.dart';
 
 const _groq = LlmSlot(kind: LlmServiceKind.groq, apiKey: 'gsk_principal_1234');
 const _claude = LlmSlot(kind: LlmServiceKind.anthropic, apiKey: 'sk-ant-reserva-9876');

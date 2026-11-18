@@ -198,12 +198,12 @@ class TablesNotFoundException implements Exception {
 
   /// O nome das tabelas que faltaram, para a mensagem.
   String get missing => [
-    if (!despesasFound) '"Despesas Gerais"',
-    if (!entradaFound) '"Entrada de Valor"',
+    if (!despesasFound) 'a tabela de gastos',
+    if (!entradaFound) 'a tabela de entradas',
   ].join(' e ');
 
   @override
-  String toString() => 'Tabela(s) não encontrada(s) nesta aba: $missing.';
+  String toString() => 'Não encontrado nesta aba: $missing.';
 }
 
 /// Localiza as tabelas via [locator] e extrai as linhas de cada uma

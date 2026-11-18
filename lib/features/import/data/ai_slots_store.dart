@@ -62,7 +62,7 @@ class SecureAiSlotsStore extends AiSlotsStore {
 
   final FlutterSecureStorage _storage;
 
-  String _name(AiSlot slot) => 'izifnc.ai.${slot.name}';
+  String _name(AiSlot slot) => 'ambrio.ai.${slot.name}';
 
   @override
   Future<LlmSlot?> read(AiSlot slot) async => decode(await _storage.read(key: _name(slot)));

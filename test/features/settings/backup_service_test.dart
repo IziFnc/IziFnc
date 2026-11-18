@@ -4,12 +4,12 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/settings/data/backup_service.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/settings/data/backup_service.dart';
 import 'package:sqlite3/sqlite3.dart' as sql;
 
 void main() {
@@ -23,8 +23,8 @@ void main() {
   AppDatabase open(File f) => AppDatabase(NativeDatabase(f));
 
   setUp(() async {
-    tmp = await Directory.systemTemp.createTemp('izifnc_backup_');
-    dbFile = File('${tmp.path}/izifnc.sqlite');
+    tmp = await Directory.systemTemp.createTemp('ambrio_backup_');
+    dbFile = File('${tmp.path}/ambrio.sqlite');
     service = BackupService(
       databaseFile: () async => dbFile,
       workDir: () async => Directory('${tmp.path}/work'),
@@ -61,7 +61,7 @@ void main() {
   }
 
   test('o nome sugerido leva a data', () {
-    expect(BackupService.fileNameFor(DateTime(2026, 9, 5)), 'izifnc-2026-09-05.sqlite');
+    expect(BackupService.fileNameFor(DateTime(2026, 9, 5)), 'ambrio-2026-09-05.sqlite');
   });
 
   test('exportar gera um arquivo SQLite que o próprio app reconhece como válido', () async {
@@ -84,7 +84,7 @@ void main() {
     await db.close();
 
     // Outro aparelho: banco vazio, sem nada.
-    final other = File('${tmp.path}/novo/izifnc.sqlite');
+    final other = File('${tmp.path}/novo/ambrio.sqlite');
     final otherService = BackupService(
       databaseFile: () async => other,
       workDir: () async => Directory('${tmp.path}/work2'),
@@ -98,7 +98,7 @@ void main() {
     final entries = await restored.select(restored.entries).get();
     expect(accounts.map((a) => a.name), ['Bradesco']);
     expect(entries.map((e) => (e.description, e.amountCents)), [('Mercado', 12345)]);
-    expect(other.parent.listSync().whereType<File>().map((f) => f.path.split(RegExp(r'[\\/]')).last), ['izifnc.sqlite'],
+    expect(other.parent.listSync().whereType<File>().map((f) => f.path.split(RegExp(r'[\\/]')).last), ['ambrio.sqlite'],
         reason: 'sem sobra do arquivo de trabalho');
   });
 
@@ -132,7 +132,7 @@ void main() {
         d.execute('CREATE TABLE notas (id INTEGER PRIMARY KEY, texto TEXT)');
         d.execute('PRAGMA user_version = 3');
       });
-      expect(reasonOf(await service.inspect(bytes)), contains('não parece ser um backup do IziFnc'));
+      expect(reasonOf(await service.inspect(bytes)), contains('não parece ser um backup do Ambrio'));
     });
 
     test('sem user_version (não é banco do drift)', () async {

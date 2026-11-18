@@ -1,0 +1,12 @@
+{
+  "descricao": "Planilha do ano: categorias nas linhas e um mês por coluna, sem datas nem bancos por lançamento.",
+  "limiteConhecido": true,
+  "abas": {
+    "Ano": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    }
+  }
+}

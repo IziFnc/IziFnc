@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:izifnc/features/import/data/anthropic_table_locator.dart';
-import 'package:izifnc/features/import/data/groq_table_locator.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/openai_compatible_table_locator.dart';
+import 'package:ambrio/features/import/data/anthropic_table_locator.dart';
+import 'package:ambrio/features/import/data/groq_table_locator.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/openai_compatible_table_locator.dart';
 
 /// Os três localizadores respondem ao "Testar" do mesmo jeito: uma requisição
 /// mínima, sem dado de planilha, que diz se chave, endereço e modelo estão certos.

@@ -22,8 +22,11 @@ import 'month_filters.dart';
 import '../../settings/presentation/privacy_notice.dart';
 import 'entry_tile.dart';
 import 'month_providers.dart';
+import 'month_swipe.dart';
 import 'no_accounts_view.dart';
+import 'month_panel_card.dart';
 import 'month_situation_widgets.dart';
+import 'situation_screen.dart';
 
 /// Home: os lançamentos de um mês de competência e a situação de relance.
 ///
@@ -106,13 +109,16 @@ class _MonthScreenState extends ConsumerState<MonthScreen> {
                   ),
                 ],
               )
-            : AppBar(title: const Text('IziFnc')),
+            : AppBar(title: const Text('Ambrio')),
         drawer: const AppDrawer(current: AppDestination.home),
         body: switch ((accounts, startDay)) {
-          (AsyncData(), AsyncData()) when !hasAccounts => const NoAccountsView(),
-          (AsyncData(), AsyncData()) => _MonthBody(
-            accounts: list!,
-            month: month!,
+          (AsyncData(), AsyncData()) when !hasAccounts =>
+            const NoAccountsView(),
+          (AsyncData(), AsyncData()) => MonthSwipe(
+            monthKey: month!,
+            onPrevious: () => select(month.previous()),
+            onNext: () => select(month.next()),
+            child: _MonthBody(accounts: list!, month: month),
           ),
           (AsyncError(:final error), _) || (_, AsyncError(:final error)) =>
             Center(child: Text('Erro ao carregar: $error')),
@@ -208,7 +214,8 @@ class _MonthBody extends ConsumerWidget {
         lastBackup.hasValue &&
         (last == null
             ? (entryCount ?? 0) >= 10
-            : ref.read(clockProvider)().difference(last) > DataSettingsScreen.staleAfter);
+            : ref.read(clockProvider)().difference(last) >
+                  DataSettingsScreen.staleAfter);
 
     // Um scroll só: o topo rola junto com a lista.
     return ListView(
@@ -219,14 +226,10 @@ class _MonthBody extends ConsumerWidget {
         if (situation != null)
           TourTarget(
             anchor: TourAnchor.situationCard,
-            child: SituationCard(
+            child: MonthPanelCard(
               situation: situation,
               monthLoaded: rows != null,
-              onTap: () => showSituationSheet(
-                context,
-                situation: situation,
-                month: month,
-              ),
+              onTap: () => context.push(SituationScreen.path, extra: month),
             ),
           ),
         ...switch (entries) {

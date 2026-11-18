@@ -14,13 +14,13 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:izifnc/features/import/data/anthropic_table_locator.dart';
-import 'package:izifnc/features/import/data/fallback_table_locator.dart';
-import 'package:izifnc/features/import/data/groq_table_locator.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/spreadsheet_tables.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
-import 'package:izifnc/features/import/domain/parsed_row.dart';
+import 'package:ambrio/features/import/data/anthropic_table_locator.dart';
+import 'package:ambrio/features/import/data/fallback_table_locator.dart';
+import 'package:ambrio/features/import/data/groq_table_locator.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/spreadsheet_tables.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/domain/parsed_row.dart';
 
 String? _readKey(String env, String fileName) {
   final fromEnv = Platform.environment[env];
@@ -132,17 +132,8 @@ Future<int> _run(List<String> args) async {
       if (!args[i].startsWith('--') && (i == 0 || !args[i - 1].startsWith('--'))) args[i],
   ];
   var path = positional.isEmpty ? null : positional.first;
-  if (path == null) {
-    for (final dir in ['_local/jason', '_local/planilhas']) {
-      final d = Directory(dir);
-      if (!d.existsSync()) continue;
-      final found = d.listSync().whereType<File>().where((f) => f.path.toLowerCase().endsWith('.xlsx')).toList();
-      if (found.isNotEmpty) {
-        path = found.first.path;
-        break;
-      }
-    }
-  }
+  // Sempre exige o caminho: procurar sozinho em `_local/jason` abria a planilha REAL do autor
+  // (aconteceu em 2026-11-10). Passe o caminho de uma planilha fictícia, ou da real só se o autor mandar.
   if (path == null || !File(path).existsSync()) {
     stderr.writeln('Planilha não encontrada. Passe o caminho: dart run tool/diagnosticar_planilha.dart arquivo.xlsx');
     return 2;

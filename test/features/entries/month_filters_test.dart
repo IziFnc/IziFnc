@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/utils/formatters.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
+import 'package:ambrio/core/widgets/money_text.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/utils/formatters.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
 
 import '../../support/real_fonts.dart';
 
@@ -66,14 +67,39 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: const IziFncApp(),
+        overrides: [balancesHiddenAtStartProvider.overrideWithValue(false), appDatabaseProvider.overrideWithValue(db)],
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
   }
 
   Finder tile(String description) => find.text(description);
+
+  group('passar os meses por gesto (feat 0053)', () {
+    testWidgets('arrastar para a esquerda vai ao mês seguinte e para a direita volta', (tester) async {
+      await pumpHome(tester);
+      final title = tester.widget<Text>(find.descendant(of: find.byType(AppBar), matching: find.textContaining(' de 20'))).data!;
+
+      await tester.fling(tile('Salário'), const Offset(-300, 0), 900);
+      await tester.pumpAndSettle();
+      final nextTitle = tester.widget<Text>(find.descendant(of: find.byType(AppBar), matching: find.textContaining(' de 20'))).data!;
+      expect(nextTitle, isNot(title), reason: 'o mês mudou');
+      expect(tile('Salário'), findsNothing, reason: 'o mês seguinte não tem os lançamentos de hoje');
+
+      await tester.fling(find.textContaining('Nenhum lançamento'), const Offset(300, 0), 900);
+      await tester.pumpAndSettle();
+      expect(tester.widget<Text>(find.descendant(of: find.byType(AppBar), matching: find.textContaining(' de 20'))).data, title);
+      expect(tile('Salário'), findsOneWidget);
+    });
+
+    testWidgets('as setas continuam funcionando', (tester) async {
+      await pumpHome(tester);
+      await tester.tap(find.byTooltip('Próximo mês'));
+      await tester.pumpAndSettle();
+      expect(tile('Salário'), findsNothing);
+    });
+  });
 
   Future<void> openFilters(WidgetTester tester) async {
     await tester.tap(find.byTooltip('Filtrar e ordenar'));
@@ -228,36 +254,40 @@ void main() {
   });
 
   group('cartão de situação (topo enxuto)', () {
-    testWidgets('mostra em conta, faturas abertas e o que entrou e gastou, sem detalhes', (tester) async {
+    testWidgets('mostra em conta, o mês em barras e o vencimento, sem detalhes', (tester) async {
       await pumpHome(tester);
 
       expect(find.text('Em conta'), findsOneWidget);
-      expect(find.text('Faturas abertas'), findsOneWidget, reason: 'a fatura em aberto já aparece de relance');
+      expect(
+        find.text('Gastou 4% do que entrou'),
+        findsOneWidget,
+        reason: '17.999 de 500.000: o gasto em percentual do que entrou',
+      );
       expect(
         find.text('Entrou ${Formatters.money(500000)} · Gastou ${Formatters.money(5000 + 12999)}'),
         findsOneWidget,
       );
-      expect(find.text('Bradesco'), findsNothing, reason: 'o detalhe por conta fica na folha');
-      expect(find.text('Situação de ${_monthLabel()}'), findsNothing);
+      expect(find.text('Bradesco'), findsNothing, reason: 'o detalhe por conta fica na tela de situação');
+      expect(find.text('Situação'), findsNothing);
     });
 
-    testWidgets('tocar abre a folha com cada conta, cada fatura e o resumo do mês', (tester) async {
+    testWidgets('tocar abre a tela de situação com cada conta, cada fatura e o resumo do mês', (tester) async {
       await pumpHome(tester);
 
       await tester.tap(find.text('Em conta'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Situação de ${_monthLabel()}'), findsOneWidget);
-      expect(find.text('Contas (saldo de hoje)'), findsOneWidget);
+      expect(find.text('Situação'), findsOneWidget);
+      expect(find.text('Seu dinheiro'), findsOneWidget);
       expect(find.text('Bradesco'), findsOneWidget);
-      expect(find.text('Faturas abertas'), findsNWidgets(2), reason: 'o rótulo do cartão e o título da seção');
+      expect(find.text('O que você deve'), findsOneWidget);
       expect(find.text('Cartão Amazon'), findsOneWidget);
       expect(find.text('Entradas'), findsOneWidget);
       expect(find.text('Gastos no débito'), findsOneWidget);
       expect(find.text('Gastos no cartão Amazon'), findsOneWidget);
     });
 
-    testWidgets('tocar numa conta da folha filtra a lista por ela e fecha a folha', (tester) async {
+    testWidgets('tocar numa conta da tela de situação filtra a lista por ela e volta ao mês', (tester) async {
       await pumpHome(tester);
       await tester.tap(find.text('Em conta'));
       await tester.pumpAndSettle();
@@ -265,13 +295,13 @@ void main() {
       await tester.tap(find.text('Bradesco'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Situação de ${_monthLabel()}'), findsNothing, reason: 'a folha fechou');
+      expect(find.text('Situação'), findsNothing, reason: 'voltou ao mês');
       expect(tile('Mouse'), findsNothing, reason: 'o cartão Amazon saiu da lista');
       expect(tile('Mercado'), findsOneWidget);
       expect(find.text('Mostrando 2 de 3 lançamento(s)'), findsOneWidget);
     });
 
-    testWidgets('as linhas da folha têm ao menos 48 dp de altura (alvo de toque)', (tester) async {
+    testWidgets('as linhas da tela de situação têm ao menos 48 dp de altura (alvo de toque)', (tester) async {
       await pumpHome(tester);
       await tester.tap(find.text('Em conta'));
       await tester.pumpAndSettle();
@@ -281,6 +311,3 @@ void main() {
     });
   });
 }
-
-/// "setembro de 2026" (o mês de hoje), como a folha o escreve.
-String _monthLabel() => Formatters.monthYear(DateTime.now());

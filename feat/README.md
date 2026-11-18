@@ -39,6 +39,11 @@ e **como conferir** que funciona.
 | [0035](0035-tamanho-arquivos.md) | Limite de tamanho de arquivos no CI (400 em `lib/`, 500 em `test/`) e divisão dos oito arquivos que passavam | 2026-10-23 | ✅ concluído |
 | [0038](0038-juridico.md) | Privacidade e consentimento dentro do app: política em PT-BR, autorização específica antes de enviar texto à IA (revogável, versionada), licenças dos pacotes e aviso legal; migração v8→v9 | 2026-10-25 | ✅ concluído |
 | [0039](0039-publico.md) | O que o público enxerga: `SECURITY.md`, guia para conferir o APK (SHA-256 e certificado), Dependabot e `.mcp.json` fora do git | 2026-10-25 | ✅ concluído |
+| [0042](0042-ux-1-0-3.md) | UX da 1.0.3: Situação em tela, Pagar fatura em tela própria e acertos dos júris | 2026-11-11 | 🚧 em andamento |
+| [0043](0043-marca-e-vitrine.md) | Marca "Tinta & âmbar", nome novo e vitrine do projeto (1.0.4) | 2026-11-16 | 🚧 em andamento |
+| [0044](0044-textos-e-planilhas.md) | Revisão de textos e teste do importador com planilhas diferentes (1.0.4) | 2026-11-16 | ✅ concluído |
+| [0045](0045-vitrine.md) | Vitrine: README de estudo de caso, capturas e resumo em inglês (1.0.4) | 2026-11-17 | ✅ concluído |
+| [0046](0046-guia-foco.md) | Guia: foco que fecha sem sustos (1.0.4) | 2026-11-17 | ✅ concluído |
 
 ## Backlog
 

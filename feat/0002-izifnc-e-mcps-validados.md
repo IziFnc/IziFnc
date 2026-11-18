@@ -15,7 +15,7 @@
 | Arquivo do banco Drift | `izifc` | `izifnc` |
 | Classe raiz | `IziFcApp` | `IziFncApp` |
 
-A pasta do repositório continua `IziFc`. Renomear ou não fica a critério do autor.
+A pasta do repositório continua `IziFc`. Renomear ou não fica a critério do dono.
 
 **MCPs de teste visual, testados de ponta a ponta**
 
@@ -26,7 +26,7 @@ A pasta do repositório continua `IziFc`. Renomear ou não fica a critério do a
 
 ## Por quê
 
-**IziFnc.** É o nome escolhido pelo autor, um trocadilho com "finanças izi". O pacote Dart
+**IziFnc.** É o nome escolhido pelo dono, um trocadilho com "finanças izi". O pacote Dart
 foi renomeado junto, apesar de ser invisível para o usuário: hoje isso tocava 6 arquivos,
 mais tarde tocaria todos os imports do app. Sem o rename, o nome interno e o de produto
 ficariam diferentes para sempre.
@@ -92,5 +92,5 @@ um `take_snapshot`. O snapshot deve listar "IziFnc", "Estrutura no ar" e
 - **A `0001` fica como está.** Ela descreve o projeto quando ainda se chamava IziFc e
   registra a ressalva do canvas que depois caiu. É histórico: não se reescreve, se corrige
   numa entrada nova, como esta.
-- **Próxima entrega:** modelagem de dados a partir da planilha do autor. Antes, há
+- **Próxima entrega:** modelagem de dados a partir da planilha do dono. Antes, há
   perguntas de modelo a responder com ele (ver `_local/claude/analise-planilha.md`).

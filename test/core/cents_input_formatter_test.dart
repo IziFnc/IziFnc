@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/utils/cents_input_formatter.dart';
+import 'package:ambrio/core/utils/cents_input_formatter.dart';
 
 void main() {
   final formatter = CentsInputFormatter();

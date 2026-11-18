@@ -58,6 +58,7 @@ class AdjustBalanceDialogState extends State<AdjustBalanceDialog> {
             decoration: InputDecoration(
               labelText: widget.isCard ? 'Em aberto' : 'Saldo no banco',
               hintText: 'R\$ 0,00',
+              helperText: 'Digite com os centavos: 150000 vira R\$ 1.500,00.',
             ),
             onSubmitted: (_) => _submit(),
           ),

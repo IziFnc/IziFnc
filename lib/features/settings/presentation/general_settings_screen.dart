@@ -93,7 +93,7 @@ class GeneralSettingsScreen extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.info_outline),
-            title: const Text('IziFnc'),
+            title: const Text('Ambrio'),
             subtitle: Text(switch (info) {
               AsyncData(value: final i) => 'Versão ${i.version} (build ${i.buildNumber})',
               _ => 'Versão …',
@@ -122,13 +122,13 @@ class GeneralSettingsScreen extends ConsumerWidget {
           // Apache pedem que o aviso acompanhe o app).
           AboutListTile(
             icon: const Icon(Icons.description_outlined),
-            applicationName: 'IziFnc',
+            applicationName: 'Ambrio',
             applicationVersion: switch (info) {
               AsyncData(value: final i) => '${i.version} (build ${i.buildNumber})',
               _ => '',
             },
             applicationLegalese:
-                '© 2026 IziFnc. Código aberto sob a licença MIT. O app é oferecido "como está", '
+                '© 2026 Ambrio. Código aberto sob a licença MIT. O app é oferecido "como está", '
                 'sem garantias além das que a lei impõe, e não é aconselhamento financeiro. '
                 'Confira os valores e faça backup de vez em quando.',
             child: const Text('Licenças e aviso legal'),

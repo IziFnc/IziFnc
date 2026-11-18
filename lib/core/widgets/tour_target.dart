@@ -30,7 +30,12 @@ final tourRouteObserver = RouteObserver<ModalRoute<void>>();
 /// tela). Ver [kTourSteps] para o roteiro completo e [TourAnchor] para a
 /// posição de cada parada.
 class TourTarget extends ConsumerStatefulWidget {
-  const TourTarget({required this.anchor, required this.child, this.ready = true, super.key});
+  const TourTarget({
+    required this.anchor,
+    required this.child,
+    this.ready = true,
+    super.key,
+  });
 
   final TourAnchor anchor;
   final Widget child;
@@ -90,6 +95,21 @@ class _TourTargetState extends ConsumerState<TourTarget> with RouteAware {
     // Enquanto outra rota estiver empilhada por cima (ex.: o formulário do
     // passo anterior ainda fechando), não mostrar por cima dela.
     if (_route?.isCurrent == false) return;
+    // A tela ainda está entrando (transição de rota): medir o alvo agora o pegaria
+    // no meio do deslize e o recorte ficaria fora de lugar. Espera acabar e tenta de novo.
+    final entering = _route?.animation;
+    if (entering != null && !entering.isCompleted && !entering.isDismissed) {
+      _open = true; // segura novas tentativas até a transição acabar
+      void listener(AnimationStatus status) {
+        if (status != AnimationStatus.completed) return;
+        entering.removeStatusListener(listener);
+        _open = false;
+        if (mounted) _maybeShow(currentStep);
+      }
+
+      entering.addStatusListener(listener);
+      return;
+    }
     _open = true;
     _show(currentStep);
   }
@@ -111,6 +131,18 @@ class _TourTargetState extends ConsumerState<TourTarget> with RouteAware {
     // respondendo mal ao toque seguinte. Esta trava garante que só a
     // primeira chamada (a nossa, do botão da bolha) tem efeito.
     var finished = false;
+    // O fechamento leva um instante (o recorte se abre); um segundo toque nele
+    // (Próximo duas vezes, ou Pular logo depois de Próximo) cortava a animação ou
+    // avançava dois passos. Só o primeiro toque na bolha vale.
+    var closing = false;
+    void once(VoidCallback action) {
+      if (closing) return;
+      closing = true;
+      action();
+    }
+
+    // "Remover animações" do Android: o pacote ignora, então encurta pelo lado de cá.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     TutorialCoachMark(
       targets: [
         TargetFocus(
@@ -124,8 +156,8 @@ class _TourTargetState extends ConsumerState<TourTarget> with RouteAware {
               builder: (context, controller) => TourBubble(
                 step: step,
                 stepNumber: stepIndex + 1,
-                onNext: controller.next,
-                onSkip: controller.skip,
+                onNext: () => once(controller.next),
+                onSkip: () => once(controller.skip),
               ),
             ),
           ],
@@ -137,11 +169,20 @@ class _TourTargetState extends ConsumerState<TourTarget> with RouteAware {
       // explica o próximo passo ilegível. No claro, o fundo claro sobra
       // brilho suficiente mesmo dimmed — só o escuro precisa de um véu mais
       // fraco (achado no celular real, feat 0026).
-      opacityShadow: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.8,
+      opacityShadow: Theme.of(context).brightness == Brightness.dark
+          ? 0.45
+          : 0.8,
       // Sem o pulso contínuo: ele nunca "assenta" (a animação se repete para
       // sempre), o que travaria qualquer teste que use `pumpAndSettle` depois
       // de abrir uma destas telas.
       pulseEnable: false,
+      // Abrir e fechar mais curtos que os 600 ms do pacote: o recorte que cresce
+      // até sumir parecia lento e desigual para alvos fora do centro (o botão +).
+      focusAnimationDuration: Duration(milliseconds: reduceMotion ? 1 : 350),
+      unFocusAnimationDuration: Duration(milliseconds: reduceMotion ? 1 : 200),
+      // O voltar do Android com a bolha aberta fechava a tela por baixo e deixava o
+      // véu parado no lugar antigo. Com a bolha aberta, a saída é Próximo ou Pular.
+      disableBackButton: true,
       // O pacote desenha o próprio texto "SKIP" solto num canto por padrão;
       // a bolha já tem "Pular o tour", então esse extra só sobra por cima de
       // outro botão (achado no celular real, feat 0026).

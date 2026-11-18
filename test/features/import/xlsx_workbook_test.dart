@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
-import 'package:izifnc/features/import/domain/import_error_message.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/domain/import_error_message.dart';
 
 /// Monta um `.xlsx` mínimo a partir das partes XML que o [XlsxWorkbook]
 /// realmente lê — sem `[Content_Types].xml` nem `_rels/.rels`, que um leitor

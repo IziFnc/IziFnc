@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/settings/domain/appearance.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/settings/domain/appearance.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:izifnc/features/settings/presentation/settings_screen.dart';
+import 'package:ambrio/features/settings/presentation/settings_screen.dart';
 
 import '../../support/menu.dart';
 import '../../support/real_fonts.dart';
@@ -41,7 +41,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -69,7 +69,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -124,8 +124,8 @@ void main() {
 
   testWidgets('Sobre mostra a versão e o build do app', (tester) async {
     PackageInfo.setMockInitialValues(
-      appName: 'IziFnc',
-      packageName: 'com.getulio.izifnc',
+      appName: 'Ambrio',
+      packageName: 'com.getulio.ambrio',
       version: '9.8.7',
       buildNumber: '42',
       buildSignature: '',
@@ -176,7 +176,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();

@@ -55,7 +55,7 @@ class AccountCardFields extends StatelessWidget {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
             labelText: 'Dia do fechamento da fatura',
-            helperText: 'Como aparece no app do banco (o "Até" da planilha).',
+            helperText: 'Como aparece no app do seu banco.',
             errorText: closingError,
           ),
           onChanged: (_) => onChanged(),
@@ -79,7 +79,7 @@ class AccountCardFields extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            'Itaú e Mercado Pago: atual · Nubank: próxima. Confira no app do seu banco.',
+            'Cada banco decide. Confira no app do seu banco.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

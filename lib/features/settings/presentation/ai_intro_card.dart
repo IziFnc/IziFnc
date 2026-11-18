@@ -50,7 +50,7 @@ class AiIntroCard extends StatelessWidget {
                     'A IA só serve para achar onde ficam as tabelas: vai todo o '
                     'texto da aba, inclusive anotações fora das tabelas e o nome da aba '
                     '(cabeçalhos, nomes dos lançamentos, bancos, observações). '
-                    'Valores e datas nunca saem do aparelho, e a chave fica guardada só nele.\n\n'
+                    'Valores e datas nunca saem do aparelho (um valor que a planilha guarda como texto iria junto), e a chave fica guardada só nele.\n\n'
                     'A Reserva é opcional: só é chamada se a Principal falhar. O botão '
                     'Testar envia uma mensagem mínima e só roda quando você toca nele.',
                     style: theme.textTheme.bodyMedium?.copyWith(color: color),

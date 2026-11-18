@@ -5,17 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/utils/formatters.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/presentation/entry_form_screen.dart';
-import 'package:izifnc/features/entries/presentation/month_screen.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/utils/formatters.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/presentation/bill_payment_screen.dart';
+import 'package:ambrio/features/entries/presentation/entry_form_screen.dart';
+import 'package:ambrio/features/entries/presentation/month_screen.dart';
 
 /// As regras de dinheiro do formulário manual: uma conta não transfere o que não
 /// tem, e uma fatura não recebe mais do que deve. A importação não passa por
@@ -57,7 +58,7 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -178,73 +179,84 @@ void main() {
     });
   });
 
-  group('pagar fatura', () {
-    /// Rótulo do chip do cartão quando ele deve [open] centavos.
-    String cardLabel(int open) => 'Amazon · ${Formatters.money(open)} em aberto';
-
-    Future<void> fillBill(WidgetTester tester, String cardLabel) async {
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Pagar fatura'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, cardLabel));
+  group('pagar fatura (tela própria, feat 0042)', () {
+    /// Abre a tela de pagamento do Amazon, como o botão "Pagar fatura" faz.
+    Future<void> openBill(WidgetTester tester) async {
+      GoRouter.of(tester.element(find.byType(MonthScreen))).push(BillPaymentScreen.pathFor(amazon));
       await tester.pumpAndSettle();
     }
 
-    testWidgets('acima do que está em aberto é bloqueado', (tester) async {
-      await entries.adjustBalance(accountId: bradesco, target: 100000);
-      await buy(5000);
-      await pumpApp(tester);
-      await openNew(tester, '6000');
-      await fillBill(tester, cardLabel(5000));
-      await save(tester);
-
-      expect(find.textContaining('Acima do que está em aberto'), findsOneWidget);
-      expect(find.byType(EntryFormScreen), findsOneWidget);
-      expect(await entries.balanceOf(amazon), -5000, reason: 'a fatura continua como estava');
-    });
-
-    testWidgets('pagamento parcial (menos que o em aberto) é permitido e o resto fica no cartão', (
-      tester,
-    ) async {
-      await entries.adjustBalance(accountId: bradesco, target: 100000);
-      await buy(5000);
-      await pumpApp(tester);
-      await openNew(tester, '2000');
-      await fillBill(tester, cardLabel(5000));
-      await save(tester);
-
-      expect(find.byType(EntryFormScreen), findsNothing);
-      expect(await entries.balanceOf(amazon), -3000, reason: 'R\$ 30,00 seguem em aberto');
-    });
-
-    // --- Juros e encargos opcionais (feat 0014) ---
-
+    final valueField = find.widgetWithText(TextField, 'Valor');
     final interestField = find.widgetWithText(TextField, 'Juros e encargos desta fatura (opcional)');
+    final payButton = find.byType(FilledButton);
+
+    Future<void> pay(WidgetTester tester) async {
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.pumpAndSettle();
+    }
 
     Future<List<Entry>> cardEntries() async =>
         (await db.select(db.entries).get()).where((e) => e.accountId == amazon).toList();
 
-    testWidgets('o campo de juros só existe em "Pagar fatura"', (tester) async {
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('já vem com o valor em aberto, a conta dona escolhida e o juros opcional', (tester) async {
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       await pumpApp(tester);
-      await openNew(tester, '1000');
-      expect(interestField, findsNothing, reason: 'despesa comum');
+      await openBill(tester);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Pagar fatura'));
-      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(valueField).controller!.text, Formatters.money(5000));
+      final saiDe = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Bradesco'));
+      expect(saiDe.selected, isTrue, reason: 'conta dona pré-selecionada');
       expect(interestField, findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Pagar fatura'), findsNothing, reason: 'o formulário não oferece mais');
+    });
+
+    testWidgets('acima do que está em aberto é bloqueado', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await buy(5000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await tester.enterText(valueField, '6000');
+      await pay(tester);
+
+      expect(find.textContaining('Acima do que está em aberto'), findsNWidgets(2), reason: 'no campo e junto do botão');
+      expect(find.byType(BillPaymentScreen), findsOneWidget);
+      expect(await entries.balanceOf(amazon), -5000, reason: 'a fatura continua como estava');
+    });
+
+    testWidgets('pagamento parcial (menos que o em aberto) é permitido e o resto fica no cartão', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await buy(5000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await tester.enterText(valueField, '2000');
+      await pay(tester);
+
+      expect(find.byType(BillPaymentScreen), findsNothing);
+      expect(await entries.balanceOf(amazon), -3000, reason: 'R\$ 30,00 seguem em aberto');
     });
 
     testWidgets('juros informados liberam pagar acima do em aberto e viram um gasto no cartão', (tester) async {
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       await pumpApp(tester);
-      await openNew(tester, '5800');
-      await fillBill(tester, cardLabel(5000));
+      await openBill(tester);
+      await tester.enterText(valueField, '5800');
       await tester.enterText(interestField, '800');
-      await save(tester);
+      await pay(tester);
 
-      expect(find.byType(EntryFormScreen), findsNothing);
+      expect(find.byType(BillPaymentScreen), findsNothing);
       expect(await entries.balanceOf(amazon), 0, reason: '5000 + 800 de juros - 5800 pagos');
       expect(await entries.balanceOf(bradesco), 94200, reason: '100000 - 5800');
       final interest = (await cardEntries()).singleWhere((e) => e.description == 'Juros e encargos da fatura');
@@ -253,30 +265,29 @@ void main() {
     });
 
     testWidgets('acima do em aberto MAIS o juros continua bloqueado e não grava nada', (tester) async {
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       await pumpApp(tester);
-      await openNew(tester, '6000');
-      await fillBill(tester, cardLabel(5000));
+      await openBill(tester);
+      await tester.enterText(valueField, '6000');
       await tester.enterText(interestField, '500');
-      await save(tester);
+      await pay(tester);
 
-      expect(find.textContaining('Acima do que está em aberto'), findsOneWidget);
-      expect(find.byType(EntryFormScreen), findsOneWidget);
+      expect(find.textContaining('Acima do que está em aberto'), findsNWidgets(2), reason: 'no campo e junto do botão');
+      expect(find.byType(BillPaymentScreen), findsOneWidget);
       expect(await cardEntries(), hasLength(1), reason: 'só a compra: o juros não foi gravado sozinho');
       expect(await entries.balanceOf(amazon), -5000);
     });
 
     testWidgets('mostra ao vivo o que sobra: parcial, com juros e quitada', (tester) async {
-      // A linha fica abaixo do campo de juros: numa janela baixa a lista nem a constrói.
-      tester.view.physicalSize = const Size(800, 2400);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       await pumpApp(tester);
-      await openNew(tester, '2000');
-      await fillBill(tester, cardLabel(5000));
+      await openBill(tester);
+      await tester.enterText(valueField, '2000');
+      await tester.pump();
 
       expect(
         find.textContaining('${Formatters.money(3000)} continuam em aberto e entram na próxima fatura'),
@@ -287,28 +298,25 @@ void main() {
       await tester.pump();
       expect(find.textContaining('${Formatters.money(4000)} continuam em aberto'), findsOneWidget);
 
-      await tester.enterText(find.widgetWithText(TextField, 'Valor'), '6000');
+      await tester.enterText(valueField, '6000');
       await tester.pump();
-      expect(find.textContaining('Fatura quitada'), findsOneWidget);
+      expect(find.textContaining('a fatura fica quitada'), findsOneWidget);
     });
 
-    testWidgets('não diz "quitada" quando o valor passa do que pode ser pago (o erro aparece ao salvar)', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 2400);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+    testWidgets('não diz "quitada" quando o valor passa do que pode ser pago (o erro aparece ao pagar)', (tester) async {
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       await pumpApp(tester);
-      await openNew(tester, '6000'); // acima dos R$ 50,00 em aberto, sem juros
-      await fillBill(tester, cardLabel(5000));
+      await openBill(tester);
+      await tester.enterText(valueField, '6000'); // acima dos R$ 50,00 em aberto, sem juros
+      await tester.pump();
 
-      expect(find.textContaining('Fatura quitada'), findsNothing);
+      expect(find.textContaining('fica quitada'), findsNothing);
       expect(find.textContaining('continuam em aberto'), findsNothing);
     });
 
-    testWidgets('editar um pagamento existente não oferece o campo de juros', (tester) async {
+    testWidgets('editar um pagamento existente continua no formulário, sem campo de juros', (tester) async {
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await buy(5000);
       final paymentId = await entries.save(
@@ -325,19 +333,78 @@ void main() {
       GoRouter.of(tester.element(find.byType(MonthScreen))).push(EntryFormScreen.editPath(paymentId));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextField, 'Valor'), findsOneWidget);
+      expect(valueField, findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Pagar fatura'), findsOneWidget, reason: 'o tipo ainda aparece ao editar');
       expect(interestField, findsNothing, reason: 'o juros já é um gasto à parte, editável na lista');
     });
 
-    testWidgets('cartão sem nada em aberto não recebe pagamento', (tester) async {
+    testWidgets('cartão sem nada em aberto não recebe pagamento sem juros', (tester) async {
+      tall(tester);
       await entries.adjustBalance(accountId: bradesco, target: 100000);
       await pumpApp(tester);
-      await openNew(tester, '1000');
-      await fillBill(tester, 'Amazon');
-      await save(tester);
+      await openBill(tester);
 
-      expect(find.textContaining('Não há fatura em aberto'), findsOneWidget);
+      expect(find.textContaining('Não há fatura em aberto neste cartão'), findsOneWidget);
+      expect(tester.widget<FilledButton>(payButton).onPressed, isNull, reason: 'sem valor nem juros, nada a pagar');
       expect(await entries.balanceOf(amazon), 0);
+    });
+
+    testWidgets('cartão sem fatura aceita pagar só os juros e encargos que o banco cobrou', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await tester.enterText(valueField, '800');
+      await tester.enterText(interestField, '800');
+      await tester.pump(); // o botão só liga depois de o juros entrar na conta
+      await pay(tester);
+
+      expect(find.byType(BillPaymentScreen), findsNothing);
+      expect(await entries.balanceOf(amazon), 0, reason: '800 de juros - 800 pagos');
+      expect(await entries.balanceOf(bradesco), 99200);
+    });
+
+    testWidgets('grava a descrição "Pagamento fatura Amazon" e a conta de origem', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await buy(5000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await pay(tester);
+
+      final payment = (await db.select(db.entries).get()).singleWhere((e) => e.type == EntryType.billPayment);
+      expect(payment.description, 'Pagamento fatura Amazon');
+      expect(payment.accountId, bradesco);
+      expect(payment.toAccountId, amazon);
+      expect(payment.amountCents, 5000, reason: 'o valor já vinha preenchido com o em aberto');
+    });
+
+    testWidgets('dois toques seguidos em Pagar gravam um pagamento só', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await buy(5000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
+      await tester.tap(payButton, warnIfMissed: false); // segundo toque antes de gravar
+      await tester.pumpAndSettle();
+
+      final payments = (await db.select(db.entries).get()).where((e) => e.type == EntryType.billPayment);
+      expect(payments, hasLength(1));
+      expect(await entries.balanceOf(amazon), 0);
+    });
+
+    testWidgets('mostra o erro também perto do botão (com texto grande o campo fica longe)', (tester) async {
+      tall(tester);
+      await entries.adjustBalance(accountId: bradesco, target: 100000);
+      await buy(5000);
+      await pumpApp(tester);
+      await openBill(tester);
+      await tester.enterText(valueField, '6000');
+      await pay(tester);
+
+      expect(find.textContaining('Acima do que está em aberto'), findsNWidgets(2), reason: 'no campo e junto do botão');
     });
   });
 

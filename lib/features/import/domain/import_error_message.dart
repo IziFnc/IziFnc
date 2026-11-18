@@ -33,22 +33,25 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
         detail: error.message,
       );
     }
-    final status = int.tryParse(RegExp(r'respondeu (\d{3})').firstMatch(error.message)?.group(1) ?? '');
+    final status = int.tryParse(
+      RegExp(r'respondeu (\d{3})').firstMatch(error.message)?.group(1) ?? '',
+    );
     final reason = switch (status) {
       401 || 403 =>
         'A chave de IA foi recusada. Confira a chave em Configurações › Inteligência '
-        'artificial (o botão Testar mostra se ela funciona).',
+            'artificial (o botão Testar mostra se ela funciona).',
       404 =>
         'O modelo de IA não foi encontrado. Troque o modelo em Configurações › '
-        'Inteligência artificial.',
-      429 || 503 || 529 =>
-        'O serviço de IA está ocupado ou chegou no limite. Espere um minuto e tente de novo.',
+            'Inteligência artificial.',
+      429 || 503 || 529 => 'O serviço de IA está ocupado ou chegou no limite. Espere um minuto e tente de novo.',
       _ => 'O serviço de IA não respondeu como esperado. Tente de novo em instantes.',
     };
     return ImportErrorMessage('$prefix $reason', detail: error.message);
   }
 
-  if (error is SocketException || error is http.ClientException || error is TimeoutException) {
+  if (error is SocketException ||
+      error is http.ClientException ||
+      error is TimeoutException) {
     return ImportErrorMessage(
       '$prefix Sem conexão com a internet. A importação usa a internet só para a IA achar as tabelas.',
       detail: '$error',
@@ -57,9 +60,10 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
 
   if (error is TablesNotFoundException) {
     return ImportErrorMessage(
-      '$prefix A IA não achou a tabela ${error.missing} nesta aba, mesmo tentando de novo. '
-      'Toque na aba outra vez (às vezes ela acha na próxima) e confira se os títulos das '
-      'colunas são Nome, Valor, Tipo, Banco, Observação e Dia.',
+      '$prefix A IA não achou ${error.missing} nesta aba. Isso acontece quando a aba não tem o '
+      'formato que o app lê: uma tabela de gastos (colunas Nome, Valor, Tipo, Banco, Observação e '
+      'Dia) e outra de entradas (Nome, Valor, Banco, Observação e Dia). Confira os títulos; se '
+      'estiverem certos, toque na aba outra vez (às vezes ela acha na próxima).',
       detail: '$error',
     );
   }
@@ -79,5 +83,8 @@ ImportErrorMessage describeImportError(Object error, {required String during}) {
     );
   }
 
-  return ImportErrorMessage('$prefix Tente de novo; se continuar, o detalhe abaixo ajuda a entender.', detail: '$error');
+  return ImportErrorMessage(
+    '$prefix Tente de novo; se continuar, o detalhe abaixo ajuda a entender.',
+    detail: '$error',
+  );
 }

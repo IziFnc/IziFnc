@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:drift/drift.dart' show DatabaseConnection, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/settings/data/settings_repository.dart';
-import 'package:izifnc/features/settings/domain/ai_consent.dart';
-import 'package:izifnc/features/settings/domain/privacy_text.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/settings/data/settings_repository.dart';
+import 'package:ambrio/features/settings/domain/ai_consent.dart';
+import 'package:ambrio/features/settings/domain/privacy_text.dart';
 
 /// O texto de privacidade e a autorização de envio à IA (feat 0038).
 void main() {

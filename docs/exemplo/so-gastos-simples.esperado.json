@@ -1,0 +1,12 @@
+{
+  "descricao": "Só gastos: Data, Descrição, Valor e Categoria numa tabela, sem banco, tipo nem entradas.",
+  "limiteConhecido": true,
+  "abas": {
+    "Outubro": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    }
+  }
+}

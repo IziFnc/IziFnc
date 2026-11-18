@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/presentation/month_situation_widgets.dart';
-import 'package:izifnc/features/settings/data/settings_repository.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/presentation/month_situation_widgets.dart';
+import 'package:ambrio/features/settings/data/settings_repository.dart';
 
 import '../../support/real_fonts.dart';
 
@@ -61,7 +61,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();

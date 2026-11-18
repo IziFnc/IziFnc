@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:izifnc/features/import/data/anthropic_table_locator.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/data/anthropic_table_locator.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
 
 SheetGrid gridFrom(Map<(int row, int col), XlsxValue> cells) {
   final byRow = <int, Map<int, XlsxValue>>{};

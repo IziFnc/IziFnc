@@ -56,7 +56,7 @@ class ImportPickFileStep extends ConsumerWidget {
               ImportChecklistRow(
                 done: hasAccounts,
                 title: 'Contas e cartões cadastrados',
-                hint: 'A planilha cita bancos e cartões: cadastre os que você usa.',
+                hint: 'Cadastre as contas e cartões da sua planilha.',
                 actionLabel: 'Cadastrar',
                 onAction: () => context.push(AccountFormScreen.newPath),
               ),
@@ -75,8 +75,8 @@ class ImportPickFileStep extends ConsumerWidget {
                     'saldo inicial, o "em aberto" dos cartões pode ficar negativo.',
               ),
               const ImportInfoRow(
-                title: 'A planilha precisa ter as tabelas certas',
-                hint: '"Despesas Gerais" e "Entrada de Valor". Outro layout provavelmente não será lido.',
+                title: 'A planilha precisa ter o formato certo',
+                hint: 'Uma tabela de gastos e outra de entradas. Outros formatos podem falhar.',
               ),
               const SizedBox(height: 16),
               // Sem `ready` aqui: diferente da v1 (dica avulsa), esta parada é

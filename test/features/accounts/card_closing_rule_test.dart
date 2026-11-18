@@ -5,15 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/accounts/presentation/account_form_screen.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/presentation/month_screen.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/accounts/presentation/account_form_screen.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/presentation/month_screen.dart';
 
 /// A escolha do cartão para a compra feita no dia do fechamento: fatura atual
 /// ou próxima. Padrão "atual" no cartão novo; cartão que já existia (migrado)
@@ -47,7 +47,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -73,7 +73,7 @@ void main() {
     expect(find.text('Fatura atual'), findsOneWidget);
     expect(find.text('Próxima fatura'), findsOneWidget);
     expect(selectedIsCurrent(tester), isTrue);
-    expect(find.textContaining('Itaú e Mercado Pago'), findsOneWidget, reason: 'ajuda com exemplos de bancos');
+    expect(find.textContaining('Cada banco decide'), findsOneWidget, reason: 'ajuda sem presumir um banco');
   });
 
   testWidgets('salvar um cartão novo guarda a escolha', (tester) async {

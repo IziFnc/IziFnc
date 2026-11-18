@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
-import 'package:izifnc/features/import/domain/parsed_row.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/domain/parsed_row.dart';
 
 import '../../../tool/corpus.dart';
 
@@ -16,7 +16,10 @@ class _ExpectedLocator implements LlmTableLocator {
   String get providerName => 'esperado';
 
   @override
-  Future<TableLocations> locate(SheetGrid grid, {required String sheetName}) async => expectation.locations;
+  Future<TableLocations> locate(
+    SheetGrid grid, {
+    required String sheetName,
+  }) async => expectation.locations;
 }
 
 int _sum(Iterable<ParsedRow> rows) => rows.fold(0, (a, r) => a + r.valorCents);
@@ -29,7 +32,11 @@ void main() {
   final cases = loadCorpus(dirs: const [publicCorpusDir], warnings: warnings);
 
   test('o corpus público existe e todas as planilhas têm o .esperado.json', () {
-    expect(cases, isNotEmpty, reason: 'rode: dart run tool/gerar_planilhas_exemplo.dart');
+    expect(
+      cases,
+      isNotEmpty,
+      reason: 'rode: dart run tool/gerar_planilhas_exemplo.dart',
+    );
     expect(warnings, isEmpty);
   });
 
@@ -41,6 +48,23 @@ void main() {
 
         test('aba "$sheet"${c.limiteConhecido ? ' (limite conhecido)' : ''}', () async {
           final grid = c.open().readSheet(sheet);
+
+          if (expected.despesasGerais == null &&
+              expected.entradaDeValor == null) {
+            // Planilha de outra forma, sem as duas tabelas do app: a resposta certa
+            // da IA é "não achei", e o app tem de dizer isso (mensagem clara na
+            // tela), não importar lixo.
+            await expectLater(
+              extractTablesWithAi(
+                grid,
+                sheetName: sheet,
+                locator: _ExpectedLocator(expected),
+              ),
+              throwsA(isA<TablesNotFoundException>()),
+            );
+            return;
+          }
+
           final result = await extractTablesWithAi(
             grid,
             sheetName: sheet,
@@ -63,21 +87,56 @@ void main() {
           final n = expected.contagens;
           expect(parsed.despesas, hasLength(n['despesas']), reason: 'despesas');
           expect(parsed.entradas, hasLength(n['entradas']), reason: 'entradas');
-          expect(parsed.transfers, hasLength(n['transfers']), reason: 'transferências');
-          expect(parsed.billPayments, hasLength(n['billPayments']), reason: 'pagamentos de fatura');
-          expect(parsed.mirrorsConsumed, n['mirrorsConsumed'], reason: 'espelhos consumidos');
-          expect(parsed.rowErrors, hasLength(n['rowErrors']), reason: parsed.rowErrors.join('\n'));
+          expect(
+            parsed.transfers,
+            hasLength(n['transfers']),
+            reason: 'transferências',
+          );
+          expect(
+            parsed.billPayments,
+            hasLength(n['billPayments']),
+            reason: 'pagamentos de fatura',
+          );
+          expect(
+            parsed.mirrorsConsumed,
+            n['mirrorsConsumed'],
+            reason: 'espelhos consumidos',
+          );
+          expect(
+            parsed.rowErrors,
+            hasLength(n['rowErrors']),
+            reason: parsed.rowErrors.join('\n'),
+          );
 
           final t = expected.totaisCents;
-          expect(_sum(parsed.despesas), t['despesas'], reason: 'total de despesas');
-          expect(_sum(parsed.entradas), t['entradas'], reason: 'total de entradas');
-          expect(_sum(parsed.transfers), t['transfers'], reason: 'total de transferências');
-          expect(_sum(parsed.billPayments), t['billPayments'], reason: 'total de faturas');
+          expect(
+            _sum(parsed.despesas),
+            t['despesas'],
+            reason: 'total de despesas',
+          );
+          expect(
+            _sum(parsed.entradas),
+            t['entradas'],
+            reason: 'total de entradas',
+          );
+          expect(
+            _sum(parsed.transfers),
+            t['transfers'],
+            reason: 'total de transferências',
+          );
+          expect(
+            _sum(parsed.billPayments),
+            t['billPayments'],
+            reason: 'total de faturas',
+          );
 
           // Nos modelos suportados, nada vem desmarcado por data: parcela com a data
           // da compra é trazida para o mês da aba, e linha sem data recebe a do
           // fim do mês da aba (feat 0025, achado da planilha real).
-          final suspeitas = [for (final r in parsed.all) if (r.suspiciousDate) 'L${r.sheetRow}'];
+          final suspeitas = [
+            for (final r in parsed.all)
+              if (r.suspiciousDate) 'L${r.sheetRow}',
+          ];
           expect(suspeitas, isEmpty, reason: 'linhas desmarcadas por data');
         });
       }

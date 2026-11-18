@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/utils/year_month.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/utils/year_month.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
 import '../support/repo_fixture.dart';
 
 void main() {

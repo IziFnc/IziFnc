@@ -6,17 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/widgets/app_drawer.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/presentation/accounts_screen.dart';
-import 'package:izifnc/features/entries/presentation/month_screen.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
-import 'package:izifnc/features/import/presentation/import_screen.dart';
-import 'package:izifnc/features/settings/presentation/settings_screen.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/widgets/app_drawer.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/presentation/accounts_screen.dart';
+import 'package:ambrio/features/entries/presentation/month_screen.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
+import 'package:ambrio/features/import/presentation/import_screen.dart';
+import 'package:ambrio/features/settings/presentation/settings_screen.dart';
 
 import '../support/menu.dart';
 import '../support/real_fonts.dart';
@@ -48,7 +48,7 @@ void main() {
           aiSlotsStoreProvider.overrideWithValue(MemoryAiSlotsStore()),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -82,7 +82,7 @@ void main() {
     for (final label in ['Início', 'Contas e cartões', 'Importar planilha', 'Configurações']) {
       expect(find.descendant(of: drawer, matching: find.text(label)), findsOneWidget, reason: label);
     }
-    expect(find.descendant(of: drawer, matching: find.text('IziFnc')), findsOneWidget);
+    expect(find.descendant(of: drawer, matching: find.text('Ambrio')), findsOneWidget);
     expect(selectedIndex(tester), 0);
   });
 

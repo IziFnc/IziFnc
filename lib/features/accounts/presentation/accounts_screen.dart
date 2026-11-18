@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/widgets/app_drawer.dart';
 import '../../../core/widgets/double_back_to_exit.dart';
+import '../../../core/widgets/money_text.dart';
 import '../../../core/widgets/tour_step.dart';
 import '../../../core/widgets/tour_target.dart';
 import 'account_form_screen.dart';
@@ -24,7 +25,7 @@ class AccountsScreen extends ConsumerWidget {
 
     return DoubleBackToExit(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Contas e cartões')),
+        appBar: AppBar(title: const Text('Contas e cartões'), actions: const [BalancesEyeButton()]),
         drawer: const AppDrawer(current: AppDestination.accounts),
         floatingActionButton: TourTarget(
           anchor: TourAnchor.accountsAdd,
@@ -80,7 +81,7 @@ class AccountsScreen extends ConsumerWidget {
   }
 }
 
-class _AccountTile extends StatelessWidget {
+class _AccountTile extends ConsumerWidget {
   const _AccountTile({
     required this.account,
     this.indented = false,
@@ -96,8 +97,9 @@ class _AccountTile extends StatelessWidget {
   final bool orphan;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final balance = ref.watch(accountBalancesProvider).value?[account.id];
     final details = account.kind.isCard
         ? [
             if (orphan)
@@ -123,6 +125,16 @@ class _AccountTile extends StatelessWidget {
         details.join(' · '),
         style: orphan ? TextStyle(color: colors.error) : null,
       ),
+      // Saldo de hoje na conta; no cartão, o que está em aberto (feat 0042).
+      trailing: balance == null
+          ? null
+          : (account.kind.isCard && balance >= 0)
+          ? const Text('sem fatura', style: TextStyle(fontFeatures: [FontFeature.tabularFigures()]))
+          : MoneyText(
+              account.kind.isCard ? -balance : balance,
+              suffix: account.kind.isCard ? ' em aberto' : '',
+              style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+            ),
       onTap: () => context.push(AccountFormScreen.editPath(account.id)),
     );
   }

@@ -5,19 +5,19 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/database/repositories.dart';
-import 'package:izifnc/core/utils/formatters.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/settings/data/backup_service.dart';
-import 'package:izifnc/features/settings/data/settings_repository.dart';
-import 'package:izifnc/features/settings/presentation/backup_actions.dart';
-import 'package:izifnc/features/settings/presentation/settings_providers.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/database/repositories.dart';
+import 'package:ambrio/core/utils/formatters.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/settings/data/backup_service.dart';
+import 'package:ambrio/features/settings/data/settings_repository.dart';
+import 'package:ambrio/features/settings/presentation/backup_actions.dart';
+import 'package:ambrio/features/settings/presentation/settings_providers.dart';
 
 import '../../support/menu.dart';
 import '../../support/real_fonts.dart';
@@ -36,8 +36,8 @@ void main() {
     late ProviderContainer container;
 
     setUp(() async {
-      tmp = await Directory.systemTemp.createTemp('izifnc_restore_');
-      dbFile = File('${tmp.path}/izifnc.sqlite');
+      tmp = await Directory.systemTemp.createTemp('ambrio_restore_');
+      dbFile = File('${tmp.path}/ambrio.sqlite');
       service = BackupService(
         databaseFile: () async => dbFile,
         workDir: () async => Directory('${tmp.path}/work'),
@@ -135,7 +135,7 @@ void main() {
             appDatabaseProvider.overrideWithValue(db),
             tourEnabledProvider.overrideWithValue(false),
           ],
-          child: const IziFncApp(),
+          child: const AmbrioApp(),
         ),
       );
       await tester.pumpAndSettle();

@@ -13,7 +13,7 @@ import 'database_file.dart';
 // `.drift.dart`, não `.g.dart`: o drift gera num alvo próprio (ver build.yaml).
 part 'app_database.drift.dart';
 
-/// Banco local do IziFnc (SQLite via Drift).
+/// Banco local do Ambrio (SQLite via Drift).
 @DriftDatabase(tables: [Accounts, Entries, AppSettings, ImportBankMappings])
 class AppDatabase extends _$AppDatabase {
   /// Construtor para testes, que abrem um banco em memória.
@@ -24,7 +24,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.defaults()
     : super(
         driftDatabase(
-          name: 'izifnc',
+          name: 'ambrio',
           native: DriftNativeOptions(
             databasePath: () async => (await databaseFile()).path,
           ),

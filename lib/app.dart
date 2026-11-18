@@ -9,14 +9,14 @@ import 'features/settings/domain/appearance.dart';
 import 'features/settings/presentation/settings_providers.dart';
 
 /// Raiz do app: tema, localização e roteamento.
-class IziFncApp extends ConsumerStatefulWidget {
-  const IziFncApp({super.key});
+class AmbrioApp extends ConsumerStatefulWidget {
+  const AmbrioApp({super.key});
 
   @override
-  ConsumerState<IziFncApp> createState() => _IziFncAppState();
+  ConsumerState<AmbrioApp> createState() => _AmbrioAppState();
 }
 
-class _IziFncAppState extends ConsumerState<IziFncApp> {
+class _AmbrioAppState extends ConsumerState<AmbrioApp> {
   // O router guarda o histórico de navegação, então precisa sobreviver aos
   // rebuilds — daí o State em vez de criá-lo dentro do build.
   late final GoRouter _router = createAppRouter();
@@ -26,7 +26,7 @@ class _IziFncAppState extends ConsumerState<IziFncApp> {
     // Enquanto o banco não responde, vale o padrão (segue o sistema).
     final appearance = ref.watch(appearanceProvider).value ?? const Appearance();
     return MaterialApp.router(
-      title: 'IziFnc',
+      title: 'Ambrio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(highContrast: appearance.highContrast),
       darkTheme: AppTheme.dark(highContrast: appearance.highContrast),

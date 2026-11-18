@@ -11,5 +11,5 @@ Future<void> main() async {
   // antes do primeiro uso; sem isso, qualquer formatação pt-BR lança em runtime.
   await initializeDateFormatting('pt_BR');
 
-  runApp(const ProviderScope(child: IziFncApp()));
+  runApp(const ProviderScope(child: AmbrioApp()));
 }

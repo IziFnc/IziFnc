@@ -1,3 +1,4 @@
+import 'layouts_extra.dart';
 import 'xlsx_writer.dart';
 
 /// Uma linha de Despesas Gerais (Nome, Valor, Tipo, Banco, Observação, Dia).
@@ -142,6 +143,23 @@ Map<String, Object?> _expected({
   };
 }
 
+/// A mesma verdade esperada, para os modelos de `layouts_extra.dart`.
+Map<String, Object?> expectedSheet({
+  required int despesasHeaderRow,
+  required int despesasCol,
+  required int entradaHeaderRow,
+  required int entradaCol,
+  required List<Despesa> despesas,
+  required List<Entrada> entradas,
+}) => _expected(
+  despesasHeaderRow: despesasHeaderRow,
+  despesasCol: despesasCol,
+  entradaHeaderRow: entradaHeaderRow,
+  entradaCol: entradaCol,
+  despesas: despesas,
+  entradas: entradas,
+);
+
 DateTime _d(int m, int d) => DateTime(2026, m, d);
 
 /// Todos os modelos que o gerador grava em `docs/exemplo/`.
@@ -155,6 +173,7 @@ List<GeneratedCase> allCases() => [
   _empilhado(),
   _colunasTrocadas(),
   _armadilhasDoReal(),
+  ...extraCases(),
 ];
 
 // --- (e) armadilhas achadas na planilha real (feat 0025) ----------------------

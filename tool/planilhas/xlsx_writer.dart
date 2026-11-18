@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart' show columnIndexToLetter;
+import 'package:ambrio/features/import/data/xlsx_workbook.dart' show columnIndexToLetter;
 
 /// Uma célula a gravar: [row] 1-based, [col] 0-based (A=0), como em `SheetGrid`.
 /// [value] é `String`, `num` ou `DateTime` (gravado como data do Excel).

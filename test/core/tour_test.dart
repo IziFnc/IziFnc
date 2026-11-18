@@ -5,17 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/widgets/tour_bubble.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/presentation/month_filters.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/widgets/tour_bubble.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/presentation/month_filters.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
 
 import '../support/real_fonts.dart';
 
@@ -35,11 +35,16 @@ void main() {
 
   setUp(() {
     db = AppDatabase(
-      DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
+      DatabaseConnection(
+        NativeDatabase.memory(),
+        closeStreamsSynchronously: true,
+      ),
     );
     accounts = AccountsRepository(db, EntriesRepository(db));
   });
-  tearDown(() => db.close().timeout(const Duration(seconds: 5), onTimeout: () {}));
+  tearDown(
+    () => db.close().timeout(const Duration(seconds: 5), onTimeout: () {}),
+  );
 
   Future<void> pumpApp(WidgetTester tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -52,7 +57,7 @@ void main() {
           // A importação lê a chave de IA; o Keystore não existe no teste.
           aiSlotsStoreProvider.overrideWithValue(MemoryAiSlotsStore()),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -86,7 +91,9 @@ void main() {
     await waitForBubble(tester);
   }
 
-  testWidgets('percorre as 8 paradas, cada uma na tela certa, até Concluir', (tester) async {
+  testWidgets('percorre as 8 paradas, cada uma na tela certa, até Concluir', (
+    tester,
+  ) async {
     await pumpApp(tester);
 
     // 1) Cadastrar conta — na home vazia, sem precisar navegar antes. O
@@ -98,7 +105,11 @@ void main() {
     expect(find.text('SKIP'), findsNothing);
     await tester.tap(bubbleButton('Cadastrar conta'));
     await tester.pumpAndSettle();
-    expect(find.text('Nova conta'), findsOneWidget, reason: 'a bolha navegou pro formulário');
+    expect(
+      find.text('Nova conta'),
+      findsOneWidget,
+      reason: 'a bolha navegou pro formulário',
+    );
     await tester.enterText(find.widgetWithText(TextField, 'Nome'), 'Bradesco');
     await tester.tap(find.text('Salvar'));
     await tester.pumpAndSettle();
@@ -118,7 +129,10 @@ void main() {
     );
     await tester.enterText(find.widgetWithText(TextField, 'Nome'), 'Amazon');
     await tester.tap(find.text('Bradesco')); // conta dona, no _OwnerPicker
-    await tester.enterText(find.widgetWithText(TextField, 'Dia do fechamento da fatura'), '10');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Dia do fechamento da fatura'),
+      '10',
+    );
     await tester.tap(find.text('Salvar'));
     await tester.pumpAndSettle();
 
@@ -142,7 +156,11 @@ void main() {
       reason: 'a lupa deve estar no mesmo alvo do tour que o filtro',
     );
     await tapBubble(tester, 'Próximo');
-    expect(find.text('Novo lançamento'), findsWidgets, reason: 'navegou pro formulário de lançamento');
+    expect(
+      find.text('Novo lançamento'),
+      findsWidgets,
+      reason: 'navegou pro formulário de lançamento',
+    );
 
     // 5) Grade de tipos — lançamento (menciona "Pagar fatura" no texto, sem
     // destacar o chip à parte — nenhum alvo aninhado dentro de outro). O
@@ -157,37 +175,58 @@ void main() {
     expect(
       tester.testTextInput.isVisible,
       isFalse,
-      reason: '"Valor" não deve focar sozinho: o teclado cobriria a bolha do tour',
+      reason:
+          '"Valor" não deve focar sozinho: o teclado cobriria a bolha do tour',
     );
     await tapBubble(tester, 'Próximo');
-    expect(find.text('Importar planilha'), findsOneWidget, reason: 'navegou pra importação');
+    expect(
+      find.text('Importar planilha'),
+      findsOneWidget,
+      reason: 'navegou pra importação',
+    );
 
     // 6) Escolher arquivo — mostra mesmo com o botão desligado (sem chave de
     // IA configurada neste teste): senão o tour travaria aqui para sempre.
     expect(find.text('6 de 8'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
-    expect(find.text('Configurações'), findsWidgets, reason: 'navegou pra Configurações');
+    expect(
+      find.text('Configurações'),
+      findsWidgets,
+      reason: 'navegou pra Configurações',
+    );
 
     // 7) Menu de Configurações.
     expect(find.text('7 de 8'), findsOneWidget);
     await tapBubble(tester, 'Próximo');
-    expect(find.text('Dados'), findsOneWidget, reason: 'navegou pra Configurações › Dados');
+    expect(
+      find.text('Dados'),
+      findsOneWidget,
+      reason: 'navegou pra Configurações › Dados',
+    );
 
     // 8) Backup — último passo, botão "Concluir".
     expect(find.text('8 de 8'), findsOneWidget);
     await tapBubble(tester, 'Concluir');
 
-    expect(find.byType(TourBubble), findsNothing, reason: 'tour concluído, nenhuma bolha sobra');
+    expect(
+      find.byType(TourBubble),
+      findsNothing,
+      reason: 'tour concluído, nenhuma bolha sobra',
+    );
   });
 
-  testWidgets('"Pular o tour" no primeiro passo encerra tudo de uma vez', (tester) async {
+  testWidgets('"Pular o tour" no primeiro passo encerra tudo de uma vez', (
+    tester,
+  ) async {
     await pumpApp(tester);
     await waitForBubble(tester);
 
-    await tester.tap(find.descendant(
-      of: find.byType(TourBubble),
-      matching: find.text('Pular o tour'),
-    ));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(TourBubble),
+        matching: find.text('Pular o tour'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TourBubble), findsNothing);
 
@@ -201,31 +240,64 @@ void main() {
     expect(find.byType(TourBubble), findsNothing);
   });
 
-  testWidgets('"Ver o tour de novo" com conta sem cartão pula direto pro passo do cartão', (
+  testWidgets(
+    '"Ver o tour de novo" com conta sem cartão pula direto pro passo do cartão',
+    (tester) async {
+      await accounts.create(name: 'Bradesco', kind: AccountKind.checking);
+      await pumpApp(tester);
+      // Sem tour pendente ainda (a conta já existia ao abrir): confere o estado
+      // inicial antes de ir a Configurações.
+      await waitForBubble(tester);
+
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push('/configuracoes/geral');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver o tour de novo'));
+      await tester.pumpAndSettle();
+      await waitForBubble(tester);
+
+      // Pula o passo 0 (cadastrar conta — não existe mais alvo pra ele) e cai
+      // direto no passo 1 (cadastrar cartão), que já existe porque há conta e
+      // ainda não há cartão.
+      expect(find.text('2 de 8'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    '"Ver o tour de novo" com conta e cartão pula direto pra situação',
+    (tester) async {
+      final owner = await accounts.create(
+        name: 'Bradesco',
+        kind: AccountKind.checking,
+      );
+      await accounts.create(
+        name: 'Amazon',
+        kind: AccountKind.creditCard,
+        linkedAccountId: owner,
+        closingDay: 10,
+      );
+      await pumpApp(tester);
+      await waitForBubble(tester);
+
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push('/configuracoes/geral');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver o tour de novo'));
+      await tester.pumpAndSettle();
+      await waitForBubble(tester);
+
+      // Pula os passos 0 e 1 (conta e cartão já existem) e cai direto na
+      // situação.
+      expect(find.text('3 de 8'), findsOneWidget);
+    },
+  );
+  testWidgets('dois toques seguidos em "Próximo" avançam só um passo', (
     tester,
   ) async {
-    await accounts.create(name: 'Bradesco', kind: AccountKind.checking);
-    await pumpApp(tester);
-    // Sem tour pendente ainda (a conta já existia ao abrir): confere o estado
-    // inicial antes de ir a Configurações.
-    await waitForBubble(tester);
-
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/configuracoes/geral');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Ver o tour de novo'));
-    await tester.pumpAndSettle();
-    await waitForBubble(tester);
-
-    // Pula o passo 0 (cadastrar conta — não existe mais alvo pra ele) e cai
-    // direto no passo 1 (cadastrar cartão), que já existe porque há conta e
-    // ainda não há cartão.
-    expect(find.text('2 de 8'), findsOneWidget);
-  });
-
-  testWidgets('"Ver o tour de novo" com conta e cartão pula direto pra situação', (
-    tester,
-  ) async {
-    final owner = await accounts.create(name: 'Bradesco', kind: AccountKind.checking);
+    final owner = await accounts.create(
+      name: 'Bradesco',
+      kind: AccountKind.checking,
+    );
     await accounts.create(
       name: 'Amazon',
       kind: AccountKind.creditCard,
@@ -234,15 +306,76 @@ void main() {
     );
     await pumpApp(tester);
     await waitForBubble(tester);
-
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/configuracoes/geral');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/configuracoes/geral');
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ver o tour de novo'));
     await tester.pumpAndSettle();
     await waitForBubble(tester);
-
-    // Pula os passos 0 e 1 (conta e cartão já existem) e cai direto na
-    // situação.
     expect(find.text('3 de 8'), findsOneWidget);
+
+    final next = bubbleButton('Próximo');
+    await tester.tap(next);
+    await tester.pump(const Duration(milliseconds: 20));
+    // O segundo toque cai enquanto a bolha ainda está se fechando.
+    await tester.tap(next, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    await waitForBubble(tester);
+
+    expect(
+      find.text('4 de 8'),
+      findsOneWidget,
+      reason: 'avançou só um passo, não dois',
+    );
+  });
+
+  testWidgets('o voltar do Android não derruba a tela por baixo da bolha', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await waitForBubble(tester);
+    expect(find.byType(TourBubble), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await waitForBubble(tester);
+
+    expect(
+      find.byType(TourBubble),
+      findsOneWidget,
+      reason: 'a bolha continua e o voltar é bloqueado',
+    );
+    expect(find.text('1 de 8'), findsOneWidget);
+  });
+
+  testWidgets('depois do voltar bloqueado, "Próximo" ainda avança', (
+    tester,
+  ) async {
+    final owner = await accounts.create(
+      name: 'Bradesco',
+      kind: AccountKind.checking,
+    );
+    await accounts.create(
+      name: 'Amazon',
+      kind: AccountKind.creditCard,
+      linkedAccountId: owner,
+      closingDay: 10,
+    );
+    await pumpApp(tester);
+    await waitForBubble(tester);
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/configuracoes/geral');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver o tour de novo'));
+    await tester.pumpAndSettle();
+    await waitForBubble(tester);
+    expect(find.text('3 de 8'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await waitForBubble(tester);
+    await tapBubble(tester, 'Próximo');
+
+    expect(find.text('4 de 8'), findsOneWidget);
   });
 }

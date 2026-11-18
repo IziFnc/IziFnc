@@ -8,20 +8,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/utils/clock.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/data/llm_slot.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
-import 'package:izifnc/features/settings/data/settings_repository.dart';
-import 'package:izifnc/features/settings/domain/privacy_text.dart';
-import 'package:izifnc/features/settings/presentation/privacy_notice.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/utils/clock.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/data/llm_slot.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
+import 'package:ambrio/features/settings/data/settings_repository.dart';
+import 'package:ambrio/features/settings/domain/privacy_text.dart';
+import 'package:ambrio/features/settings/presentation/privacy_notice.dart';
 
 import '../../support/real_fonts.dart';
 
@@ -77,7 +77,7 @@ void main() {
           }),
           tourEnabledProvider.overrideWithValue(!tourOff),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();

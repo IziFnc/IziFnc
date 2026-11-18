@@ -67,6 +67,14 @@ class EntryTypeGrid extends StatelessWidget {
               ],
             ),
           ],
+          if (types.contains(EntryType.transfer) && checkingCount < 2)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Transferência precisa de duas contas.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
         ],
       ),
     );

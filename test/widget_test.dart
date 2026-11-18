@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/utils/formatters.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
+import 'package:ambrio/core/widgets/money_text.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/utils/formatters.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
 
 import 'support/menu.dart';
 import 'support/real_fonts.dart';
@@ -55,9 +56,10 @@ void main() {
       ProviderScope(
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
+          balancesHiddenAtStartProvider.overrideWithValue(false), // estes testes olham os valores
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -186,29 +188,25 @@ void main() {
       // O cartão de situação mostra de relance quanto há em conta e a fatura aberta.
       expect(find.text('Em conta'), findsOneWidget);
       expect(find.text(Formatters.money(50000)), findsOneWidget, reason: 'o total em conta');
-      expect(find.text('Faturas abertas'), findsOneWidget, reason: 'o cartão Amazon tem R\$ 50,00 em aberto');
 
-      await tester.tap(find.byTooltip('Novo lançamento'));
+      // Pagar fatura tem tela própria (feat 0042): Situação > Pagar fatura. As faturas
+      // abertas ficam na Situação (o painel da home mostra só o mês e o vencimento).
+      await tester.tap(find.text('Em conta'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.widgetWithText(TextField, 'Valor'), '5000');
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Pagar fatura'));
+      expect(find.textContaining('Faturas abertas'), findsOneWidget, reason: 'o cartão Amazon tem R\$ 50,00 em aberto');
+      await tester.tap(find.text('Pagar fatura'));
       await tester.pumpAndSettle();
-      // O chip do cartão mostra quanto está em aberto.
-      await tester.tap(
-        find.widgetWithText(
-          ChoiceChip,
-          'Amazon · ${Formatters.money(5000)} em aberto',
-        ),
-      );
-      await tester.pumpAndSettle();
-      // "Sai de" já vem com a conta dona do cartão, e a descrição é sugerida.
+      // O valor já vem com o em aberto e "Sai de" com a conta dona do cartão.
+      final valor = tester.widget<TextField>(find.widgetWithText(TextField, 'Valor'));
+      expect(valor.controller!.text, Formatters.money(5000));
       final saiDe = tester.widget<ChoiceChip>(
         find.widgetWithText(ChoiceChip, 'Bradesco'),
       );
       expect(saiDe.selected, isTrue, reason: 'conta dona pré-selecionada');
-      expect(find.text('Pagamento fatura Amazon'), findsOneWidget);
 
-      await tester.tap(find.text('Salvar'));
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BackButton)); // da Situação de volta ao mês
       await tester.pumpAndSettle();
 
       expect(
@@ -224,7 +222,7 @@ void main() {
       expect(find.textContaining('Bradesco → fatura Amazon'), findsOneWidget);
       // Totais do mês: o Mouse continua como gasto (do cartão); o pagamento da
       // fatura não é gasto novo.
-      expect(find.textContaining('Gastou ${Formatters.money(5000)}'), findsOneWidget);
+      expect(find.text('Sem entradas neste mês'), findsOneWidget, reason: 'o painel não conta o pagamento como gasto');
     },
   );
 
@@ -330,6 +328,6 @@ void main() {
     // Na linha do lançamento e no "Gastou" do cartão de situação. Via Formatters e
     // não literal: o separador depois do R$ é NBSP, fácil de errar à mão.
     expect(find.text(Formatters.money(1234)), findsOneWidget);
-    expect(find.text('Entrou ${Formatters.money(0)} · Gastou ${Formatters.money(1234)}'), findsOneWidget);
+    expect(find.text('Sem entradas neste mês'), findsOneWidget, reason: 'o painel: há gasto, mas nenhuma entrada');
   });
 }

@@ -46,13 +46,16 @@ void showEntryDeletedUndo(ScaffoldMessengerState messenger, EntriesRepository re
     );
 }
 
-/// Os tipos que o formulário oferece. Ajuste fica de fora de propósito.
+/// Os tipos que o formulário oferece ao **criar**. Ajuste fica de fora de propósito,
+/// e pagar fatura saiu daqui na 0042: tem tela própria (`BillPaymentScreen`).
 const entryFormTypes = [
   EntryType.expense,
   EntryType.income,
   EntryType.transfer,
-  EntryType.billPayment,
 ];
+
+/// Ao **editar** um pagamento de fatura antigo, o formulário ainda mostra o tipo.
+const entryFormTypesEditingBill = [...entryFormTypes, EntryType.billPayment];
 
 /// O mês que o repositório vai gravar: usa a mesma regra dele (inclusive a do
 /// dia do fechamento do cartão), para o "Vai para" nunca discordar.

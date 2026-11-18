@@ -1,4 +1,4 @@
-package com.getulio.izifnc
+package com.getulio.ambrio
 
 import io.flutter.embedding.android.FlutterActivity
 

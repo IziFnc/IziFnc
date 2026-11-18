@@ -1,4 +1,4 @@
-# Política de privacidade do IziFnc
+# Política de privacidade do Ambrio
 
 > Versão 1, em vigor desde 25 de outubro de 2026.
 > Este arquivo é gerado a partir do texto que o app mostra (`lib/features/settings/domain/privacy_text.dart`,
@@ -7,7 +7,7 @@
 
 ## Em resumo
 
-- O IziFnc não tem conta, login nem servidor. Seus lançamentos, contas e configurações ficam só no seu aparelho.
+- O Ambrio não tem conta, login nem servidor. Seus lançamentos, contas e configurações ficam só no seu aparelho.
 - Quem desenvolve o app não recebe, não vê e não guarda nenhum dado seu.
 - Há uma única exceção, que você escolhe usar: a importação de planilha com inteligência artificial. Aí o texto da planilha vai ao serviço de IA que você configurou, e o app pede a sua autorização antes.
 
@@ -33,7 +33,7 @@ Para o serviço que você configurou, e o app fala direto do seu aparelho com el
 
 - Groq (Estados Unidos): por padrão não guarda entradas nem respostas; pode registrá-las por até 30 dias para segurança e estabilidade, e a conta pode ativar retenção zero.
 - Anthropic: apaga entradas e respostas em até 30 dias; casos sinalizados por segurança ou exigência legal podem ficar guardados por mais tempo.
-- Outro serviço compatível com OpenAI: vale a política dele, que o IziFnc não controla.
+- Outro serviço compatível com OpenAI: vale a política dele, que o Ambrio não controla.
 - Os serviços citados processam dados fora do Brasil.
 
 ## A sua autorização
@@ -50,7 +50,7 @@ Como os dados estão no seu aparelho, o controle já é seu: você vê, corrige 
 
 ## Crianças e adolescentes
 
-O IziFnc é um controle financeiro pessoal e não é dirigido a menores de 18 anos.
+O Ambrio é um controle financeiro pessoal e não é dirigido a menores de 18 anos.
 
 ## Segurança
 
@@ -60,7 +60,7 @@ O IziFnc é um controle financeiro pessoal e não é dirigido a menores de 18 an
 
 ## Quem é o responsável e como falar
 
-IziFnc é um projeto de código aberto (licença MIT), sem fins lucrativos e sem anúncios. Para dúvidas, pedidos ou problemas de privacidade, abra uma issue em https://github.com/IziFnc/IziFnc/issues. Para falhas de segurança, use o relato privado de vulnerabilidade do repositório, para não expor o problema em público.
+Ambrio é um projeto de código aberto (licença MIT), sem fins lucrativos e sem anúncios. Para dúvidas, pedidos ou problemas de privacidade, abra uma issue em https://github.com/IziFnc/IziFnc/issues. Para falhas de segurança, use o relato privado de vulnerabilidade do repositório, para não expor o problema em público.
 
 ## Mudanças neste texto
 

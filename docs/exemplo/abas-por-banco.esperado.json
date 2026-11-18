@@ -1,0 +1,18 @@
+{
+  "descricao": "Uma aba por banco (Azul, Verde), cada uma com Data, Descrição e Valor; o banco é o nome da aba.",
+  "limiteConhecido": true,
+  "abas": {
+    "Azul": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    },
+    "Verde": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    }
+  }
+}

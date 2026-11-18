@@ -1,4 +1,4 @@
-// Texto de privacidade do IziFnc, em um lugar só.
+// Texto de privacidade do Ambrio, em um lugar só.
 //
 // É a fonte da tela "Privacidade", da folha de consentimento da importação e
 // do arquivo PRIVACIDADE.md da raiz (gerado por `dart run tool/gerar_privacidade.dart`;
@@ -31,7 +31,7 @@ const List<PrivacySection> kPrivacySections = [
   PrivacySection(
     'Em resumo',
     bullets: [
-      'O IziFnc não tem conta, login nem servidor. Seus lançamentos, contas e configurações ficam só no seu aparelho.',
+      'O Ambrio não tem conta, login nem servidor. Seus lançamentos, contas e configurações ficam só no seu aparelho.',
       'Quem desenvolve o app não recebe, não vê e não guarda nenhum dado seu.',
       'Há uma única exceção, que você escolhe usar: a importação de planilha com inteligência artificial. Aí o texto da planilha vai ao serviço de IA que você configurou, e o app pede a sua autorização antes.',
     ],
@@ -61,7 +61,7 @@ const List<PrivacySection> kPrivacySections = [
     bullets: [
       'Groq (Estados Unidos): por padrão não guarda entradas nem respostas; pode registrá-las por até 30 dias para segurança e estabilidade, e a conta pode ativar retenção zero.',
       'Anthropic: apaga entradas e respostas em até 30 dias; casos sinalizados por segurança ou exigência legal podem ficar guardados por mais tempo.',
-      'Outro serviço compatível com OpenAI: vale a política dele, que o IziFnc não controla.',
+      'Outro serviço compatível com OpenAI: vale a política dele, que o Ambrio não controla.',
       'Os serviços citados processam dados fora do Brasil.',
     ],
   ),
@@ -82,7 +82,7 @@ const List<PrivacySection> kPrivacySections = [
   PrivacySection(
     'Crianças e adolescentes',
     paragraphs: [
-      'O IziFnc é um controle financeiro pessoal e não é dirigido a menores de 18 anos.',
+      'O Ambrio é um controle financeiro pessoal e não é dirigido a menores de 18 anos.',
     ],
   ),
   PrivacySection(
@@ -96,7 +96,7 @@ const List<PrivacySection> kPrivacySections = [
   PrivacySection(
     'Quem é o responsável e como falar',
     paragraphs: [
-      'IziFnc é um projeto de código aberto (licença MIT), sem fins lucrativos e sem anúncios. Para dúvidas, pedidos ou problemas de privacidade, abra uma issue em $kPrivacyContactUrl. Para falhas de segurança, use o relato privado de vulnerabilidade do repositório, para não expor o problema em público.',
+      'Ambrio é um projeto de código aberto (licença MIT), sem fins lucrativos e sem anúncios. Para dúvidas, pedidos ou problemas de privacidade, abra uma issue em $kPrivacyContactUrl. Para falhas de segurança, use o relato privado de vulnerabilidade do repositório, para não expor o problema em público.',
     ],
   ),
   PrivacySection(
@@ -118,12 +118,12 @@ String consentServiceLine(String key) {
     return 'Anthropic: apaga em até 30 dias; casos sinalizados por segurança ou lei podem ficar mais tempo.';
   }
   final host = key.startsWith('custom:') ? key.substring(7) : key;
-  return '$host: vale a política desse serviço, que o IziFnc não controla, e ele pode ficar fora do Brasil.';
+  return '$host: vale a política desse serviço, que o Ambrio não controla, e ele pode ficar fora do Brasil.';
 }
 
 /// O texto principal da folha de consentimento.
 const String kConsentWhatGoes =
-    'Para achar onde ficam as tabelas, o IziFnc vai enviar todo o texto da aba, inclusive anotações fora das tabelas e o nome da aba (por exemplo: cabeçalhos, nomes dos lançamentos, bancos e observações), ao serviço de IA abaixo, junto com a sua chave.';
+    'Para achar onde ficam as tabelas, o Ambrio vai enviar todo o texto da aba, inclusive anotações fora das tabelas e o nome da aba (por exemplo: cabeçalhos, nomes dos lançamentos, bancos e observações), ao serviço de IA abaixo, junto com a sua chave.';
 
 /// O que não vai.
 const String kConsentWhatStays =
@@ -132,7 +132,7 @@ const String kConsentWhatStays =
 /// O PRIVACIDADE.md completo a partir de [kPrivacySections].
 String privacyMarkdown() {
   final b = StringBuffer()
-    ..writeln('# Política de privacidade do IziFnc')
+    ..writeln('# Política de privacidade do Ambrio')
     ..writeln()
     ..writeln('> Versão $kPrivacyVersion, em vigor desde $kPrivacyDate.')
     ..writeln('> Este arquivo é gerado a partir do texto que o app mostra (`lib/features/settings/domain/privacy_text.dart`,')

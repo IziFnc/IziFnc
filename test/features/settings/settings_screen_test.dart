@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/data/llm_slot.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
-import 'package:izifnc/features/settings/presentation/ai_settings_screen.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/data/llm_slot.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
+import 'package:ambrio/features/settings/presentation/ai_settings_screen.dart';
 
 const _groq = LlmSlot(kind: LlmServiceKind.groq, apiKey: 'gsk_principal_1234');
 const _claude = LlmSlot(kind: LlmServiceKind.anthropic, apiKey: 'sk-ant-reserva-9876');

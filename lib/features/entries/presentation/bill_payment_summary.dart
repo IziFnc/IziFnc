@@ -35,12 +35,14 @@ class BillPaymentSummary extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Text(
+        // No condicional e em cor neutra: o valor já vem preenchido, e um "Fatura quitada."
+        // em verde antes de pagar dava a entender que já estava paga (júri 1.0.3, S1).
         outcome.isSettled
-            ? 'Fatura quitada.'
-            : '${Formatters.money(outcome.openAfterCents)} continuam em aberto '
+            ? 'Pagando este valor, a fatura fica quitada.'
+            : 'Pagando este valor, ${Formatters.money(outcome.openAfterCents)} continuam em aberto '
                   'e entram na próxima fatura.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );

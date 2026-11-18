@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/spreadsheet_tables.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
-import 'package:izifnc/features/import/domain/parsed_row.dart';
+import 'package:ambrio/features/import/data/spreadsheet_tables.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/domain/parsed_row.dart';
 
 RawTableRow despesaRow(
   int sheetRow, {

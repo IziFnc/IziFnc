@@ -1,0 +1,12 @@
+{
+  "descricao": "Extrato de banco: Data, Histórico, Débito, Crédito e Saldo, com débito e crédito em colunas separadas.",
+  "limiteConhecido": true,
+  "abas": {
+    "Outubro": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    }
+  }
+}

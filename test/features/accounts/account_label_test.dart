@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/accounts/presentation/account_label.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/accounts/presentation/account_label.dart';
 
 void main() {
   final created = DateTime(2025);

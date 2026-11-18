@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:izifnc/features/import/data/anthropic_table_locator.dart';
-import 'package:izifnc/features/import/data/groq_table_locator.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/openai_compatible_table_locator.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/data/anthropic_table_locator.dart';
+import 'package:ambrio/features/import/data/groq_table_locator.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/openai_compatible_table_locator.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
 
 /// O README promete que **valores e datas dos lançamentos nunca saem do aparelho**.
 /// Este teste olha o corpo que vai de fato ao provedor, nos três localizadores.

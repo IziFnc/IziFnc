@@ -3,8 +3,12 @@ import 'package:go_router/go_router.dart';
 import '../../features/accounts/domain/account_kind.dart';
 import '../../features/accounts/presentation/account_form_screen.dart';
 import '../../features/accounts/presentation/accounts_screen.dart';
+import '../../features/entries/presentation/bill_payment_screen.dart';
 import '../../features/entries/presentation/entry_form_screen.dart';
 import '../../features/entries/presentation/month_screen.dart';
+import '../../features/entries/presentation/situation_screen.dart';
+import '../utils/clock.dart';
+import '../utils/year_month.dart';
 import '../../features/import/presentation/import_screen.dart';
 import '../../features/settings/presentation/ai_settings_screen.dart';
 import '../../features/settings/presentation/data_settings_screen.dart';
@@ -28,6 +32,16 @@ GoRouter createAppRouter() => GoRouter(
     GoRoute(
       path: MonthScreen.path,
       builder: (context, state) => const MonthScreen(),
+    ),
+    GoRoute(
+      path: BillPaymentScreen.pattern,
+      builder: (context, state) => BillPaymentScreen(cardId: int.tryParse(state.pathParameters['id']!) ?? -1),
+    ),
+    GoRoute(
+      path: SituationScreen.path,
+      builder: (context, state) => SituationScreen(
+        month: state.extra as YearMonth? ?? YearMonth.of(systemClock()),
+      ),
     ),
     GoRoute(
       path: EntryFormScreen.newPath,

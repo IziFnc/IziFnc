@@ -146,6 +146,15 @@ class EntryAccountSection extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
+        // Antes de salvar, o que falta aparece em tom neutro (não como erro).
+        if (!submitted && account == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              type.hasDestination ? 'Escolha de onde sai' : 'Escolha a conta',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         if (submitted && account == null)
           Padding(
             padding: const EdgeInsets.only(top: 8),

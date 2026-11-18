@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img">
+  <title>Ambrio, versão 2: moeda de âmbar</title>
+  <desc>Um disco de âmbar sobre azul marinho com um A em azul marinho, como uma moeda ou uma gota de âmbar.</desc>
+  <rect width="1024" height="1024" fill="#1B3A5C"/>
+  <circle cx="512" cy="512" r="318" fill="#E8A317"/>
+  <path d="M382 706 L512 330 L642 706" fill="none" stroke="#1B3A5C" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M432 590 H592" fill="none" stroke="#1B3A5C" stroke-width="54" stroke-linecap="round"/>
+</svg>

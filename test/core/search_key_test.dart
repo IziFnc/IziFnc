@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/utils/search_key.dart';
+import 'package:ambrio/core/utils/search_key.dart';
 
 void main() {
   group('searchKey — texto comparável para busca', () {

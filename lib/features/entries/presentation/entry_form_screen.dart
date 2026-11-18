@@ -238,7 +238,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
       description: _description,
       note: _note,
       type: _type,
-      formTypes: entryFormTypes,
+      formTypes: _isEditing && _type == EntryType.billPayment ? entryFormTypesEditingBill : entryFormTypes,
       date: _date,
       accountId: _accountId,
       isEditing: _isEditing,

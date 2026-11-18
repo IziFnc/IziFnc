@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/import/data/fallback_table_locator.dart';
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/data/xlsx_workbook.dart';
+import 'package:ambrio/features/import/data/fallback_table_locator.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/data/xlsx_workbook.dart';
 
 final _grid = SheetGrid(const {}, 0);
 

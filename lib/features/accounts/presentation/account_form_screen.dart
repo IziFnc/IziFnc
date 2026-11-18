@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../entries/presentation/bill_payment_screen.dart';
 import '../../../core/database/repositories.dart';
 import '../../../core/utils/formatters.dart';
 import '../data/accounts_repository.dart';
@@ -145,7 +146,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
       _submitted && _day(_dueDay) == -1 ? 'Um dia de 1 a 31' : null;
 
   String? get _ownerError =>
-      _submitted && _ownerId == null ? 'Escolha a conta dona do cartão' : null;
+      _submitted && _ownerId == null ? 'Escolha a conta que paga a fatura deste cartão' : null;
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +185,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                       onAdjust: _adjust,
                       onUndo: () => setState(() => _pendingAdjust = null),
                     ),
+                    if (isCard) PayBillButton(cardId: widget.accountId!, enabled: _pendingAdjust == null),
                     const SizedBox(height: 16),
                   ],
                   SegmentedButton<AccountKind>(
@@ -207,7 +209,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                   TextField(
                     controller: _name,
                     autofocus: !_isEditing,
-                    textCapitalization: TextCapitalization.words,
+                    textCapitalization: TextCapitalization.sentences,
                     maxLength: 60,
                     decoration: InputDecoration(
                       labelText: 'Nome',
@@ -370,7 +372,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
           content: Text(
             'Esta conta tem ${e.entryCount} '
             '${e.entryCount == 1 ? 'lançamento' : 'lançamentos'}. '
-            'Exclua ou mova ${e.entryCount == 1 ? 'ele' : 'eles'} antes.',
+            'Exclua-${e.entryCount == 1 ? 'o' : 'os'} antes de excluir a conta.',
           ),
         ),
       );
@@ -381,7 +383,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
           content: Text(
             'Esta conta é dona de ${e.cardCount} '
             '${e.cardCount == 1 ? 'cartão' : 'cartões'}. '
-            'Vincule ${e.cardCount == 1 ? 'ele' : 'eles'} a outra conta antes.',
+            'Passe ${e.cardCount == 1 ? 'o cartão' : 'os cartões'} para outra conta antes.',
           ),
         ),
       );

@@ -1,0 +1,12 @@
+{
+  "descricao": "Uma tabela só (Data, Descrição, Valor, Conta); gasto é negativo e entrada é positiva.",
+  "limiteConhecido": true,
+  "abas": {
+    "Outubro": {
+      "despesasGerais": null,
+      "entradaDeValor": null,
+      "contagens": {},
+      "totaisCents": {}
+    }
+  }
+}

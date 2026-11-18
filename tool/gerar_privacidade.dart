@@ -5,7 +5,7 @@
 //   dart run tool/gerar_privacidade.dart
 import 'dart:io';
 
-import 'package:izifnc/features/settings/domain/privacy_text.dart';
+import 'package:ambrio/features/settings/domain/privacy_text.dart';
 
 void main() {
   File('PRIVACIDADE.md').writeAsStringSync(privacyMarkdown());

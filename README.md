@@ -1,210 +1,91 @@
-# IziFnc
+# Ambrio
 
-Controle de finanças pessoais — offline, local e sem frescura.
+Controle de finanças pessoais para Android, feito para quem já controla o dinheiro numa planilha e quer algo mais direto. Funciona **offline**,
+não pede conta nem login e não tem servidor: os dados ficam no seu aparelho.
 
-Os dados ficam no aparelho, num SQLite. Sem conta, sem login, sem servidor.
+![Início, Situação e Pagar fatura do Ambrio, nos temas claro e escuro](docs/telas/hero.png)
 
-> **Status:** 1.0.2 (o histórico completo de entregas vem em [`feat/`](feat/README.md)).
-> Funcionando: contas e cartões, lançamentos, transferências, pagamento de fatura (com juros
-> opcionais), saldos, filtros e busca, importação da planilha `.xlsx` com IA, tema/tamanho do
-> texto/alto contraste, backup e restauração do banco, e um guia dentro do app pra quem está
-> começando. Próximas entregas seguem pelo backlog numerado de `feat/`.
+> **Status:** versão 1.0.4. É um projeto pessoal em código aberto, mantido por uma pessoa. O histórico de entregas está em
+> [`feat/`](feat/README.md). Em inglês: [README.en.md](README.en.md).
 
-## Como usar
+## O que faz
 
-**Instalar.** Baixe o `.apk` mais recente em [Releases](https://github.com/IziFnc/IziFnc/releases)
-e abra no celular Android. O Android vai pedir para permitir a instalação de "fontes
-desconhecidas" (o app não está na Play Store). Atualizações vêm como um APK novo: instale por cima,
-os dados ficam.
+- **Contas e cartões**, com o dia de fechamento e de vencimento de cada cartão.
+- **Lançamentos** de gasto e de entrada, **transferências** entre contas e **pagamento de fatura** (parcial, com juros e encargos opcionais).
+- **Painel na tela inicial**: o quanto do que entrou já foi gasto, numa barra, e o próximo vencimento de cartão; um olhinho esconde os saldos (começam escondidos).
+- **Situação**: quanto há em cada conta, quanto se deve em cada cartão (o que vence primeiro aparece primeiro) e o resumo do mês.
+- **Mês certo para cada compra no cartão**: a data de fechamento decide em qual fatura e em qual mês a compra entra.
+- **Importação de planilha `.xlsx`** com ajuda de IA, opcional (veja em Privacidade).
+- Busca, filtros, **backup e restauração**, tema claro e escuro, tamanho de texto e alto contraste, e um guia dentro do app para quem está começando.
 
-**Primeiros passos.**
+## Instalar
 
-1. **Contas e cartões** (menu ☰): cadastre as suas contas e, para cada cartão, a conta dona, o
-   dia do fechamento e se compra **no próprio dia** do fechamento entra na fatura atual ou na
-   próxima (confira no app do seu banco).
+O app não está na Play Store. Baixe o `.apk` mais recente em [Releases](https://github.com/IziFnc/IziFnc/releases) e abra no celular. O Android vai
+pedir para permitir a instalação de "fontes desconhecidas".
+
+Antes de instalar, **confira o arquivo**: o [guia de verificação](docs/VERIFICAR.md) traz o SHA-256 de cada APK e o certificado de assinatura.
+
+> **Vinha do IziFnc?** O Ambrio é o mesmo projeto com outro nome, mas o Android o trata como outro app, então ele não atualiza por cima. Em
+> **Configurações › Dados**, salve um backup no IziFnc, instale o Ambrio e use **Restaurar de um arquivo**. As chaves de IA não vão no
+> backup: cole de novo em Configurações › Inteligência artificial.
+
+## Primeiros passos
+
+1. **Contas e cartões** (menu ☰): cadastre as suas contas e, para cada cartão, a conta que paga a fatura e o dia do fechamento (confira no app do banco).
 2. **Ajustar saldo** em cada conta e cartão, para o valor de hoje.
-3. Lance despesas e entradas no **+**; use **Pagar fatura** para quitar um cartão (dá para pagar
-   parcialmente e informar juros e encargos) e **Transferência** entre contas.
-4. Na tela do mês, busque, filtre por tipo e conta e ordene pelo botão de filtros.
+3. Lance gastos e entradas no **+**. Para quitar um cartão, use **Pagar fatura** (na Situação ou na tela do cartão).
 
-**Importar a planilha que você já usa** (`.xlsx`, uma aba por vez, da mais antiga para a mais nova):
+**Importar a planilha que você já usa** (`.xlsx`, uma aba, um mês por vez): crie uma chave grátis em [console.groq.com/keys](https://console.groq.com/keys),
+cole em **☰ › Configurações › Inteligência artificial**, e use **☰ › Importar planilha**. Reimportar a mesma aba não duplica nada. O app lê planilhas
+com uma tabela de gastos (`Nome, Valor, Tipo, Banco, Observação, Dia`) e uma de entradas (`Nome, Valor, Banco, Observação, Dia`). **Outros formatos
+podem não ser lidos**, e o app avisa quando não acha as tabelas; os limites medidos estão em [docs/exemplo/](docs/exemplo/LEIAME.md).
 
-1. Crie uma chave grátis em [console.groq.com/keys](https://console.groq.com/keys) e cole em
-   **☰ › Configurações › Inteligência artificial › Principal**. (Opcional: uma **Reserva**, chamada só
-   se a Principal falhar; e **Testar** confere a chave com uma mensagem mínima, só quando você toca.)
-2. **☰ › Importar planilha**, escolha o arquivo e a aba, ligue cada nome da planilha à sua
-   conta/cartão e revise a prévia antes de gravar. Reimportar a mesma aba não duplica nada, e dá para
-   importar só uma parte.
+## Privacidade
 
-Sem a sua planilha, teste com as fictícias em [`docs/exemplo/`](docs/exemplo/LEIAME.md). O leitor
-procura as tabelas **Despesas Gerais** (`Nome, Valor, Tipo, Banco, Observação, Dia`) e **Entrada de
-Valor** (`Nome, Valor, Banco, Observação, Dia`); planilhas com outro layout provavelmente não serão lidas.
+Sem conta, sem login, sem servidor, sem anúncio: os dados ficam só no aparelho e quem desenvolve o app não recebe nada. A exceção é a importação
+com IA, que você escolhe usar: o serviço configurado recebe o **texto** da aba (cabeçalhos, nomes dos lançamentos, bancos, observações) para achar onde
+ficam as tabelas. **Células de número e de data nunca saem do aparelho**, e um teste trava essa promessa. Antes do primeiro envio o app pede a sua
+autorização, por serviço, e você revoga quando quiser. A chave de IA fica no Keystore do Android e não entra no backup.
+Texto completo: [PRIVACIDADE.md](PRIVACIDADE.md) (também dentro do app).
 
-**Backup.** Tudo fica só no seu celular. Em **☰ › Configurações › Dados**, **Salvar backup** grava
-um arquivo `.sqlite` (uma cópia exata) onde você escolher, e **Restaurar de um arquivo** traz de volta.
-Faça de tempos em tempos e guarde fora do aparelho.
+## Por que é assim
 
-**Privacidade.** Sem conta, sem login, sem servidor: seus dados ficam só no aparelho, e quem
-desenvolve o app não recebe nada. A exceção é a importação com IA, que você escolhe usar: o serviço
-de IA configurado recebe **as células de texto** da aba (cabeçalhos, nomes dos lançamentos, bancos e
-observações) para achar onde ficam as tabelas; **células de número e de data, ou seja, valores e
-datas dos lançamentos, nunca saem do aparelho** (um valor que a planilha guarda como texto, e não
-como número, iria junto). Antes do primeiro envio o app pede a **sua autorização**, por serviço,
-e você pode revogá-la quando quiser em Configurações › Inteligência artificial. A chave de IA fica
-só no aparelho (Keystore do Android) e não entra no backup. Texto completo, com o que cada serviço
-faz com os dados: [PRIVACIDADE.md](PRIVACIDADE.md) (também dentro do app, em Configurações › Geral ›
-Privacidade).
-
-**Limites conhecidos.** O plano grátis da Groq limita requisições por minuto (o app repete sozinho
-em 429/503). Modelos de IA são aposentados com frequência: se aparecer "model not found", troque o
-modelo na tela de IA.
-
-## Stack
-
-| Camada | Escolha |
+| Decisão | Por quê |
 |---|---|
-| Framework | Flutter 3.47 / Dart 3.13 |
-| Estado e DI | [Riverpod 3](https://riverpod.dev) com code generation |
-| Navegação | [go_router](https://pub.dev/packages/go_router) |
-| Banco local | [Drift](https://drift.simonbinder.eu) sobre SQLite |
-| Formatação pt-BR | [intl](https://pub.dev/packages/intl) |
+| Offline, sem conta e sem servidor | Dado financeiro é sensível; sem servidor não há o que vazar, e o app funciona sem internet. O custo aceito: não há sincronização entre aparelhos. |
+| Dinheiro em centavos, como inteiro | Ponto flutuante acumula erro de arredondamento e o saldo deixa de fechar. |
+| Saldo calculado, não guardado | Uma fórmula só, para conta e cartão. Para corrigir, "Ajustar saldo" grava a diferença como lançamento. |
+| O mês vem do fechamento, não da data | Compra no cartão depois do fechamento cai na próxima fatura; cada cartão escolhe o que fazer com a compra feita no próprio dia. |
+| IA só para achar a tabela | A leitura dos valores é código determinístico e testado; a IA só diz onde a tabela começa. |
+| Nunca obrigar categoria | A planilha de origem não tem categoria, e forçar uma reorganização afasta quem só quer migrar. |
 
-Plataforma alvo é **Android**. Não há build web (removido na 0018: o app é offline e local, e
-o SQLite em WebAssembly só pesava o repositório).
+## Como foi construído
 
-## Rodando
+Uma pessoa, com o **Claude Code** como parceiro de desenvolvimento. As decisões de produto são minhas; o código saiu em parceria, e o que mais
+aprendi foi a **conferir o trabalho da IA e o meu**. O processo está descrito em [docs/PROCESSO.md](docs/PROCESSO.md).
 
-```bash
-flutter pub get
-dart run build_runner build          # gera .drift.dart (banco) e .g.dart (providers)
-```
+- **Mais de 650 testes** e um CI que roda análise, testes e uma porta de qualidade (`tool/validar.dart`): tamanho de arquivo, relógio injetável,
+  nenhum `.xlsx` real no repositório, varredura de chaves. O CI não usa nenhum segredo.
+- **Migrações de banco testadas** passo a passo (schema v9), e restauração de backup que recusa arquivo adulterado.
+- **Cada entrega vira uma nota** em [`feat/`](feat/README.md) com o que mudou, **por quê** e como verificar.
+- **APK assinado e verificável**: SHA-256 e certificado em [docs/VERIFICAR.md](docs/VERIFICAR.md); política de segurança em [SECURITY.md](SECURITY.md).
+- **Contraste testado**: um teste confere os pares de cor do tema (claro, escuro e alto contraste) contra o piso de 4,5:1, e 7:1 no alto contraste.
+- **Testes de usabilidade simulados**: roteiros no emulador e "júris" de agentes que usam o app como uma pessoa nova usaria.
 
-O [`build.yaml`](build.yaml) roda o drift num alvo próprio, **antes** do
-`riverpod_generator`. Sem isso, os providers que usam classes do banco (`Account`,
-`Entry`) falham com `InvalidTypeException`. Por esse motivo o banco usa
-`part 'app_database.drift.dart'`, e não `.g.dart`.
+### Duas histórias
 
-**Android:**
+**O CI verde que não valia nada.** A porta de qualidade devolvia o resultado como retorno de `main`. Em Dart, esse valor não vira código de saída, então
+o CI ficou verde por quase um mês com 11 testes quebrando. Só apareceu quando forcei uma falha de propósito e saiu `exit=0`. Corrigi com
+`exitCode` e a regra passou a ser provar que a trava consegue falhar antes de confiar nela: semáforo verde sem prova não vale nada.
 
-```bash
-flutter emulators --launch Pixel_9
-flutter run
-```
+**O backup que só travava no app de verdade.** Restaurar um backup funcionava nos testes e no modo de depuração, mas travava no APK de release com o
+app em uso, porque o banco não terminava de fechar. Só um teste no aparelho, com o app de release, achou. Hoje o fechamento tem tempo limite e o
+roteiro de cada versão inclui restaurar no release.
 
-**Verificação:**
+## Desenvolver
 
-```bash
-flutter analyze
-flutter test
-dart run tool/validar.dart                    # o que o CI roda
-flutter test integration_test -d emulator-5554  # passeio no aparelho (não roda no CI)
-```
-
-> Ao mexer em qualquer arquivo com `@riverpod` ou `@DriftDatabase`, rode o
-> `build_runner` de novo — ou deixe `dart run build_runner watch` rodando ao lado.
-
-### APK de distribuição (assinado)
-
-```bash
-flutter build apk --release --target-platform android-arm64   # ~22 MB, celulares atuais
-```
-
-A assinatura vem de `android/key.properties`, que **não é versionado** (nem o keystore em
-`_local/keys/`). Sem esse arquivo (CI, outra máquina) o build cai na chave de debug e continua
-funcionando, mas esse APK **não serve para distribuir**. Sem o keystore original não dá para
-publicar atualizações por cima do que já foi instalado: **guarde uma cópia do
-`izifnc-release.jks` e da senha fora deste computador**. Como o keystore é outro, um APK de
-release não instala por cima de um build de debug (e vice-versa): desinstale antes.
-
-**Duas versões do app.**
-
-| | Versão do usuário | Versão pessoal |
-|---|---|---|
-| Como gerar | `flutter build apk --release --target-platform android-arm64` | `bash tool/build_pessoal.sh` |
-| Nome / id | IziFnc · `com.getulio.izifnc` | IziFnc Pessoal · `com.getulio.izifnc.pessoal` |
-| Chave de IA | cada pessoa cola a sua em Configurações › Inteligência artificial | já embutida (lida de `_local/keys/`) |
-| Distribuição | vai para as releases | **nunca**: só para uso do autor |
-
-As duas convivem no mesmo celular (ids diferentes, cada uma com o seu banco). A chave embutida na versão
-pessoal pode ser extraída de quem tiver o APK; por isso o arquivo sai em `_local/build/` (fora do git) e
-não se publica nem se compartilha. Uma chave configurada dentro do app sempre vale mais que a embutida.
-
-Para desenvolver com a IA sem digitar a chave no app, use
-`--dart-define=GROQ_API_KEY="$(cat _local/keys/groq.txt)"`; a chave configurada no app tem prioridade.
-
-### Mudou uma tabela? Migração
-
-O app guarda dados reais no aparelho. Mudança de schema sem migração **apaga ou quebra**
-os dados de quem já usa. O fluxo, sempre nesta ordem:
-
-1. **Antes** de mexer: se a versão atual ainda não tem foto em `drift_schemas/`, rode
-   `dart run drift_dev make-migrations`.
-2. Mude as tabelas e suba o `schemaVersion` em
-   [`app_database.dart`](lib/core/database/app_database.dart).
-3. `dart run build_runner build` e `dart run drift_dev make-migrations`: isso gera o
-   schema novo, o passo em `app_database.steps.dart` e o teste em `test/drift/`.
-4. Escreva o passo `fromNToN+1` no `stepByStep` e **preencha o teste de preservação de
-   dados** com dados parecidos com os reais.
-5. Teste instalando **por cima** de uma versão antiga no emulador, com dados.
-
-Prefira migrações que só **adicionam** (coluna ou tabela). Mudar CHECK ou tipo de coluna
-obriga o SQLite a recriar a tabela.
-
-## Estrutura
-
-```
-lib/
-├── main.dart                  # bootstrap: ProviderScope + locale pt-BR
-├── app.dart                   # MaterialApp.router, tema, localização
-├── core/                      # o que é compartilhado por todas as features
-│   ├── database/              # banco Drift, provider dele e dos repositórios
-│   ├── router/                # rotas do go_router
-│   ├── theme/                 # ColorScheme claro/escuro
-│   └── utils/                 # moeda, datas, YearMonth, campo de valor
-└── features/                  # uma pasta por feature, fatiada em camadas
-    ├── accounts/              # contas e cartões
-    ├── entries/               # lançamentos, regra de mês, tela do mês
-    │   ├── data/              #   tabela + repositório
-    │   ├── domain/            #   competenceOf, MonthSummary (lógica pura)
-    │   └── presentation/      #   telas + providers
-    └── settings/              # Geral (tema, virada do mês, sobre) e Dados (backup)
-
-assets/branding/  # logo e ícones do app (origem do ícone adaptativo)
-feat/             # histórico de entregas (versionado) — veja abaixo
-_local/           # anotações de trabalho (NÃO versionado)
-```
-
-Cada feature nasce como `features/<nome>/` com as camadas que precisar
-(`data/`, `domain/`, `presentation/`). Pastas de feature não são criadas vazias — elas
-aparecem junto com a feature.
-
-### Convenções
-
-- **Dinheiro é `int` em centavos, nunca `double`.** Ponto flutuante acumula erro de
-  arredondamento e o saldo deixa de fechar. A conversão para decimal acontece só na
-  exibição, em [`core/utils/formatters.dart`](lib/core/utils/formatters.dart).
-- **Nada pode assumir que existe internet ou login.** O app é offline-first por decisão,
-  não por acaso.
-- **O mês de um lançamento vem do dia de corte da conta, não da data.** Lançamento no dia
-  do corte ou depois conta para o mês seguinte. Cartão usa o dia de fechamento (e cada
-  cartão escolhe se a compra **no próprio dia** do fechamento fica na fatura atual ou vai
-  para a próxima); conta corrente usa o dia de virada configurado. A regra toda mora em
-  [`competenceForAccount`](lib/features/entries/domain/competence.dart). Não recalcule em outro lugar.
-- **Nunca obrigar categoria.** A planilha que o app quer importar não tem categoria, e
-  forçar vai contra a ideia de não obrigar o usuário a se reorganizar.
-- **Débito é da conta; cartão é sempre crédito e pertence a uma conta**
-  (`accounts.linked_account_id`). Compra no débito ou pix é lançada na conta; no crédito,
-  no cartão. Não existe "função débito" em cartão.
-- **Transferência** (`EntryType.transfer`) é **só conta → conta**. **Pagar fatura**
-  (`EntryType.billPayment`) sai de uma conta e vai para um cartão; no formulário, o "Sai
-  de" vem com a conta dona do cartão. Nos dois, o mês segue a conta de origem.
-- **Saldo não se guarda, se calcula**, em `EntriesRepository.watchBalances`: uma fórmula
-  para conta e cartão (no cartão dá negativo, e a tela mostra como "em aberto"). Para
-  corrigir, use **Ajustar saldo**, que grava a diferença como lançamento. Nunca edite um
-  saldo "na mão".
-- **Transferência e ajuste não entram nos totais do mês** (`EntryType.affectsMonthTotals`).
-- **Arquivos `.g.dart` e `.drift.dart` são gerados** e estão fora da análise estática.
-  Não edite à mão.
+Como rodar, testar, gerar o APK e mexer no banco: [docs/DESENVOLVIMENTO.md](docs/DESENVOLVIMENTO.md).
+Planilhas fictícias para testar a importação: [docs/exemplo/](docs/exemplo/LEIAME.md).
 
 ## Licença
 
@@ -214,24 +95,5 @@ faça backup de vez em quando.
 
 ## Histórico de features
 
-Toda entrega significativa vira um arquivo em **[`feat/`](feat/README.md)**, explicando
-o que mudou, **por que** mudou e como verificar. O `git log` conta o *o quê*; a pasta
-`feat/` conta o *porquê* — que é a parte que não dá para reconstruir depois.
-
-Antes de abrir uma nova frente de trabalho, vale ler a entrada mais recente lá.
-
-## Testes visuais com MCP
-
-O [`.mcp.json`](.mcp.json) registra os servidores MCP. O que dirige o app é o
-**`mobile-mcp`** (emulador ou aparelho Android via `adb`). O `chrome-devtools` que também
-consta ali só servia ao build web, que saiu na 0018; pode ser removido do `.mcp.json`.
-
-Ao mudar o `.mcp.json`, o Claude Code pede para aprovar os servidores de novo e só os
-carrega numa sessão nova.
-
-### Android: `mobile-mcp` no Windows
-
-O pacote `mobilecli`, do qual o `mobile-mcp` depende, só instala o binário de Linux. Por
-isso o `.mcp.json` pede ao `npx` também o `@mobilenext/mobilecli-windows-amd64`. Se um
-dia o projeto for aberto fora do Windows, troque esse pacote pelo da plataforma certa
-(`-linux-amd64`, `-darwin-arm64`, …).
+Toda entrega significativa vira um arquivo em **[`feat/`](feat/README.md)**, explicando o que mudou, **por que** mudou e como verificar. O `git log`
+conta o *o quê*; a pasta `feat/` conta o *porquê*, que é a parte que não dá para reconstruir depois.

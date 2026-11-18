@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Gera a versao PESSOAL do IziFnc: o mesmo app, com as chaves de IA de _local/keys/
+# Gera a versao PESSOAL do Ambrio: o mesmo app, com as chaves de IA de _local/keys/
 # ja embutidas (Groq e, se existir, Anthropic), para uso do proprio autor. Instala
-# como "IziFnc Pessoal" (id com.getulio.izifnc.pessoal), ao lado da versao normal.
+# como "Ambrio Pessoal" (id com.getulio.ambrio.pessoal), ao lado da versao normal.
 #
 #   bash tool/build_pessoal.sh          # celular (arm64), o padrao
 #   bash tool/build_pessoal.sh x64      # emulador do Android Studio (x86_64)
@@ -36,11 +36,11 @@ else
   echo "Chave embutida: Groq (sem $anthropic_file, sem reserva)."
 fi
 
-IZIFNC_PESSOAL=1 flutter build apk --release --target-platform "$alvo" "${defines[@]}"
+AMBRIO_PESSOAL=1 flutter build apk --release --target-platform "$alvo" "${defines[@]}"
 
 version="$(grep -m1 '^version:' pubspec.yaml | sed -E 's/version:[[:space:]]*//; s/\+.*//')"
 mkdir -p _local/build
-out="_local/build/IziFnc-pessoal-${version}-${plataforma}.apk"
+out="_local/build/Ambrio-pessoal-${version}-${plataforma}.apk"
 cp build/app/outputs/flutter-apk/app-release.apk "$out"
 echo
 echo "Pronto: $out"

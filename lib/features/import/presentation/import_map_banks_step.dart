@@ -22,6 +22,7 @@ class ImportMapBanksStep extends ConsumerWidget {
     required this.onSelect,
     required this.onSkip,
     required this.onContinue,
+    this.problems = const [],
   });
 
   final Widget banner;
@@ -36,6 +37,9 @@ class ImportMapBanksStep extends ConsumerWidget {
   final void Function(String banco, SourceTipo tipo) onSkip;
   final VoidCallback onContinue;
 
+  /// Por que linhas da aba foram descartadas (mostradas quando nenhuma sobrou).
+  final List<String> problems;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accounts = ref.watch(accountsProvider).value ?? const <Account>[];
@@ -46,6 +50,8 @@ class ImportMapBanksStep extends ConsumerWidget {
       mapped: mapped,
       skipped: skipped,
     );
+
+    if (pairs.isEmpty) return _NothingToImport(banner: banner, problems: problems);
 
     return Column(
       children: [
@@ -86,6 +92,50 @@ class ImportMapBanksStep extends ConsumerWidget {
               onPressed: canContinue && !busy ? onContinue : null,
               child: const Text('Continuar'),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Nenhuma linha da aba sobreviveu à leitura (feat 0049, achado F1): em vez de uma
+/// lista vazia com o botão desligado, diz o que houve e o que conferir.
+class _NothingToImport extends StatelessWidget {
+  const _NothingToImport({required this.banner, required this.problems});
+
+  final Widget banner;
+  final List<String> problems;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        banner,
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text('Nenhuma linha desta aba pôde ser importada', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              const Text(
+                'O app achou as tabelas, mas não conseguiu ler as linhas. Confira se as datas são datas de verdade '
+                '(não texto), se o valor e o banco estão preenchidos e se o tipo é Débito ou Crédito. '
+                'Volte e escolha outra aba, ou ajuste a planilha.',
+              ),
+              if (problems.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Exemplos do que foi descartado', style: theme.textTheme.labelLarge),
+                const SizedBox(height: 4),
+                for (final message in problems.take(3))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(message, style: TextStyle(color: theme.colorScheme.error)),
+                  ),
+                if (problems.length > 3) Text('e mais ${problems.length - 3}.'),
+              ],
+            ],
           ),
         ),
       ],

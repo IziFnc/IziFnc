@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart' show DatabaseConnection, Value, Variable, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/utils/year_month.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/utils/year_month.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
 
 /// Rede de segurança de desempenho (feat 0018): depois de importar planilhas de
 /// anos, o banco tem milhares de lançamentos. Saldo e tela do mês precisam

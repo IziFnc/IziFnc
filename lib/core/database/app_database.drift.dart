@@ -2573,10 +2573,11 @@ class $$AccountsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (importBankMappingsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Account,
                           $AccountsTable,
-                          ImportBankMapping
+                          ImportBankMapping,
+                          $ImportBankMappingsTable
                         >(
                           currentTable: table,
                           referencedTable: $$AccountsTableReferences
@@ -2587,10 +2588,8 @@ class $$AccountsTableTableManager
                                 table,
                                 p0,
                               ).importBankMappingsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.accountId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'account_id',
                           typedResults: items,
                         ),
                     ];

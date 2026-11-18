@@ -58,14 +58,14 @@ class AppDrawer extends StatelessWidget {
                 'assets/branding/logo.png',
                 width: 48,
                 height: 48,
-                semanticLabel: 'Logo do IziFnc',
+                semanticLabel: 'Logo do Ambrio',
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('IziFnc', style: theme.textTheme.headlineSmall),
+                    Text('Ambrio', style: theme.textTheme.headlineSmall),
                     Text(
                       'Finanças, sem frescura',
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),

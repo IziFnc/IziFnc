@@ -27,6 +27,9 @@ class DataSettingsScreen extends ConsumerStatefulWidget {
 class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
   bool _busy = false;
 
+  /// Confirmação que fica na tela depois de salvar o backup (o SnackBar some em segundos).
+  String? _savedNote;
+
   void _say(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -45,7 +48,10 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       );
       if (saved == null) return; // cancelou
       await actions.markExported();
-      if (mounted) _say('Backup salvo.');
+      if (mounted) {
+        _say('Backup salvo.');
+        setState(() => _savedNote = 'Backup salvo agora.');
+      }
     } catch (e) {
       if (mounted) _say('Não consegui salvar o backup: $e');
     } finally {
@@ -88,7 +94,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       content: const Text(
         'Isto SUBSTITUI todos os dados de agora (contas, lançamentos e '
         'configurações) pelos do arquivo.\n\n'
-        'Por segurança, o IziFnc guarda antes uma cópia dos dados atuais neste aparelho.',
+        'Por segurança, o Ambrio guarda antes uma cópia dos dados atuais neste aparelho.',
       ),
       actions: [
         TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
@@ -153,6 +159,17 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
             const SizedBox(height: 16),
             const LinearProgressIndicator(),
           ],
+          if (_savedNote case final note?)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(note, style: theme.textTheme.bodyLarge)),
+                ],
+              ),
+            ),
           const SizedBox(height: 24),
           Text(
             'O arquivo é uma cópia exata do banco (.sqlite) e tem todos os seus dados '

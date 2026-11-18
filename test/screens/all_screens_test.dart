@@ -5,27 +5,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:izifnc/app.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/core/database/database_provider.dart';
-import 'package:izifnc/core/widgets/tour_target.dart';
-import 'package:izifnc/features/accounts/data/accounts_repository.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/accounts/presentation/account_form_screen.dart';
-import 'package:izifnc/features/accounts/presentation/accounts_screen.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/presentation/entry_form_screen.dart';
-import 'package:izifnc/features/import/presentation/import_screen.dart';
-import 'package:izifnc/features/settings/data/settings_repository.dart';
-import 'package:izifnc/features/import/data/ai_slots_store.dart';
-import 'package:izifnc/features/import/data/llm_slot.dart';
-import 'package:izifnc/features/import/presentation/import_providers.dart';
-import 'package:izifnc/features/settings/presentation/ai_settings_screen.dart';
-import 'package:izifnc/features/settings/presentation/data_settings_screen.dart';
-import 'package:izifnc/features/settings/presentation/general_settings_screen.dart';
-import 'package:izifnc/features/settings/presentation/privacy_screen.dart';
-import 'package:izifnc/features/settings/presentation/settings_screen.dart';
+import 'package:ambrio/app.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/core/database/database_provider.dart';
+import 'package:ambrio/core/widgets/tour_target.dart';
+import 'package:ambrio/features/accounts/data/accounts_repository.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/accounts/presentation/account_form_screen.dart';
+import 'package:ambrio/features/accounts/presentation/accounts_screen.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/presentation/bill_payment_screen.dart';
+import 'package:ambrio/features/entries/presentation/entry_form_screen.dart';
+import 'package:ambrio/features/import/presentation/import_screen.dart';
+import 'package:ambrio/features/settings/data/settings_repository.dart';
+import 'package:ambrio/features/import/data/ai_slots_store.dart';
+import 'package:ambrio/features/import/data/llm_slot.dart';
+import 'package:ambrio/features/import/presentation/import_providers.dart';
+import 'package:ambrio/features/settings/presentation/ai_settings_screen.dart';
+import 'package:ambrio/features/settings/presentation/data_settings_screen.dart';
+import 'package:ambrio/features/settings/presentation/general_settings_screen.dart';
+import 'package:ambrio/features/settings/presentation/privacy_screen.dart';
+import 'package:ambrio/features/settings/presentation/settings_screen.dart';
 
 import '../support/real_fonts.dart';
 
@@ -113,7 +114,7 @@ void main() {
           aiSlotsStoreProvider.overrideWithValue(aiStore),
           tourEnabledProvider.overrideWithValue(false),
         ],
-        child: const IziFncApp(),
+        child: const AmbrioApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -248,7 +249,7 @@ Future<void> _pickType(WidgetTester tester, EntryType type) =>
 final _screens = <_Screen>[
   _Screen('Início (com dados)', (tester) async {}),
   _Screen('Início · menu aberto', (tester) => _tap(tester, find.byType(DrawerButton))),
-  _Screen('Início · situação (folha de detalhes)', (tester) => _tap(tester, find.text('Em conta'))),
+  _Screen('Situação (tela)', (tester) => _tap(tester, find.text('Em conta'))),
   _Screen('Início · busca aberta', (tester) => _tap(tester, find.byTooltip('Buscar'))),
   _Screen(
     'Início · filtros',
@@ -270,10 +271,7 @@ final _screens = <_Screen>[
     await _go(tester, EntryFormScreen.newPath);
     await _pickType(tester, EntryType.transfer);
   }),
-  _Screen('Lançamento · pagar fatura', (tester) async {
-    await _go(tester, EntryFormScreen.newPath);
-    await _pickType(tester, EntryType.billPayment);
-  }),
+  _Screen('Pagar fatura · cartão', (tester) => _go(tester, BillPaymentScreen.pathFor(3))),
   _Screen('Lançamento · editar', (tester) => _go(tester, '/lancamento/1')),
   _Screen('Importar planilha', (tester) => _go(tester, ImportScreen.path)),
   _Screen('Configurações', (tester) => _go(tester, SettingsScreen.path)),

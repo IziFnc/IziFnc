@@ -69,8 +69,7 @@ class TourStep {
 
 /// O roteiro fixo do tour, oito paradas: cadastrar a primeira conta, um
 /// cartão (se usar), a situação e os filtros da home, a grade de tipos do
-/// lançamento (menciona "Pagar fatura" no texto, sem destacar o chip à parte
-/// — ver feat 0026), importar planilha, Configurações e o backup dentro
+/// lançamento (o texto manda pagar a fatura pela tela de situação, feat 0042), importar planilha, Configurações e o backup dentro
 /// dela. Cobre uma função por vez, em vez de esperar a pessoa esbarrar em
 /// cada botão sozinha.
 const kTourSteps = <TourStep>[
@@ -110,7 +109,7 @@ const kTourSteps = <TourStep>[
     title: 'Sua situação num relance',
     message:
         'Mostra quanto você tem nas contas e quanto está em aberto nas '
-        'faturas. Toque aqui para ver os valores de cada conta e cartão.',
+        'faturas. O olho esconde ou mostra os valores (eles começam escondidos). Toque aqui para abrir a tela de situação, com cada conta e cartão.',
   ),
   TourStep(
     anchor: TourAnchor.homeFilters,
@@ -127,19 +126,19 @@ const kTourSteps = <TourStep>[
     icon: Icons.add_circle_outline,
     title: 'Escolha o tipo',
     message:
-        'Despesa, entrada, transferência entre contas ou pagamento de '
-        'fatura. Em "Pagar fatura" dá para pagar só uma parte ou incluir '
-        'juros, quando a fatura vier maior. Essa opção fica disponível '
-        'depois que você cadastrar um cartão.',
+        'Despesa, entrada ou transferência entre contas. Para pagar a '
+        'fatura de um cartão, abra a situação (o cartão do topo da tela '
+        'inicial) e toque em "Pagar fatura": dá para pagar só uma parte ou '
+        'incluir juros, quando a fatura vier maior.',
     nextRoute: ImportScreen.path,
   ),
   TourStep(
     anchor: TourAnchor.importPickFile,
     icon: Icons.upload_file_outlined,
-    title: 'Importe a planilha que você já usa',
+    title: 'Importe a sua planilha',
     message:
         'Com as contas cadastradas e a chave de IA configurada, escolha o '
-        'arquivo .xlsx e importe um mês (uma aba) por vez.',
+        'arquivo .xlsx e importe um mês (uma aba) por vez. O app lê planilhas com uma tabela de gastos e outra de entradas.',
     nextRoute: SettingsScreen.path,
     // Este botão fica mais para baixo na tela (depois do checklist "Antes de
     // começar"): "abaixo" (o padrão) estourava a tela.

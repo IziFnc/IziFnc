@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/database/app_database.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/domain/month_situation.dart';
-import 'package:izifnc/features/entries/domain/month_summary.dart';
+import 'package:ambrio/core/database/app_database.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/domain/month_situation.dart';
+import 'package:ambrio/features/entries/domain/month_summary.dart';
 
 final _at = DateTime(2025);
 

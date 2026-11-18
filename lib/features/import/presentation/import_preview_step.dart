@@ -4,9 +4,12 @@ import '../../entries/domain/entry_type.dart';
 import '../domain/build_import_plan.dart';
 import '../domain/import_plan.dart';
 import '../domain/parsed_row.dart';
-import 'import_plan_tiles.dart';
+import 'import_details_screen.dart';
+import 'import_summary_card.dart';
 
-/// Passo 4: a prévia do que vai ser importado, com "desmarcar" por linha/seção.
+/// Passo 4: a prévia do que vai ser importado, em **resumo** (feat 0049): um cartão
+/// por tipo (quantas linhas, quantas marcadas, quanto somam), o que pede revisão e
+/// os avisos recolhidos. As linhas uma a uma ficam em "Ver mais detalhes".
 class ImportPreviewStep extends StatelessWidget {
   const ImportPreviewStep({
     super.key,
@@ -29,131 +32,152 @@ class ImportPreviewStep extends StatelessWidget {
   final int leftOut;
   final bool busy;
 
-  /// Uma linha ou seção foi (des)marcada: a tela refaz a contagem.
+  /// Uma linha ou grupo foi (des)marcado: a tela refaz a contagem.
   final VoidCallback onChanged;
   final VoidCallback onConfirm;
 
-  /// Cabeçalho de uma seção da prévia, com "Desmarcar todas / Marcar todas":
-  /// tirar uma seção inteira (ex.: as despesas) é um toque, não uma por uma.
-  Widget sectionHeader(String label, List<ImportPlanRow> rows) {
-    final allOn = rows.every((p) => p.include);
-    return ImportSectionHeader(
-      label,
-      trailing: TextButton(
-        onPressed: () {
-          for (final p in rows) {
-            p.include = !allOn;
-          }
-          onChanged();
-        },
-        child: Text(allOn ? 'Desmarcar todas' : 'Marcar todas'),
-      ),
-    );
+  void _setAll(List<ImportPlanRow> rows, bool value) {
+    for (final p in rows) {
+      p.include = value;
+    }
+    onChanged();
   }
 
-  void toggle(ImportPlanRow row) {
-    row.include = !row.include;
-    onChanged();
+  void _openDetails(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => ImportDetailsScreen(plan: plan, onChanged: onChanged)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     List<ImportPlanRow> ofType(EntryType type) => [
       for (final p in plan)
         if (p.type == type) p,
     ];
-    final despesas = ofType(EntryType.expense);
-    final entradas = ofType(EntryType.income);
-    final transferencias = ofType(EntryType.transfer);
-    final faturas = ofType(EntryType.billPayment);
+    final groups = [
+      (Icons.shopping_bag_outlined, 'Despesas', ofType(EntryType.expense)),
+      (Icons.savings_outlined, 'Entradas', ofType(EntryType.income)),
+      (Icons.swap_horiz, 'Transferências', ofType(EntryType.transfer)),
+      (Icons.credit_card, 'Pagamentos de fatura', ofType(EntryType.billPayment)),
+    ];
     final toImport = plan.where((p) => p.include).length;
+    final toReview = plan.where((p) => p.reason != null).length;
     final errors = [...parsed.rowErrors, ...planErrors];
+    final notes = [
+      ...importNotes(parsed, plan),
+      if (leftOut > 0) '$leftOut linha(s) ficaram de fora nos bancos que você marcou "Não importar".',
+    ];
 
     return Column(
       children: [
         banner,
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            '$toImport de ${plan.length} lançamento(s) serão importados de "$sheetName": '
-            '${despesas.length} despesa(s), ${entradas.length} entrada(s), '
-            '${transferencias.length} transferência(s) e '
-            '${faturas.length} pagamento(s) de fatura. '
-            'Desmarque o que não quiser.'
-            '${leftOut == 0 ? '' : ' $leftOut linha(s) ficaram de fora nos bancos que você marcou "Não importar".'}'
-            '${errors.isEmpty ? '' : ' ${errors.length} linha(s) com erro foram ignoradas.'}',
-          ),
-        ),
         Expanded(
           child: ListView(
+            padding: const EdgeInsets.only(bottom: 8),
             children: [
-              // O que a importação fez diferente da planilha: nada some sem explicação.
-              for (final note in importNotes(parsed, plan))
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          note,
-                          style: Theme.of(context).textTheme.bodySmall,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Text(
+                  '$toImport de ${plan.length} lançamento(s) serão importados de "$sheetName".',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              for (final (icon, label, rows) in groups)
+                if (rows.isNotEmpty)
+                  ImportGroupSummary(
+                    icon: icon,
+                    label: label,
+                    rows: rows,
+                    onToggleAll: (value) => _setAll(rows, value),
+                  ),
+              if (toReview > 0)
+                Card(
+                  color: theme.colorScheme.secondaryContainer,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.flag_outlined, color: theme.colorScheme.onSecondaryContainer),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '$toReview ${toReview == 1 ? 'linha veio desmarcada' : 'linhas vieram desmarcadas'} '
+                            'para você revisar (já importadas antes, ou com data fora do mês da aba). '
+                            'Veja em "Ver mais detalhes".',
+                            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSecondaryContainer),
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (notes.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.info_outline),
+                    title: Text('${notes.length} ${notes.length == 1 ? 'aviso' : 'avisos'} sobre esta importação'),
+                    children: [
+                      for (final note in notes)
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(note, style: theme.textTheme.bodySmall),
+                          ),
+                        ),
                     ],
                   ),
                 ),
-              if (despesas.isNotEmpty) sectionHeader('Despesas', despesas),
-              for (final p in despesas)
-                ImportPlanTile(plan: p, onToggle: toggle),
-              if (entradas.isNotEmpty) sectionHeader('Entradas', entradas),
-              for (final p in entradas)
-                ImportPlanTile(plan: p, onToggle: toggle),
-              if (transferencias.isNotEmpty)
-                sectionHeader('Transferências', transferencias),
-              for (final p in transferencias)
-                ImportPlanTile(plan: p, onToggle: toggle),
-              if (faturas.isNotEmpty)
-                sectionHeader('Pagamentos de fatura', faturas),
-              for (final p in faturas)
-                ImportPlanTile(plan: p, onToggle: toggle),
-              if (errors.isNotEmpty) ...[
-                const ImportSectionHeader('Ignoradas por erro'),
-                for (final message in errors)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
+              if (errors.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    leading: Icon(Icons.error_outline, color: theme.colorScheme.error),
+                    title: Text(
+                      '${errors.length} ${errors.length == 1 ? 'linha ignorada' : 'linhas ignoradas'} por erro',
+                      style: TextStyle(color: theme.colorScheme.error),
                     ),
-                    child: Text(
-                      message,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
+                    children: [
+                      for (final message in errors)
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(message, style: TextStyle(color: theme.colorScheme.error)),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openDetails(context),
+                    icon: const Icon(Icons.list_alt_outlined),
+                    label: const Text('Ver mais detalhes'),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: FilledButton(
               onPressed: toImport == 0 || busy ? null : onConfirm,
               child: busy
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                   : Text('Importar $toImport lançamento(s)'),
             ),
           ),

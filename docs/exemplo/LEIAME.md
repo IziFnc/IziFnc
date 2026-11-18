@@ -9,6 +9,23 @@ Planilhas **inventadas** para testar a importação sem usar dados reais. Contas
 | `deslocado` | Sem Faturas nem Recorrentes; cabeçalho na linha 3. |
 | `empilhado` | Entrada de Valor **abaixo** de Despesas Gerais, e não ao lado. |
 | `colunas-trocadas` | **Limite conhecido**: colunas em outra ordem. A IA acha a tabela, mas o leitor determinístico assume a ordem `Nome, Valor, Tipo, Banco, Observação, Dia`. |
+| `armadilhas-do-real` | Traços da planilha real com dados inventados: linhas sem data, parcelas com a data da compra, fatura sem cartão, transferência com espelho. |
+
+**Planilhas de forma diferente** (feat 0044): servem para medir o que o app lê quando a planilha de outra pessoa não é a que o desenhou.
+
+| Arquivo | Forma | Esperado |
+|---|---|---|
+| `ingles` | O layout do app, cabeçalhos em inglês | Suportado se a IA reconhecer os rótulos |
+| `sinonimos` | O layout do app, outros nomes de coluna (Descrição, Quanto, Forma...) | Suportado se a IA reconhecer os rótulos |
+| `colunas-extras` | Uma coluna "Categoria" no meio | **Limite**: o leitor lê por posição e desloca tudo |
+| `data-em-texto` | Dia como texto (`05/10/2026`) | **Limite**: o leitor só aceita data de verdade |
+| `valor-com-sinal` | Uma tabela só; gasto é negativo, entrada é positiva | **Limite**: não há as duas tabelas do app |
+| `extrato-banco` | Data, Histórico, Débito, Crédito, Saldo | **Limite**: não há as duas tabelas do app |
+| `mes-em-colunas` | Categorias nas linhas, um mês por coluna | **Limite**: não há as duas tabelas do app |
+| `abas-por-banco` | Uma aba por banco, só Data, Descrição, Valor | **Limite**: não há as duas tabelas do app |
+| `so-gastos-simples` | Só gastos, com categoria e sem banco nem tipo | **Limite**: não há as duas tabelas do app |
+
+Onde "não há as duas tabelas do app", a resposta certa da IA é "não achei" (localização `null`) e o app tem de dizer isso com clareza.
 
 Cada `.xlsx` tem um `.esperado.json` ao lado: onde ficam as tabelas e o que o leitor deve
 extrair (contagens e totais). Esses números são **calculados das próprias linhas gravadas**,
@@ -24,8 +41,8 @@ Os bytes são determinísticos: regerar sem mudar os modelos não altera nada no
 
 ## Acrescentar um modelo
 
-1. Em `tool/planilhas/layouts.dart`, crie uma função que devolve um `GeneratedCase` (use
-   `_espelhoDoReal` como exemplo) e inclua-a em `allCases()`.
+1. Em `tool/planilhas/layouts.dart` (ou, para formas diferentes, `layouts_extra.dart`), crie uma função que
+   devolve um `GeneratedCase` (use `_espelhoDoReal` como exemplo) e inclua-a em `allCases()` ou `extraCases()`.
 2. `dart run tool/gerar_planilhas_exemplo.dart`
 3. `flutter test test/features/import/corpus_test.dart` — o novo modelo entra sozinho.
 

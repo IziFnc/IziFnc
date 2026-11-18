@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:izifnc/features/import/data/llm_table_locator.dart';
-import 'package:izifnc/features/import/domain/import_error_message.dart';
+import 'package:ambrio/features/import/data/llm_table_locator.dart';
+import 'package:ambrio/features/import/domain/import_error_message.dart';
 
 void main() {
   group('describeImportError — o erro da importação em português, com o que fazer', () {
@@ -62,7 +62,7 @@ void main() {
 
     test('tabela não encontrada pela IA: diz qual e sugere tentar de novo, não "arquivo inválido"', () {
       final m = of(const TablesNotFoundException(despesasFound: true, entradaFound: false));
-      expect(m.text, contains('"Entrada de Valor"'));
+      expect(m.text, contains('a tabela de entradas'));
       expect(m.text, contains('outra vez'));
       expect(m.text, isNot(contains('.xlsx válida')));
     });

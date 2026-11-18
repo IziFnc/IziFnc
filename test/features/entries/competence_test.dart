@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/utils/year_month.dart';
-import 'package:izifnc/features/accounts/domain/account_kind.dart';
-import 'package:izifnc/features/entries/domain/competence.dart';
+import 'package:ambrio/core/utils/year_month.dart';
+import 'package:ambrio/features/accounts/domain/account_kind.dart';
+import 'package:ambrio/features/entries/domain/competence.dart';
 
 void main() {
   group('competenceOf', () {

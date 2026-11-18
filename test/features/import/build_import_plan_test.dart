@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/features/entries/data/entries_repository.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/import/domain/build_import_plan.dart';
-import 'package:izifnc/features/import/domain/import_plan.dart';
-import 'package:izifnc/features/import/domain/parsed_row.dart';
+import 'package:ambrio/features/entries/data/entries_repository.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/import/domain/build_import_plan.dart';
+import 'package:ambrio/features/import/domain/import_plan.dart';
+import 'package:ambrio/features/import/domain/parsed_row.dart';
 
 final _dia = DateTime(2025, 12, 1);
 
@@ -139,9 +139,36 @@ void _planilhaReal() {
       expect(notes, contains(startsWith('1 vieram desmarcada(s)')));
       expect(notes, contains(startsWith('1 parcela(s)')));
       expect(notes, contains(startsWith('1 linha(s) estavam sem data')));
-      expect(notes, contains(startsWith('2 transferência(s) aparecem duas vezes')));
-      expect(notes, contains(contains('Gastos Recorrentes')));
+      expect(notes, contains(startsWith('2 transferência(s) apareciam duas vezes')));
+      expect(notes, contains(contains('gastos recorrentes')));
       expect(notes.where((n) => n.contains('fatura(s) sem o cartão')), isEmpty, reason: 'só aparece o que aconteceu');
+    });
+
+    test('linha que a própria pessoa desmarcou não conta como "vieram desmarcadas" (0036)', () async {
+      final parsed = ParsedSheetData(
+        despesas: [
+          ParsedRow(
+            sheetRow: 1,
+            nome: 'X',
+            valorCents: 100,
+            data: _dia,
+            banco: 'Bradesco',
+            tipo: SourceTipo.debito,
+            observacao: null,
+            suspiciousDate: false,
+            undated: false,
+            originalDate: null,
+          ),
+        ],
+        entradas: const [],
+        mirrorsConsumed: 0,
+        rowErrors: const [],
+      );
+      final plan = await buildImportPlan(parsed: parsed, mapped: {'bradesco|debito': _bradesco}, isDuplicate: _never);
+      plan.rows.single.include = false; // a pessoa desmarcou na prévia
+
+      final notes = importNotes(parsed, plan.rows);
+      expect(notes.where((n) => n.contains('vieram desmarcada')), isEmpty);
     });
 
     test('linha sem data na planilha: entra marcada, e a observação avisa', () async {

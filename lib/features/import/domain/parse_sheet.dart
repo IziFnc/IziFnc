@@ -40,7 +40,7 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     if (isFaturaName(normalizedNome)) {
       if (valor == null || banco == null) {
         errors.add(
-          'Linha ${row.sheetRow} (Despesas Gerais, fatura): faltou valor ou a '
+          'Linha ${row.sheetRow} (gastos, fatura): faltou valor ou a '
           'conta que pagou — ignorada.',
         );
         return null;
@@ -69,7 +69,7 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     if (isTransferName(normalizedNome) || isTransferName(normalizedTipo)) {
       if (valor == null || banco == null || data == null) {
         errors.add(
-          'Linha ${row.sheetRow} (Despesas Gerais, transfer): faltou valor, '
+          'Linha ${row.sheetRow} (gastos, transfer): faltou valor, '
           'origem ou data — ignorada.',
         );
         return null;
@@ -89,7 +89,7 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     final tipo = parseTipo(normalizedTipo);
     if (valor == null || banco == null || tipo == null) {
       errors.add(
-        'Linha ${row.sheetRow} (Despesas Gerais, "$nome"): '
+        'Linha ${row.sheetRow} (gastos, "$nome"): '
         'faltou valor, banco ou o Tipo não é Débito/Crédito — ignorada.',
       );
       return null;
@@ -126,7 +126,7 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     if (isTransferName(normalizedNome)) {
       if (valor == null || banco == null) {
         errors.add(
-          'Linha ${row.sheetRow} (Entrada de Valor, transfer): faltou valor ou '
+          'Linha ${row.sheetRow} (entradas, transfer): faltou valor ou '
           'conta — ignorada.',
         );
         return null;
@@ -144,15 +144,15 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
     }
     if (isFaturaName(normalizedNome)) {
       errors.add(
-        'Linha ${row.sheetRow} (Entrada de Valor, fatura): pagamento de fatura '
-        'não é esperado em Entrada de Valor — ignorada.',
+        'Linha ${row.sheetRow} (entradas, fatura): pagamento de fatura '
+        'não é esperado nas entradas — ignorada.',
       );
       return null;
     }
 
     if (valor == null || banco == null) {
       errors.add(
-        'Linha ${row.sheetRow} (Entrada de Valor, "$nome"): '
+        'Linha ${row.sheetRow} (entradas, "$nome"): '
         'faltou valor ou banco — ignorada.',
       );
       return null;
@@ -180,8 +180,8 @@ ParsedSheetData parseSheet(SpreadsheetTables tables) {
   final mirrorsConsumed = mirrors.where((m) => m.used).length;
   for (final m in mirrors.where((m) => !m.used)) {
     errors.add(
-      'Linha ${m.sheetRow} (Entrada de Valor, transfer): transferência recebida '
-      'sem saída correspondente em Despesas Gerais — ignorada.',
+      'Linha ${m.sheetRow} (entradas, transfer): transferência recebida '
+      'sem saída correspondente nos gastos — ignorada.',
     );
   }
 
@@ -288,7 +288,7 @@ List<ParsedRow> _resolveTransfers(
   void accept(PendingTransfer t, String destino) {
     if (sameName(t.banco, destino)) {
       errors.add(
-        'Linha ${t.sheetRow} (Despesas Gerais, transfer): origem e destino são '
+        'Linha ${t.sheetRow} (gastos, transfer): origem e destino são '
         'a mesma conta ($destino) — ignorada.',
       );
       return;
@@ -308,15 +308,15 @@ List<ParsedRow> _resolveTransfers(
     final candidates = candidatesFor(t);
     if (candidates.isEmpty) {
       errors.add(
-        'Linha ${t.sheetRow} (Despesas Gerais, transfer): destino em branco e '
-        'nenhuma entrada com o mesmo valor em Entrada de Valor — ignorada.',
+        'Linha ${t.sheetRow} (gastos, transfer): destino em branco e '
+        'nenhuma entrada com o mesmo valor nas entradas — ignorada.',
       );
       continue;
     }
     final destinos = {for (final m in candidates) normalizeBankName(m.banco)};
     if (destinos.length > 1) {
       errors.add(
-        'Linha ${t.sheetRow} (Despesas Gerais, transfer): destino em branco e '
+        'Linha ${t.sheetRow} (gastos, transfer): destino em branco e '
         'mais de uma entrada com o mesmo valor apontando para contas diferentes — '
         'ignorada (não dá para saber qual é).',
       );

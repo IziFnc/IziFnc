@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:izifnc/core/utils/formatters.dart';
-import 'package:izifnc/features/entries/domain/entry_type.dart';
-import 'package:izifnc/features/entries/domain/payment_rules.dart';
+import 'package:ambrio/core/utils/formatters.dart';
+import 'package:ambrio/features/entries/domain/entry_type.dart';
+import 'package:ambrio/features/entries/domain/payment_rules.dart';
 
 void main() {
   group('transferBlockedReason', () {

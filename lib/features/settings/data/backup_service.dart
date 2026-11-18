@@ -11,7 +11,7 @@ sealed class BackupInspection {
   const BackupInspection();
 }
 
-/// Arquivo do IziFnc, de uma versão que este app entende.
+/// Arquivo do Ambrio, de uma versão que este app entende.
 final class BackupValid extends BackupInspection {
   const BackupValid({required this.schemaVersion});
 
@@ -51,7 +51,7 @@ class BackupService {
   static const _magic = 'SQLite format 3\u0000';
   static const _requiredTables = {'accounts', 'entries', 'app_settings'};
 
-  /// Tudo o que um banco do IziFnc pode ter. Um backup com outra tabela, ou com
+  /// Tudo o que um banco do Ambrio pode ter. Um backup com outra tabela, ou com
   /// trigger/view (o app não cria nenhum), foi alterado à mão: o trigger rodaria
   /// no primeiro `INSERT` depois de restaurar. Ao acrescentar uma tabela ao
   /// schema, acrescente aqui também (o teste de exportação real avisa se esquecer).
@@ -60,9 +60,9 @@ class BackupService {
   /// Quantas cópias de segurança (de antes de uma restauração) ficam guardadas.
   static const keepSafetyCopies = 3;
 
-  /// `izifnc-2026-09-21.sqlite`
+  /// `ambrio-2026-09-21.sqlite`
   static String fileNameFor(DateTime day) =>
-      'izifnc-${day.year}-${_two(day.month)}-${_two(day.day)}.sqlite';
+      'ambrio-${day.year}-${_two(day.month)}-${_two(day.day)}.sqlite';
 
   /// O banco de agora como bytes, num instante consistente.
   ///
@@ -99,7 +99,7 @@ class BackupService {
     return files;
   }
 
-  /// Confere se [bytes] é um banco do IziFnc que este app consegue abrir.
+  /// Confere se [bytes] é um banco do Ambrio que este app consegue abrir.
   Future<BackupInspection> inspect(Uint8List bytes) async {
     if (bytes.length < 100 || String.fromCharCodes(bytes.sublist(0, 16)) != _magic) {
       return const BackupInvalid('Este arquivo não é um banco de dados SQLite.');
@@ -117,7 +117,7 @@ class BackupService {
           r['name'] as String,
       };
       if (version == 0 || !tables.containsAll(_requiredTables)) {
-        return const BackupInvalid('Este arquivo não parece ser um backup do IziFnc.');
+        return const BackupInvalid('Este arquivo não parece ser um backup do Ambrio.');
       }
       final extras = {
         for (final r in db.select("SELECT type, name FROM sqlite_master WHERE type IN ('trigger', 'view')"))
@@ -127,13 +127,13 @@ class BackupService {
       };
       if (extras.isNotEmpty) {
         return const BackupInvalid(
-          'Este arquivo tem partes que o IziFnc não cria e foi recusado por segurança. '
+          'Este arquivo tem partes que o Ambrio não cria e foi recusado por segurança. '
           'Use um backup salvo pelo próprio app.',
         );
       }
       if (version > currentSchemaVersion) {
         return const BackupInvalid(
-          'Este backup foi feito por uma versão mais nova do IziFnc. Atualize o app e tente de novo.',
+          'Este backup foi feito por uma versão mais nova do Ambrio. Atualize o app e tente de novo.',
         );
       }
       final check = db.select('PRAGMA quick_check').first.values.first;
@@ -142,7 +142,7 @@ class BackupService {
       }
       return BackupValid(schemaVersion: version);
     } on sql.SqliteException {
-      return const BackupInvalid('Não consegui ler este arquivo como um banco do IziFnc.');
+      return const BackupInvalid('Não consegui ler este arquivo como um banco do Ambrio.');
     } finally {
       db?.close();
       await _delete(probe);

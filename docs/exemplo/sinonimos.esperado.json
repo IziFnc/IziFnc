@@ -1,0 +1,30 @@
+{
+  "descricao": "Layout do app com outros nomes de coluna (Descrição, Quanto, Forma, Conta, Obs, Data).",
+  "limiteConhecido": false,
+  "abas": {
+    "Outubro": {
+      "despesasGerais": {
+        "headerRow": 3,
+        "startCol": 1
+      },
+      "entradaDeValor": {
+        "headerRow": 3,
+        "startCol": 9
+      },
+      "contagens": {
+        "despesas": 4,
+        "entradas": 2,
+        "transfers": 0,
+        "billPayments": 1,
+        "mirrorsConsumed": 0,
+        "rowErrors": 0
+      },
+      "totaisCents": {
+        "despesas": 32830,
+        "entradas": 580000,
+        "transfers": 0,
+        "billPayments": 30000
+      }
+    }
+  }
+}
